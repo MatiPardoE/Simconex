@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "C:/Users/toto_/.platformio/packages/framework-arduinoespressif8266/cores/esp8266",
+                "C:/Users/toto_/.platformio/packages/framework-arduinoespressif8266/tools/sdk/include",
+                "C:/Users/toto_/.platformio/packages/toolchain-xtensa/xtensa-lx106-elf/include",
+                "${workspaceFolder}/testRDO/include**",
+                "C:/Users/toto_/.platformio/packages/framework-arduinoespressif8266/variants/nodemcu"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "windowsSdkVersion": "10.0.22621.0",
+            "compilerPath": "cl.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-msvc-x64"
+        }
+    ],
+    "version": 4
+}
