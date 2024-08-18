@@ -7,6 +7,7 @@ class Sequencer2{
     public:
     
     enum reading_step {STEP1, STEP2};
+    enum sequence_status {IN_PROGRESS, FINISHED};
     
     Sequencer2( void (*step1)(), unsigned long time1,
                 void (*step2)(), unsigned long time2);
@@ -14,7 +15,7 @@ class Sequencer2{
     void reset();
 	void reset(unsigned long delay);
     
-    void run();
+    sequence_status run();
     
     void set_step1_time(unsigned long time);
     void set_step2_time(unsigned long time);

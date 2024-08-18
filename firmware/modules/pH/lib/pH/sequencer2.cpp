@@ -34,10 +34,8 @@ void Sequencer2::reset(unsigned long delay){
      next_step_time = millis() + delay;
 }
 
-void Sequencer2::run(){
-    
-    switch (current_step) {
-        
+Sequencer2::sequence_status Sequencer2::run(){    
+    switch (current_step) {        
         case STEP1:
             if (millis() >= next_step_time) {  
                 s1func();
@@ -50,8 +48,10 @@ void Sequencer2::run(){
             if (millis() >= next_step_time) {  
                 s2func();
                 next_step_time = millis() + t2; 
-                current_step = STEP1; 
+                current_step = STEP1;
+                return FINISHED;
             }
         break;
     }
+    return IN_PROGRESS;
 }

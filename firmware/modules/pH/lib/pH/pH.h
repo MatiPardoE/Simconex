@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+#define PH_ADDR 100
+
 class pH {
     public:
 	
