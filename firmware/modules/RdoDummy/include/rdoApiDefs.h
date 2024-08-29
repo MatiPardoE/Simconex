@@ -32,7 +32,7 @@
 #define _RDO_GPIOS_     RDO_TX_GPIO , RDO_RX_GPIO , UART_PIN_NO_CHANGE , UART_PIN_NO_CHANGE
 
 //RDO UART
-#define RDO_UART_NUM        UART_NUM_1
+#define RDO_UART_NUM        UART_NUM_2
 #define RDO_BAUD_RATE       19200
 #define RDO_DATA_BITS       UART_DATA_8_BITS
 #define RDO_PARITY          UART_PARITY_EVEN
@@ -41,7 +41,6 @@
 #define RDO_FLOW_CONTROL_THR    122 //entiendo que es dummy
 
 #define RDO_BUFFER_SIZE     512
-//#define RDO_BUFFER_SIZE     512
 
 
 
