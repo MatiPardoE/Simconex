@@ -6,14 +6,6 @@
 		{
 			"name": "Rdo",
 			"path": "Rdo"
-		},
-		{
-			"name": "RdoDummy",
-			"path": "RdoDummy"
-		},
-		{
-			"name": "240818-194903-arduino-blink",
-			"path": "../../../../../Documents/PlatformIO/Projects/240818-194903-arduino-blink"
 		}
 	],
 	"settings": {
