@@ -1,6 +1,6 @@
 #include "ezo_ph.h"
 
-pH pH_Device = pH(20, "EZO pH probe");   //object which holds the device we'll find
+extern pH pH_Device;
 
 Sequencer2 read_seq(&read_step1, READING_DELAY, &read_step2, 0 );
 
@@ -110,7 +110,7 @@ void print_help() {
     Serial.println(F("addr,[nnn]   Changes the sensors I2C address to number nnn                 "));
 }
 
-void me_ph() {
+uint8_t me_ph() {
     static state_ph_t state_ph = READ_PH;
 
     switch(state_ph){
@@ -118,6 +118,7 @@ void me_ph() {
             if(read_seq.run() == read_seq.FINISHED) {
                 if(pH_Device.get_error() == pH::SUCCESS){
                     Serial.printf("Valor de pH: %.2f \n", pH_Device.get_last_received_reading());
+                    return ME_FINISHED;
                 } else {
                     Serial.println("ph read error");
                 }
@@ -137,6 +138,7 @@ void me_ph() {
             state_ph = READ_PH;
             break;
     }
+    return ME_PROCESSING;
 }
 
 uint8_t me_calib() {
@@ -178,5 +180,5 @@ uint8_t me_calib() {
             break;
     }
 
-    return ME_IN_PROGRESS;
+    return ME_PROCESSING;
 }

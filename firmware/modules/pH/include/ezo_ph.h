@@ -4,15 +4,13 @@
 #include <pH.h> //include the EZO I2C library from https://github.com/Atlas-Scientific/Ezo_I2c_lib
 #include <Wire.h> //include arduinos i2c library
 #include <sequencer2.h> //imports a 2 function sequencer 
+#include "utilities.h"
 
 #define I2C_SDA 12
 #define I2C_SCL 14
 
 #define READING_DELAY   1000
 #define CLEAR_DELAY     400
-
-#define ME_IN_PROGRESS 0
-#define ME_FINISHED    1
 
 enum state_calib_t {
     CLEAR_CALIB,
@@ -29,7 +27,7 @@ enum state_ph_t {
 
 bool init_pH_probe();
 void print_help();
-void me_ph();
+uint8_t me_ph();
 uint8_t me_calib();
 
 void read_step1();     //forward declarations of functions to use them in the sequencer before defining them

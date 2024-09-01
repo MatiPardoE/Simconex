@@ -1,6 +1,6 @@
 #include "shift_reg.h"
 
-byte shift_outputs = 0;
+extern byte shift_outputs;
 
 void init_shift_reg() {
     pinMode(SHIFT_LATCH, OUTPUT);
