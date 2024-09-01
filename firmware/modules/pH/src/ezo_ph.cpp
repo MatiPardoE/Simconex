@@ -2,24 +2,13 @@
 
 pH pH_Device = pH(20, "EZO pH probe");   //object which holds the device we'll find
 
+Sequencer2 read_seq(&read_step1, READING_DELAY, &read_step2, 0 );
 
-Sequencer2 read_seq(&read_step1, READING_DELAY,   //calls the steps in sequence with time in between them
-                    &read_step2, 0 );
-
-Sequencer2 calib_clear_seq(&calib_clear_step1, CLEAR_DELAY,   //calls the steps in sequence with time in between them
-                           &calib_clear_step2, 0 );
-
-Sequencer2 calib_mid_seq(&calib_mid_step1, READING_DELAY,   //calls the steps in sequence with time in between them
-                         &calib_mid_step2, 0 );
-
-Sequencer2 calib_low_seq(&calib_low_step1, READING_DELAY,   //calls the steps in sequence with time in between them
-                         &calib_low_step2, 0 );
-
-Sequencer2 calib_high_seq(&calib_high_step1, READING_DELAY,   //calls the steps in sequence with time in between them
-                          &calib_high_step2, 0 );
-
-Sequencer2 calib_check_seq(&calib_check_step1, CLEAR_DELAY,   //calls the steps in sequence with time in between them
-                           &calib_check_step2, 0 );
+Sequencer2 calib_clear_seq(&calib_clear_step1,  CLEAR_DELAY,    &calib_clear_step2, 0);
+Sequencer2 calib_mid_seq  (&calib_mid_step1,    READING_DELAY,  &calib_mid_step2,   0);
+Sequencer2 calib_low_seq  (&calib_low_step1,    READING_DELAY,  &calib_low_step2,   0);
+Sequencer2 calib_high_seq (&calib_high_step1,   READING_DELAY,  &calib_high_step2,  0);
+Sequencer2 calib_check_seq(&calib_check_step1,  CLEAR_DELAY,    &calib_check_step2, 0);
 
 bool init_pH_probe(){
     Wire.begin(I2C_SDA, I2C_SCL); //start the I2C
@@ -45,8 +34,7 @@ void read_step1() {
 void read_step2() {
     //get the reading from the device
     Serial.println("read_step2");
-    receive_and_print_reading(pH_Device);             
-    Serial.println("");
+    pH_Device.receive_read_cmd();
 }
 
 void calib_clear_step1() {
@@ -128,6 +116,11 @@ void me_ph() {
     switch(state_ph){
         case READ_PH:
             if(read_seq.run() == read_seq.FINISHED) {
+                if(pH_Device.get_error() == pH::SUCCESS){
+                    Serial.printf("Valor de pH: %.2f \n", pH_Device.get_last_received_reading());
+                } else {
+                    Serial.println("ph read error");
+                }
                 state_ph = CALIB_PH;
                 delay(1000);
             }
