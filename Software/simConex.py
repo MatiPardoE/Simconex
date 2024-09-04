@@ -13,15 +13,17 @@ from frames.manual_frame import ThirdFrame
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)  # Configura el nivel de registro
 
+# Obtener la ruta del directorio actual donde está el archivo Python
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Definir la ruta de la carpeta Log dentro de Software
-log_dir = os.path.join("Software", "Log")
+# Definir la ruta de la carpeta Log relativa al directorio del script
+log_dir = os.path.join(current_dir, "log")
 
 # Crear la carpeta Log si no existe
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
 
-# Crear un manejador para el archivo en la carpeta Log dentro de Software
+# Crear un manejador para el archivo en la carpeta Log
 file_handler = logging.FileHandler(os.path.join(log_dir, "app.log"))
 file_handler.setLevel(logging.DEBUG)
 
