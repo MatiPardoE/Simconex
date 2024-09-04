@@ -11,7 +11,7 @@ Sequencer2 calib_high_seq (&calib_high_step1,   READING_DELAY,  &calib_high_step
 Sequencer2 calib_check_seq(&calib_check_step1,  CLEAR_DELAY,    &calib_check_step2, 0);
 
 bool init_pH_probe(){
-    Wire.begin(I2C_SDA, I2C_SCL); //start the I2C
+    
     delay(3000); //wait for devices to boot
     Wire.beginTransmission(PH_ADDR); //try to talk to the device over I2C
     if(Wire.endTransmission() == 0) { //check if communication attempt was successful   
