@@ -16,11 +16,7 @@ from frames.cycle_frame import CycleFrame
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)  # Configura el nivel de registro
 
-# Obtener la ruta del directorio actual donde está el archivo Python
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Definir la ruta de la carpeta Log relativa al directorio del script
-log_dir = os.path.join(current_dir, "log")
+log_dir = os.path.join(os.getcwd(), "log")
 
 # Crear la carpeta Log si no existe
 if not os.path.exists(log_dir):
@@ -56,7 +52,7 @@ class App(ctk.CTk):
         self.grid_columnconfigure(1, weight=1)
 
         # load images with light and dark mode image
-        image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "images")
+        image_path = os.path.join(os.getcwd(), "images")
         self.logo_image = ctk.CTkImage(Image.open(os.path.join(image_path, "simconex_Logo.png")), size=(40, 40))
         self.large_test_image = ctk.CTkImage(Image.open(os.path.join(image_path, "large_test_image.png")), size=(500, 150))
         self.image_icon_image = ctk.CTkImage(Image.open(os.path.join(image_path, "image_icon_light.png")), size=(20, 20))
@@ -84,7 +80,7 @@ class App(ctk.CTk):
                                          image=self.home_image, anchor="w", command=self.home_button_event)
         self.home_button.grid(row=1, column=0, sticky="ew")
 
-        self.cycle_button = ctk.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Cycle",
+        self.cycle_button = ctk.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Ciclos",
                                             fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
                                             image=self.cycle_image, anchor="w", command=self.cycle_button_event)
         self.cycle_button.grid(row=2, column=0, sticky="ew")
@@ -94,25 +90,25 @@ class App(ctk.CTk):
                                             image=self.manual_image, anchor="w", command=self.manual_button_event)
         self.manual_button.grid(row=3, column=0, sticky="ew")
 
-        self.calibration_button = ctk.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Calibration",
+        self.calibration_button = ctk.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Calibracion",
                                             fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
                                             image=self.calibration_image, anchor="w", command=self.calibration_button_event)
         self.calibration_button.grid(row=4, column=0, sticky="ew")
 
-        self.alerts_button = ctk.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Alerts",
+        self.alerts_button = ctk.CTkButton(self.navigation_frame, corner_radius=0, height=40, border_spacing=10, text="Alertas",
                                             fg_color="transparent", text_color=("gray10", "gray90"), hover_color=("gray70", "gray30"),
                                             image=self.alerts_image, anchor="w", command=self.alerts_button_event)
         self.alerts_button.grid(row=5, column=0, sticky="ew")
 
         # Connection Menu SideBar
-        self.connection_label = ctk.CTkLabel(self.navigation_frame, text="Status:   ", anchor="w",
+        self.connection_label = ctk.CTkLabel(self.navigation_frame, text="Estado:   ", anchor="w",
                                              font=ctk.CTkFont(size=12, weight="bold"), image=self.connection_image, compound="right")
         self.connection_label.grid(row=7, column=0, padx=20, pady=(10, 0))
-        self.connection_button = ctk.CTkButton(self.navigation_frame, text="Connect", command=self.connection_button_event)
+        self.connection_button = ctk.CTkButton(self.navigation_frame, text="Conectar", command=self.connection_button_event)
         self.connection_button.grid(row=8, column=0, padx=20, pady=(10, 0))
 
         # Scaling Menu SideBar
-        self.scaling_label = ctk.CTkLabel(self.navigation_frame, text="UI Scaling:", anchor="w")
+        self.scaling_label = ctk.CTkLabel(self.navigation_frame, text="Zoom:", anchor="w")
         self.scaling_label.grid(row=9, column=0, padx=20, pady=(10, 0))
         self.scaling_optionemenu = ctk.CTkOptionMenu(self.navigation_frame, values=["80%", "90%", "100%", "110%", "120%"],
                                                      command=self.change_scaling_event)
@@ -120,7 +116,7 @@ class App(ctk.CTk):
         self.scaling_optionemenu.grid(row=10, column=0, padx=20, pady=(10, 20), sticky="s")
 
         # create frames
-        self.home_frame = HomeFrame(self, self.large_test_image, self.image_icon_image)
+        self.home_frame = HomeFrame(self)
         self.cycle_frame = CycleFrame(self)
         self.manual_frame = ManualFrame(self)
         self.calibration_frame = CalibrationFrame(self)
