@@ -1,68 +1,22 @@
 import customtkinter as ctk
 from PIL import Image
 import os
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import numpy as np
 
 class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
 
-        image_path = os.path.join(os.getcwd(), "images") 
-        small_font = ctk.CTkFont(size=12, weight="bold")
-        big_font = ctk.CTkFont(size=16, weight="bold")
+        self.grid_columnconfigure((0, 1, 2), weight=0)
 
-        # set grid layout 1x3
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure(2, weight=1)
-
-        # Left 
-        self.co2_label = ctk.CTkLabel(self, text="CO2", anchor="w", font=small_font)
-        self.co2_label.grid(row=0, column=0, padx=20, pady=(10, 0))
-        self.co2_button = ctk.CTkButton(self, text="Encendido", fg_color="green", command=self.co2_button_event, hover=False)
-        self.co2_button.grid(row=1, column=0, padx=20, pady=(10, 0))
-
-        self.o2_label = ctk.CTkLabel(self, text="O2", anchor="w", font=small_font)
-        self.o2_label.grid(row=2, column=0, padx=20, pady=(10, 0))
-        self.o2_button = ctk.CTkButton(self, text="Encendido", fg_color="green", command=self.o2_button_event, hover=False)
-        self.o2_button.grid(row=3, column=0, padx=20, pady=(10, 0))
-
-        self.air_label = ctk.CTkLabel(self, text="Aire", anchor="w", font=small_font)
-        self.air_label.grid(row=4, column=0, padx=20, pady=(10, 0))
-        self.air_button = ctk.CTkButton(self, text="Encendido", fg_color="green", command=self.air_button_event, hover=False)
-        self.air_button.grid(row=5, column=0, padx=20, pady=(10, 0))
-
-        self.pump_label = ctk.CTkLabel(self, text="Bomba", anchor="w", font=small_font)
-        self.pump_label.grid(row=6, column=0, padx=20, pady=(10, 0))
-        self.pump_button = ctk.CTkButton(self, text="Encendido", fg_color="green", command=self.pump_button_event, hover=False)
-        self.pump_button.grid(row=7, column=0, padx=20, pady=(10, 0))
-
-        # Center
-        # self.reactor_image_frame = ctk.CTkFrame(master=self)
-        # self.reactor_image_frame.grid(row=0, column=1, sticky="nsew")
-        # self.reactor_image = ctk.CTkImage(Image.open(os.path.join(image_path, "reactor.png")))
-        # bg_image_label = ctk.CTkLabel(master=self.reactor_image_frame, image=self.reactor_image)
-        # bg_image_label.pack(side="top", fill="both", expand=True)
-        
-
-        # Right 
-        self.light_label = ctk.CTkLabel(self, text="Luz", anchor="w", font=small_font)
-        self.light_label.grid(row=0, column=2, padx=20, pady=10)
-        self.light_label_info = ctk.CTkLabel(self, text="50%", anchor="w", fg_color="white", font=small_font, padx=20, pady=15, corner_radius=5)
-        self.light_label_info.grid(row=1, column=2, padx=20, pady=10)
-
-        self.pH_label = ctk.CTkLabel(self, text="pH", anchor="w", font=small_font)
-        self.pH_label.grid(row=2, column=2, padx=20, pady=10)
-        self.pH_label_info = ctk.CTkLabel(self, text="7.032", anchor="w", fg_color="white", font=small_font, padx=20, pady=15, corner_radius=5)
-        self.pH_label_info.grid(row=3, column=2, padx=20, pady=10)
-
-        self.do_label = ctk.CTkLabel(self, text="DO", anchor="w", font=small_font)
-        self.do_label.grid(row=4, column=2, padx=20, pady=10)
-        self.do_label_info = ctk.CTkLabel(self, text="75.3%", anchor="w", fg_color="white", font=small_font, padx=20, pady=15, corner_radius=5)
-        self.do_label_info.grid(row=5, column=2, padx=20, pady=10)
-
-        self.temp_label = ctk.CTkLabel(self, text="Temperatura", anchor="w", font=small_font)
-        self.temp_label.grid(row=6, column=2, padx=20, pady=10)
-        self.temp_label_info = ctk.CTkLabel(self, text="24.3°C", anchor="w", fg_color="white", font=small_font, padx=20, pady=15, corner_radius=5)
-        self.temp_label_info.grid(row=7, column=2, padx=20, pady=10)
+        left_frame = ctk.CTkFrame(self, fg_color="blue")
+        left_frame.grid(row=0, column=0, padx=0, pady=(0, 20), sticky="w")
+        center_frame = ctk.CTkFrame(self, fg_color="green")
+        center_frame.grid(row=0, column=1, padx=0, pady=(0, 20), sticky="w")
+        right_frame = ctk.CTkFrame(self, fg_color="pink")
+        right_frame.grid(row=0, column=2, padx=0, pady=(0, 20), sticky="w")
 
     def co2_button_event(self):
         if self.co2_button.cget("text") == "Encendido":
@@ -96,25 +50,94 @@ class InstantValuesFrame(ctk.CTkFrame):
             self.pump_button.configure(text="Encendido")
             self.pump_button.configure(fg_color="green")
 
+class ActualCycleFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master) 
+
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(4, weight=1)
+
+        self.label_actual = ctk.CTkLabel(self, text="Ciclo Actual", font=ctk.CTkFont(size=20, weight="bold"))
+        self.label_actual.grid(row=0, column=0, padx=(20, 10), pady=(10, 0), sticky="w")
+
+        self.label_actual_days = ctk.CTkLabel(self, text="10 Dias", font=ctk.CTkFont(size=18))
+        self.label_actual_days.grid(row=1, column=0, padx=(20, 10), pady=(10, 10), sticky="w")
+
+        self.progressbar_actual = ctk.CTkProgressBar(self)
+        self.progressbar_actual.grid(row=2, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+
+        self.frame_actual = ctk.CTkFrame(self)
+        self.frame_actual.grid(row=3, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+
+        self.frame_actual.grid_columnconfigure((0, 1), weight=1)
+        self.frame_actual.grid_rowconfigure((0, 1), weight=1)
+
+        self.label_done_colour = ctk.CTkLabel(self.frame_actual, text="Done")
+        self.label_done_colour.grid(row=0, column=0, padx=20, pady=0, sticky="w")
+
+        self.label_left_colour = ctk.CTkLabel(self.frame_actual, text="Left")
+        self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="w")
+
+        self.label_done_text = ctk.CTkLabel(self.frame_actual, text="5 dias", font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="w")
+
+        self.label_left_text = ctk.CTkLabel(self.frame_actual, text="5 dias", font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="w")
+    
+class MyPlot(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master)
+
+        # generate random numbers for the plot
+        x,y,s,c = np.random.rand(4,100)
+        # generate the figure and plot object which will be linked to the root element
+        fig, ax = plt.subplots()
+        fig.set_size_inches(8,4)
+        ax.scatter(x,y,s*50,c)
+        ax.axis("off")
+        fig.subplots_adjust(left=0, right=1, bottom=0, top=1, wspace=0, hspace=0)
+        canvas = FigureCanvasTkAgg(fig, master=master)
+        canvas.draw()
+        canvas.get_tk_widget().grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
+
+class PlotFrame(ctk.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master) 
+
+        self.tabview = ctk.CTkTabview(self)
+        self.tabview.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
+        self.tabview.add("Luz")
+        self.tabview.add("pH")
+        self.tabview.add("OD")            
+        self.tabview.add("Temperatura")
+
+        self.tabview.tab("Luz").grid_columnconfigure(0, weight=1) 
+        self.tabview.tab("pH").grid_columnconfigure(0, weight=1)
+        self.tabview.tab("OD").grid_columnconfigure(0, weight=1)
+        self.tabview.tab("Temperatura").grid_columnconfigure(0, weight=1)
+
+        self.plot_light = MyPlot(self.tabview.tab("Luz"))
+        self.plot_ph = MyPlot(self.tabview.tab("pH"))
+        self.plot_od = MyPlot(self.tabview.tab("OD"))
+        self.plot_temp = MyPlot(self.tabview.tab("Temperatura"))
+        
+
 class HomeFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, corner_radius=0, fg_color="transparent")    
+
+        self.grid_columnconfigure((0, 1), weight=1)
+        self.grid_rowconfigure((0, 1), weight=1)
+
+        self.instant_values_frame = InstantValuesFrame(self)
+        self.instant_values_frame.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsew")
+
+        self.actual_cycle_frame = ActualCycleFrame(self)
+        self.actual_cycle_frame.grid(row=0, column=1, padx=10, pady=(10, 0), sticky="nsew")
+
+        self.plot1_frame = PlotFrame(self)
+        self.plot1_frame.grid(row=1, column=0, padx=10, pady=(10, 0), sticky="nsew")
+
+        self.plot2_frame = PlotFrame(self)
+        self.plot2_frame.grid(row=1, column=1, padx=10, pady=(10, 0), sticky="nsew")
         
-        top_frame = ctk.CTkFrame(master=self)
-        top_frame.pack(side="top", fill="both", expand=True)
-
-        bottom_frame = ctk.CTkFrame(master=self)
-        bottom_frame.pack(side="top", fill="both", expand=True)
-
-        instant_values_frame = InstantValuesFrame(top_frame)
-        instant_values_frame.pack(side="left", fill="both", expand=True)
-
-        home_frame_1_2 = ctk.CTkFrame(master=top_frame, fg_color="orange")
-        home_frame_1_2.pack(side="left", fill="both", expand=True)
-
-        home_frame_2_1 = ctk.CTkFrame(master=bottom_frame, fg_color="green")
-        home_frame_2_1.pack(side="left", fill="both", expand=True)
-
-        home_frame_2_2 = ctk.CTkFrame(master=bottom_frame, fg_color="purple")
-        home_frame_2_2.pack(side="left", fill="both", expand=True)
-
