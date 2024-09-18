@@ -135,16 +135,16 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="w")
     
 class MyPlot(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, values_ideal, values_meas, base):
         super().__init__(master)
 
-        # generate random numbers for the plot
-        x,y,s,c = np.random.rand(4,100)
-        # generate the figure and plot object which will be linked to the root element
         fig, ax = plt.subplots()
-        fig.set_size_inches(8,4)
-        ax.scatter(x,y,s*50,c)
-        ax.axis("off")
+        ax.plot(base, values_meas, linewidth=2.0)
+        ax.plot(base, values_ideal, linewidth=2.0)
+
+        ax.set(xlim=(0, 8), xticks=np.arange(1, 8),
+        ylim=(0, 8), yticks=np.arange(1, 8))
+
         fig.subplots_adjust(left=0, right=1, bottom=0, top=1, wspace=0, hspace=0)
         canvas = FigureCanvasTkAgg(fig, master=master)
         canvas.draw()
@@ -166,10 +166,16 @@ class PlotFrame(ctk.CTkFrame):
         self.tabview.tab("OD").grid_columnconfigure(0, weight=1)
         self.tabview.tab("Temperatura").grid_columnconfigure(0, weight=1)
 
-        self.plot_light = MyPlot(self.tabview.tab("Luz"))
-        self.plot_ph = MyPlot(self.tabview.tab("pH"))
-        self.plot_od = MyPlot(self.tabview.tab("OD"))
-        self.plot_temp = MyPlot(self.tabview.tab("Temperatura"))
+        x = np.linspace(0, 10, 100)
+        y_light = 4 + 1 * np.sin(2 * x)
+        y_ph = 4 + 1 * np.sin(x)
+        y_od = 2 + 4 * np.sin(2 * x)
+        y_temp = 2 + 4 * np.sin(x)
+
+        self.plot_light = MyPlot(self.tabview.tab("Luz"), y_light-1, y_light, x)
+        self.plot_ph = MyPlot(self.tabview.tab("pH"), y_ph-1, y_ph, x)
+        self.plot_od = MyPlot(self.tabview.tab("OD"), y_od-1, y_od, x)
+        self.plot_temp = MyPlot(self.tabview.tab("Temperatura"), y_temp-1, y_temp, x)
         
 
 class HomeFrame(ctk.CTkFrame):
