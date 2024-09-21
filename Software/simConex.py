@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import os
-from PIL import Image
+import tkinter
+from PIL import Image, ImageTk
 import serial
 import serial.tools.list_ports
 import threading
@@ -43,8 +44,8 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.title("simConex.py")
-        self.geometry("700x450")
+        self.title("FBR SIMCONEX")
+        #self.geometry("700x450")
         ctk.set_appearance_mode("Light")
 
         # set grid layout 1x2
@@ -53,7 +54,7 @@ class App(ctk.CTk):
 
         # load images with light and dark mode image
         image_path = os.path.join(os.getcwd(), "images")
-        self.logo_image = ctk.CTkImage(Image.open(os.path.join(image_path, "simconex_Logo.png")), size=(40, 40))
+        self.logo_image = ctk.CTkImage(Image.open(os.path.join(image_path, "logo_edited.png")), size=(40, 40))
         self.large_test_image = ctk.CTkImage(Image.open(os.path.join(image_path, "large_test_image.png")), size=(500, 150))
         self.image_icon_image = ctk.CTkImage(Image.open(os.path.join(image_path, "image_icon_light.png")), size=(20, 20))
         self.home_image = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "home_dark.png")),
@@ -71,7 +72,7 @@ class App(ctk.CTk):
         self.navigation_frame.grid(row=0, column=0, sticky="nsew")
         self.navigation_frame.grid_rowconfigure(6, weight=1)
 
-        self.navigation_frame_label = ctk.CTkLabel(self.navigation_frame, text=" SimConEx", image=self.logo_image,
+        self.navigation_frame_label = ctk.CTkLabel(self.navigation_frame, text=" FBR SIMCONEX", image=self.logo_image,
                                                    compound="left", anchor="w", font=ctk.CTkFont(size=12, weight="bold"))
         self.navigation_frame_label.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
 

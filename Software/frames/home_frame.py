@@ -41,7 +41,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.center_frame = ctk.CTkFrame(self)
         self.center_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
 
-        self.reactor_img = ctk.CTkImage(Image.open(os.path.join(image_path, "reactor.png")), size=(150, 300))
+        self.reactor_img = ctk.CTkImage(Image.open(os.path.join(image_path, "reactor_edited.png")), size=(150, 300))
         self.reactor_img_label = ctk.CTkLabel(self.center_frame, text="", image=self.reactor_img)
         self.reactor_img_label.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
 
