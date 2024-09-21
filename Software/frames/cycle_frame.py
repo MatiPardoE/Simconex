@@ -90,15 +90,11 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.combobox_unit = ctk.CTkComboBox(self.frame_buttons, state="readonly", values=["min", "seg"])
         self.combobox_unit.grid(row=0, column=4, padx=5, pady=5, sticky="ew")
 
-        self.main_button_interval = ctk.CTkButton(master=self.frame_buttons, text="Enviar", fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"))
+        self.main_button_interval = ctk.CTkButton(master=self.frame_buttons, text="Enviar", command=self.send_button_event)
         self.main_button_interval.grid(row=0, column=5, padx=5, pady=5, sticky="ew")
-
-class LogLine(ctk.CTkFrame):
-
-    def __init__(self, master):
-        super().__init__(master) 
-
-
+    
+    def send_button_event(self):
+        print("Enviar")
    
 class LogFrame(ctk.CTkScrollableFrame):
 
@@ -190,7 +186,9 @@ class CycleFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, corner_radius=0, fg_color="transparent")
 
-        self.grid_columnconfigure((0, 1), weight=1)
+        self.grid_columnconfigure(0, weight=2)
+        self.grid_columnconfigure(1, weight=2)
+        self.grid_columnconfigure(2, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=5)
         

@@ -68,38 +68,6 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.temp_button = ctk.CTkButton(self.right_frame, text="24.3°C", fg_color="white", hover=False, state="disabled", text_color_disabled="black")
         self.temp_button.grid(row=7, column=0, padx=10, pady=0, sticky="nsew")
 
-    def co2_button_event(self):
-        if self.co2_button.cget("text") == "Encendido":
-            self.co2_button.configure(text="Apagado")
-            self.co2_button.configure(fg_color="red")
-        elif self.co2_button.cget("text") == "Apagado":
-            self.co2_button.configure(text="Encendido")
-            self.co2_button.configure(fg_color="green")
-
-    def o2_button_event(self):
-        if self.o2_button.cget("text") == "Encendido":
-            self.o2_button.configure(text="Apagado")
-            self.o2_button.configure(fg_color="red")
-        elif self.o2_button.cget("text") == "Apagado":
-            self.o2_button.configure(text="Encendido")
-            self.o2_button.configure(fg_color="green")
-    
-    def air_button_event(self):
-        if self.air_button.cget("text") == "Encendido":
-            self.air_button.configure(text="Apagado")
-            self.air_button.configure(fg_color="red")
-        elif self.air_button.cget("text") == "Apagado":
-            self.air_button.configure(text="Encendido")
-            self.air_button.configure(fg_color="green")
-
-    def pump_button_event(self):
-        if self.pump_button.cget("text") == "Encendido":
-            self.pump_button.configure(text="Apagado")
-            self.pump_button.configure(fg_color="red")
-        elif self.pump_button.cget("text") == "Apagado":
-            self.pump_button.configure(text="Encendido")
-            self.pump_button.configure(fg_color="green")
-
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
