@@ -58,7 +58,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.ph_button = ctk.CTkButton(self.right_frame, text="6.536", fg_color="white", hover=False, state="disabled", text_color_disabled="black")
         self.ph_button.grid(row=3, column=0, padx=10, pady=0, sticky="nsew")
 
-        self.label_do = ctk.CTkLabel(self.right_frame, text="DO", font=ctk.CTkFont(weight="bold"))
+        self.label_do = ctk.CTkLabel(self.right_frame, text="OD", font=ctk.CTkFont(weight="bold"))
         self.label_do.grid(row=4, column=0, padx=10, pady=(10,0), sticky="nsew")
         self.do_button = ctk.CTkButton(self.right_frame, text="342.4", fg_color="white", hover=False, state="disabled", text_color_disabled="black")
         self.do_button.grid(row=5, column=0, padx=10, pady=0, sticky="nsew")
@@ -122,10 +122,10 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.frame_actual.grid_columnconfigure((0, 1), weight=1)
         self.frame_actual.grid_rowconfigure((0, 1), weight=1)
 
-        self.label_done_colour = ctk.CTkLabel(self.frame_actual, text="Done")
+        self.label_done_colour = ctk.CTkLabel(self.frame_actual, text="Completo")
         self.label_done_colour.grid(row=0, column=0, padx=20, pady=0, sticky="w")
 
-        self.label_left_colour = ctk.CTkLabel(self.frame_actual, text="Left")
+        self.label_left_colour = ctk.CTkLabel(self.frame_actual, text="Restante")
         self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="w")
 
         self.label_done_text = ctk.CTkLabel(self.frame_actual, text="5 dias", font=ctk.CTkFont(size=15, weight="bold"))
