@@ -1,9 +1,61 @@
 import customtkinter as ctk
+import tkinter
 from PIL import Image
 import os
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import numpy as np
+import csv
+from datetime import datetime
+import random
+
+def read_datalog(fname):
+    datetime_list = []
+    ph_list = []
+    od_list = []
+    temp_list = []
+    light_list = []
+    index = {}
+    
+    with open(fname, newline='') as csvfile:
+        handler = csv.reader(csvfile)
+        for i, line in enumerate(handler):
+            if i==0:
+                for j, column in enumerate(line):
+                    #print(line)
+                    if column == "Fecha":
+                        index['fecha'] = j
+                    elif column == "Hora":
+                        index['hora'] = j
+                    elif column == "pH":
+                        index['ph'] = j
+                    elif column == "DO":
+                        index['do'] = j
+                    elif column == "Temperatura":
+                        index['temperatura'] = j
+                    elif column == "LED1":
+                        index['led1'] = j
+                    elif column == "LED2":
+                        index['led2'] = j
+                    elif column == "LED3":
+                        index['led3'] = j
+                    elif column == "LED4":
+                        index['led4'] = j
+                    elif column == "LED5":
+                        index['led5'] = j
+            else: 
+                datetime_str = line[index.get("fecha")] + ' ' + line[index.get("hora")]
+                datetime_single = datetime.strptime(datetime_str, '%d/%m/%Y %H:%M:%S')
+                datetime_list.append(datetime_single)
+                
+                # Extraer los valores
+                ph_list.append(float(line[index.get("ph")]))
+                od_list.append(float(line[index.get("do")]))
+                temp_list.append(float(line[index.get("temperatura")]))
+                light_list.append(float(line[index.get("led1")]))  
+    
+    return datetime_list, ph_list, od_list, temp_list, light_list
 
 class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -137,24 +189,46 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
     
 class MyPlot(ctk.CTkFrame):
-    def __init__(self, master, values_ideal, values_meas, base):
+    def __init__(self, master, var, datalog_meas, datalog_ideal):
         super().__init__(master)
 
-        fig, ax = plt.subplots()
-        ax.plot(base, values_meas, linewidth=2.0)
-        ax.plot(base, values_ideal, linewidth=2.0)
+        datetime_list_m, ph_list_m, od_list_m, temp_list_m, light_list_m = read_datalog(datalog_meas)
+        datetime_list_i, ph_list_i, od_list_i, temp_list_i, light_list_i = read_datalog(datalog_ideal)
 
-        ax.set(xlim=(0, 8), xticks=np.arange(1, 8),
-        ylim=(0, 8), yticks=np.arange(1, 8))
+        fig = Figure(figsize=(5, 4), dpi=100)
+        ax = fig.add_subplot()
 
-        fig.subplots_adjust(left=0, right=1, bottom=0, top=1, wspace=0, hspace=0)
-        canvas = FigureCanvasTkAgg(fig, master=master)
+        if var=="pH":
+            ax.plot(datetime_list_i, ph_list_i, label="Valores esperados")
+            ax.plot(datetime_list_m, [x * random.uniform(0.9, 1.1) for x in ph_list_i], label="Valores medidos")
+        elif var=="OD":
+            ax.plot(datetime_list_i, od_list_i, label="Valores esperados")
+            ax.plot(datetime_list_m, [x * random.uniform(0.9, 1.1) for x in od_list_i], label="Valores medidos")
+            ax.set_ylabel("[%]")
+        elif var=="Temperatura":
+            ax.plot(datetime_list_i, temp_list_i, label="Valores esperados")
+            ax.plot(datetime_list_m, [x * random.uniform(0.9, 1.1) for x in temp_list_i], label="Valores medidos")
+            ax.set_ylabel("[°C]")
+        elif var=="Luz":
+            ax.plot(datetime_list_i, light_list_i, label="Valores esperados")
+            ax.plot(datetime_list_m, [x * random.uniform(0.9, 1.1) for x in light_list_i], label="Valores medidos")
+            ax.set_ylabel("[%]")
+        
+        ax.legend()  
+        canvas = FigureCanvasTkAgg(fig, master=master)  
         canvas.draw()
-        canvas.get_tk_widget().grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
+
+        toolbar = NavigationToolbar2Tk(canvas, master, pack_toolbar=False)
+        toolbar.update()
+
+        toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
+        canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
 
 class PlotFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
+
+        datalog_path = os.path.join(os.getcwd(), "test_data")
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -171,16 +245,16 @@ class PlotFrame(ctk.CTkFrame):
         self.tabview.tab("OD").grid_columnconfigure(0, weight=1)
         self.tabview.tab("Temperatura").grid_columnconfigure(0, weight=1)
 
-        x = np.linspace(0, 10, 100)
-        y_light = 4 + 1 * np.sin(2 * x)
-        y_ph = 4 + 1 * np.sin(x)
-        y_od = 2 + 4 * np.sin(2 * x)
-        y_temp = 2 + 4 * np.sin(x)
+        x = np.arange(0, 3, .01)
+        y_light = 2 * np.sin(2 * np.pi * x)
+        y_ph = 2 * np.sin(2 * np.pi * 2 * x)
+        y_od = 2 * np.sin(2 * np.pi * 3 * x)
+        y_temp = 2 * np.sin(2 * np.pi * x)
 
-        self.plot_light = MyPlot(self.tabview.tab("Luz"), y_light-1, y_light, x)
-        self.plot_ph = MyPlot(self.tabview.tab("pH"), y_ph-1, y_ph, x)
-        self.plot_od = MyPlot(self.tabview.tab("OD"), y_od-1, y_od, x)
-        self.plot_temp = MyPlot(self.tabview.tab("Temperatura"), y_temp-1, y_temp, x)
+        self.plot_light = MyPlot(self.tabview.tab("Luz"), "Luz", os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
+        self.plot_ph = MyPlot(self.tabview.tab("pH"), "pH", os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
+        self.plot_od = MyPlot(self.tabview.tab("OD"), "OD", os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
+        self.plot_temp = MyPlot(self.tabview.tab("Temperatura"), "Temperatura", os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
         
 
 class HomeFrame(ctk.CTkFrame):
