@@ -7,141 +7,107 @@
 #include <ModbusMaster.h>
 
 
+#include "driver/uart.h"
+#include "driver/gpio.h"
+#include "esp_intr_alloc.h"
+
+
+#include <soc/uart_struct.h>
+#include <soc/uart_reg.h>
+
+
 
 /* ----------------------------------------------------------------------------
    -- RDO
    ---------------------------------------------------------------------------- */
-// instantiate ModbusMaster object
-ModbusMaster node;
 
-void preTransmission()
-{
-  digitalWrite(RDO_DE_RE_GPIO, 1);
-}
+volatile bool uart_tx_done = false;
+volatile bool uart_rx_ready = false;
+const char test_str[] = {0xAA,0xF0};
 
-void postTransmission()
-{
-  digitalWrite(RDO_DE_RE_GPIO, 0);
-}
+// ISR para la interrupción de UART
+static void IRAM_ATTR uart_isr_handler(void* arg) {
+    uint32_t uart_intr_status = UART1.int_st.val; // UART1 es para UART_NUM_1
+    digitalWrite(LED_BUILTIN, 1);
 
-// Función para calcular el CRC-16
-uint16_t calculateCRC(uint8_t *data, uint8_t length) {
-  uint16_t crc = 0xFFFF;
 
-  for (uint8_t i = 0; i < length; i++) {
-    crc ^= (uint16_t)data[i];  // XOR entre el byte actual y el CRC
-
-    for (uint8_t j = 0; j < 8; j++) {  // Procesar cada bit del byte
-      if (crc & 0x0001) {  // Si el bit menos significativo es 1
-        crc >>= 1;
-        crc ^= 0xA001;  // XOR con el polinomio
-      } else {
-        crc >>= 1;  // Desplazar el CRC a la derecha
-      }
+    // Interrupción de transmisión completada
+    if (uart_intr_status & UART_TX_DONE_INT_ST_M) {
+        uart_clear_intr_status(RDO_UART_NUM, UART_TX_DONE_INT_CLR_M);
+        uart_tx_done = true;
+        digitalWrite(RDO_DE_RE_GPIO, 1);
     }
-  }
-  
-  return crc;
+
+    // Interrupción de recepción de datos
+    if (uart_intr_status & UART_RXFIFO_FULL_INT_ST_M) {
+        uart_clear_intr_status(RDO_UART_NUM, UART_RXFIFO_FULL_INT_CLR_M);
+        uart_rx_ready = true;
+    }
 }
 
 
 void setup() {
 
+ // Configuración de pines UART
+  gpio_set_direction(RDO_TX_GPIO, GPIO_MODE_OUTPUT);
+  gpio_set_direction(RDO_RX_GPIO, GPIO_MODE_INPUT);
+  gpio_set_pull_mode(RDO_RX_GPIO, GPIO_PULLUP_ONLY);
+
   pinMode(RDO_DE_RE_GPIO, OUTPUT);
-  pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(RDO_DE_RE_GPIO, 0);
+  pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, 0);
 
-  
-  Serial.begin(9600);
+  // Configuración de UART
+  uart_config_t uart_config = {
+    .baud_rate  = RDO_BAUD_RATE,
+    .data_bits  = UART_DATA_8_BITS,
+    .parity     = RDO_PARITY,
+    .stop_bits  = UART_STOP_BITS_1,
+    .flow_ctrl  = UART_HW_FLOWCTRL_DISABLE,
+    .source_clk = UART_SCLK_APB,
+  };
 
-  // use Serial (port 1); initialize Modbus communication baud rate
-  Serial1.begin(19200, SERIAL_8E1);
+  uart_param_config(RDO_UART_NUM, &uart_config);
+  uart_set_pin(RDO_UART_NUM, RDO_RX_GPIO, RDO_RX_GPIO, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+ 
+  // Instalar el controlador UART sin buffer para manejo por interrupciones
+  uart_driver_install(RDO_UART_NUM, 1024, 1024, 0, NULL, 0);
 
+  // Configurar las interrupciones UART
+  uart_enable_intr_mask(RDO_UART_NUM, UART_TX_DONE_INT_ENA_M | UART_RXFIFO_FULL_INT_ENA_M);
+  uart_isr_register(RDO_UART_NUM, uart_isr_handler, NULL, ESP_INTR_FLAG_IRAM, NULL);
 
-  /*
-  // communicate with Modbus slave ID 2 over Serial (port 0)
-  node.begin(1, Serial1);
-  // Callbacks allow us to configure the RS485 transceiver correctly
-  node.preTransmission(preTransmission);
-  node.postTransmission(postTransmission);
-  */
+  // Enviar mensaje inicial
+
+  uart_tx_done = false;
+  uart_write_bytes(RDO_UART_NUM, test_str, strlen(test_str));
 
 }
 
 void loop() {
 
-  uint8_t result;
-  uint16_t data[6];
-
-  int16_t rdoLengthRx;
-
-  uint8_t slaveID  = 0x01;
-  uint8_t funCode  = 0x03;
-  uint8_t regMSB   = 0x00;
-  uint8_t regLSB   = 0x01;
-  uint8_t qReadMSB = 0x00;
-  uint8_t qReadLSB = 0x01;
-  //uint8_t modbusTx[] = { slaveID , funCode , regLSB , regMSB , qReadLSB , qReadMSB , 0 , 0 };
-  uint8_t modbusTx[] = { slaveID , funCode , regMSB , regLSB , qReadMSB , qReadLSB , 0 , 0 };
-  uint16_t crc;
-  uint8_t i;
-  // id cf dataB data
-  uint8_t modbusRx[] = { 0 , 0 , 0 , 0 , 0 , 0 , 0 };
-
-  uint16_t rx = 0;
-
 
   while(1){
-    digitalWrite(LED_BUILTIN, 1);
-    delay(1000);
 
-    crc = calculateCRC(modbusTx,6);
-    modbusTx[6] = (crc>>8)&0xFF;
-    modbusTx[7] = (crc)&0xFF;
 
-    digitalWrite(RDO_DE_RE_GPIO, HIGH);
-    
-    for( i=0 ; i<8 ; i++){
-      if( uart_write_bytes( RDO_UART_NUM, (const char *)&modbusTx[i] , sizeof(uint8_t) ) == '1')
-        Serial.print("\n\rERROR!");
-      uart_wait_tx_done(RDO_UART_NUM, portMAX_DELAY);
-      //delay(1);
-    }
-    // Esperar a que la transmisión termine
-    
-    
-    // Ahora que todos los bytes han sido enviados, puedes desactivar la transmisión
-    digitalWrite(RDO_DE_RE_GPIO, LOW);
-
-    //delay(100);
-    //digitalWrite(RDO_DE_RE_GPIO, LOW);
-
-    rdoLengthRx = uart_read_bytes(RDO_UART_NUM, (void*)modbusRx, 7, 100);
-    Serial.print("\n\rESP32 received: ");
-    Serial.println( rdoLengthRx );
-    for( i=0 ; i<7 ; i++){
-      Serial.println( modbusRx[i] );
+  if (uart_tx_done) {
+        uart_tx_done = false;
+        uart_write_bytes(RDO_UART_NUM, test_str, strlen(test_str));
+        digitalWrite(RDO_DE_RE_GPIO, 0);
     }
 
-  /*
-    result = node.readHoldingRegisters(0x0001, 2);
-    if (result == node.ku8MBSuccess)
-    {
-      Serial.print("\n\rResponse: ");
-      Serial.println(node.getResponseBuffer(0x04));
+    // Procesar datos recibidos si hay
+    if (uart_rx_ready) {
+        uart_rx_ready = false;
     }
-    else{
-      Serial.print("\n\rNo response.");
-      Serial.print(result);
-    }
-  */
-
-    digitalWrite(LED_BUILTIN, 0);
-    delay(1000);
+/*
+    digitalWrite(RDO_DE_RE_GPIO, 0);
+    delay(100);
+    digitalWrite(RDO_DE_RE_GPIO, 1);
+    delay(100);
+*/
   }
-  
-  
 
 }
 
