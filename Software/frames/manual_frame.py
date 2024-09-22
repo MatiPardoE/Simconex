@@ -39,8 +39,8 @@ class LogFrame(ctk.CTkScrollableFrame):
             ["15:00", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"]
         ]
 
-        self.frame_lines = ctk.CTkFrame(self)
-        self.frame_lines.grid(row=1, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+        self.frame_lines = ctk.CTkFrame(self, width=1500)
+        self.frame_lines.grid(row=1, column=0, padx=10, pady=10)
         self.frame_lines.grid_columnconfigure(0, weight=1)
         self.frame_lines.grid_rowconfigure(0, weight=1)
 
@@ -57,26 +57,26 @@ class LogFrame(ctk.CTkScrollableFrame):
             self.frame_line.grid_columnconfigure(5, weight=1)
             self.frame_line.grid_columnconfigure(6, weight=1)
 
-            self.label_time = ctk.CTkLabel(self.frame_line, text=datalog[i][0], corner_radius=0)
-            self.label_time.grid(row=0, column=0, padx=5, pady=0, sticky="ew")
+            self.label_time = ctk.CTkLabel(self.frame_line, text=datalog[i][0], corner_radius=0, width=100)
+            self.label_time.grid(row=0, column=0, padx=5, pady=0, sticky="ns")
 
-            self.label_date = ctk.CTkLabel(self.frame_line, text=datalog[i][1], corner_radius=0)
-            self.label_date.grid(row=0, column=1, padx=5, pady=0, sticky="ew")
+            self.label_date = ctk.CTkLabel(self.frame_line, text=datalog[i][1], corner_radius=0, width=150)
+            self.label_date.grid(row=0, column=1, padx=5, pady=0, sticky="ns")
 
-            self.label_od = ctk.CTkLabel(self.frame_line, text=datalog[i][2], corner_radius=0)
-            self.label_od.grid(row=0, column=2, padx=5, pady=0, sticky="ew")
+            self.label_od = ctk.CTkLabel(self.frame_line, text=datalog[i][2], corner_radius=0, width=100)
+            self.label_od.grid(row=0, column=2, padx=5, pady=0, sticky="ns")
 
-            self.label_ph = ctk.CTkLabel(self.frame_line, text=datalog[i][3], corner_radius=0)
-            self.label_ph.grid(row=0, column=3, padx=5, pady=0, sticky="ew")
+            self.label_ph = ctk.CTkLabel(self.frame_line, text=datalog[i][3], corner_radius=0, width=100)
+            self.label_ph.grid(row=0, column=3, padx=5, pady=0, sticky="ns")
 
-            self.label_light = ctk.CTkLabel(self.frame_line, text=datalog[i][4], corner_radius=0)
-            self.label_light.grid(row=0, column=4, padx=5, pady=0, sticky="ew")
+            self.label_light = ctk.CTkLabel(self.frame_line, text=datalog[i][4], corner_radius=0, width=100)
+            self.label_light.grid(row=0, column=4, padx=5, pady=0, sticky="ns")
 
-            self.label_temp = ctk.CTkLabel(self.frame_line, text=datalog[i][5], corner_radius=0)
-            self.label_temp.grid(row=0, column=5, padx=5, pady=0, sticky="ew")
+            self.label_temp = ctk.CTkLabel(self.frame_line, text=datalog[i][5], corner_radius=0, width=150)
+            self.label_temp.grid(row=0, column=5, padx=5, pady=0, sticky="ns")
 
-            self.label_cycle = ctk.CTkLabel(self.frame_line, text=datalog[i][6], corner_radius=0)
-            self.label_cycle.grid(row=0, column=6, padx=5, pady=0, sticky="ew")
+            self.label_cycle = ctk.CTkLabel(self.frame_line, text=datalog[i][6], corner_radius=0, width=100)
+            self.label_cycle.grid(row=0, column=6, padx=5, pady=0, sticky="ns")
 
             if i==0:
                 self.label_time.configure(font=ctk.CTkFont(size=15, weight="bold"))
@@ -93,99 +93,147 @@ class InstantValuesFrame(ctk.CTkFrame):
 
         image_path = os.path.join(os.getcwd(), "images")
 
+        self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
         self.left_frame = ctk.CTkFrame(self)
         self.left_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
+        self.left_frame.grid_rowconfigure(0, weight=1)
+        self.left_frame.grid_columnconfigure(0, weight=1)
 
         self.reactor_img = ctk.CTkImage(Image.open(os.path.join(image_path, "reactor_edited.png")), size=(150, 300))
         self.reactor_img_label = ctk.CTkLabel(self.left_frame, text="", image=self.reactor_img)
         self.reactor_img_label.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
 
         self.right_frame = ctk.CTkFrame(self)
-        self.right_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
+        self.right_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")     
+
+        self.right_frame.grid_rowconfigure(0, weight=1)
+        self.right_frame.grid_rowconfigure(1, weight=1)
+        self.right_frame.grid_rowconfigure(2, weight=1)
+        self.right_frame.grid_rowconfigure(3, weight=1)
+        self.right_frame.grid_rowconfigure(4, weight=1)
+        self.right_frame.grid_rowconfigure(5, weight=1)
+        self.right_frame.grid_rowconfigure(6, weight=1)
+        self.right_frame.grid_rowconfigure(7, weight=1)
+        self.right_frame.grid_rowconfigure(8, weight=1)
+        self.right_frame.grid_columnconfigure(0, weight=1)   
+
+        self.label_control = ctk.CTkLabel(self.right_frame, text="Estado Variables", font=ctk.CTkFont(size=20, weight="bold"))
+        self.label_control.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsew")
 
         self.label_light = ctk.CTkLabel(self.right_frame, text="Luz [%]", font=ctk.CTkFont(weight="bold"))
-        self.label_light.grid(row=0, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.light_button = ctk.CTkButton(self.right_frame, text="42", fg_color="white", hover=False, state="disabled", text_color_disabled="black")
-        self.light_button.grid(row=1, column=0, padx=10, pady=0, sticky="nsew")
+        self.label_light.grid(row=1, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.light_button = ctk.CTkButton(self.right_frame, text="42", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
+        self.light_button.grid(row=2, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_ph = ctk.CTkLabel(self.right_frame, text="pH", font=ctk.CTkFont(weight="bold"))
-        self.label_ph.grid(row=2, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.ph_button = ctk.CTkButton(self.right_frame, text="6.536", fg_color="white", hover=False, state="disabled", text_color_disabled="black")
-        self.ph_button.grid(row=3, column=0, padx=10, pady=0, sticky="nsew")
+        self.label_ph.grid(row=3, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.ph_button = ctk.CTkButton(self.right_frame, text="6.536", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
+        self.ph_button.grid(row=4, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_do = ctk.CTkLabel(self.right_frame, text="OD [%]", font=ctk.CTkFont(weight="bold"))
-        self.label_do.grid(row=4, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.do_button = ctk.CTkButton(self.right_frame, text="342.4", fg_color="white", hover=False, state="disabled", text_color_disabled="black")
-        self.do_button.grid(row=5, column=0, padx=10, pady=0, sticky="nsew")
+        self.label_do.grid(row=5, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.do_button = ctk.CTkButton(self.right_frame, text="342.4", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
+        self.do_button.grid(row=6, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_temp = ctk.CTkLabel(self.right_frame, text="Temperatura [°C]", font=ctk.CTkFont(weight="bold"))
-        self.label_temp.grid(row=6  , column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.temp_button = ctk.CTkButton(self.right_frame, text="24.3", fg_color="white", hover=False, state="disabled", text_color_disabled="black")
-        self.temp_button.grid(row=7, column=0, padx=10, pady=0, sticky="nsew")
+        self.label_temp.grid(row=7, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.temp_button = ctk.CTkButton(self.right_frame, text="24.3", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
+        self.temp_button.grid(row=8, column=0, padx=10, pady=(0, 10), sticky="ns")
 
 class SetPointsFrame(ctk.CTkFrame):
 
     def __init__(self, master):
         super().__init__(master) 
 
+        self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
         self.left_frame = ctk.CTkFrame(self)
         self.left_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
+        self.left_frame.grid_rowconfigure(0, weight=1)
+        self.left_frame.grid_rowconfigure(1, weight=1)
+        self.left_frame.grid_rowconfigure(2, weight=1)
+        self.left_frame.grid_rowconfigure(3, weight=1)
+        self.left_frame.grid_rowconfigure(4, weight=1)
+        self.left_frame.grid_rowconfigure(5, weight=1)
+        self.left_frame.grid_rowconfigure(6, weight=1)
+        self.left_frame.grid_rowconfigure(7, weight=1)
+        self.left_frame.grid_rowconfigure(8, weight=1)
+        self.left_frame.grid_columnconfigure(0, weight=1)
+
+        self.label_control = ctk.CTkLabel(self.left_frame, text="Control Salidas", font=ctk.CTkFont(size=20, weight="bold"))
+        self.label_control.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsew")
+
         self.label_co2 = ctk.CTkLabel(self.left_frame, text="CO2", font=ctk.CTkFont(weight="bold"))
-        self.label_co2.grid(row=0, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.co2_button = ctk.CTkButton(self.left_frame, text="Encendido", fg_color="green", text_color_disabled="white", hover=False, command=self.co2_button_event)
-        self.co2_button.grid(row=1, column=0, padx=10, pady=0, sticky="nsew")
+        self.label_co2.grid(row=1, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.co2_button = ctk.CTkButton(self.left_frame, text="Encendido", fg_color="green", text_color_disabled="white", hover=False, command=self.co2_button_event, width=100)
+        self.co2_button.grid(row=2, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_o2 = ctk.CTkLabel(self.left_frame, text="O2", font=ctk.CTkFont(weight="bold"))
-        self.label_o2.grid(row=2, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.o2_button = ctk.CTkButton(self.left_frame, text="Encendido", fg_color="green", text_color_disabled="white", hover=False, command=self.o2_button_event)
-        self.o2_button.grid(row=3, column=0, padx=10, pady=0, sticky="nsew")
+        self.label_o2.grid(row=3, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.o2_button = ctk.CTkButton(self.left_frame, text="Encendido", fg_color="green", text_color_disabled="white", hover=False, command=self.o2_button_event, width=100)
+        self.o2_button.grid(row=4, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_air = ctk.CTkLabel(self.left_frame, text="Aire", font=ctk.CTkFont(weight="bold"))
-        self.label_air.grid(row=4, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.air_button = ctk.CTkButton(self.left_frame, text="Encendido", fg_color="green", text_color_disabled="white", hover=False, command=self.air_button_event)
-        self.air_button.grid(row=5, column=0, padx=10, pady=0, sticky="nsew")
+        self.label_air.grid(row=5, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.air_button = ctk.CTkButton(self.left_frame, text="Encendido", fg_color="green", text_color_disabled="white", hover=False, command=self.air_button_event, width=100)
+        self.air_button.grid(row=6, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_pump = ctk.CTkLabel(self.left_frame, text="Bomba", font=ctk.CTkFont(weight="bold"))
-        self.label_pump.grid(row=6  , column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.pump_button = ctk.CTkButton(self.left_frame, text="Encendido", fg_color="green", text_color_disabled="white", hover=False, command=self.pump_button_event)
-        self.pump_button.grid(row=7, column=0, padx=10, pady=0, sticky="nsew")
+        self.label_pump.grid(row=7, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.pump_button = ctk.CTkButton(self.left_frame, text="Encendido", fg_color="green", text_color_disabled="white", hover=False, command=self.pump_button_event, width=100)
+        self.pump_button.grid(row=8, column=0, padx=10, pady=(0, 10), sticky="ns")
 
         self.right_frame = ctk.CTkFrame(self)
         self.right_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
 
+        self.right_frame.grid_rowconfigure(0, weight=1)
+        self.right_frame.grid_rowconfigure(1, weight=1)
+        self.right_frame.grid_rowconfigure(2, weight=1)
+        self.right_frame.grid_rowconfigure(3, weight=1)
+        self.right_frame.grid_rowconfigure(4, weight=1)
+        self.right_frame.grid_rowconfigure(5, weight=1)
+        self.right_frame.grid_rowconfigure(6, weight=1)
+        self.right_frame.grid_rowconfigure(7, weight=1)
+        self.right_frame.grid_rowconfigure(8, weight=1)
+        self.right_frame.grid_rowconfigure(9, weight=1)
+        self.right_frame.grid_columnconfigure(0, weight=1)
+
+        self.label_control = ctk.CTkLabel(self.right_frame, text="Control Variables", font=ctk.CTkFont(size=20, weight="bold"))
+        self.label_control.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsew")
+
         self.label_light = ctk.CTkLabel(self.right_frame, text="Luz [%]", font=ctk.CTkFont(weight="bold"))
-        self.label_light.grid(row=0, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.entry_light = ctk.CTkEntry(self.right_frame, justify="center")
+        self.label_light.grid(row=1, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.entry_light = ctk.CTkEntry(self.right_frame, justify="center", width=100)
         self.entry_light.insert(0, "42")
-        self.entry_light.grid(row=1, column=0, padx=10, pady=0, sticky="nsew")
+        self.entry_light.grid(row=2, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_ph = ctk.CTkLabel(self.right_frame, text="pH", font=ctk.CTkFont(weight="bold"))
-        self.label_ph.grid(row=2, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.entry_ph = ctk.CTkEntry(self.right_frame, justify="center")
+        self.label_ph.grid(row=3, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.entry_ph = ctk.CTkEntry(self.right_frame, justify="center", width=100)
         self.entry_ph.insert(0, "6.536")
-        self.entry_ph.grid(row=3, column=0, padx=10, pady=0, sticky="nsew")
+        self.entry_ph.grid(row=4, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_do = ctk.CTkLabel(self.right_frame, text="OD [%]", font=ctk.CTkFont(weight="bold"))
-        self.label_do.grid(row=4, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.entry_do = ctk.CTkEntry(self.right_frame, justify="center")
+        self.label_do.grid(row=5, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.entry_do = ctk.CTkEntry(self.right_frame, justify="center", width=100)
         self.entry_do.insert(0, "342.4")
-        self.entry_do.grid(row=5, column=0, padx=10, pady=0, sticky="nsew")
+        self.entry_do.grid(row=6, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_temp = ctk.CTkLabel(self.right_frame, text="Temperatura [°C]", font=ctk.CTkFont(weight="bold"))
-        self.label_temp.grid(row=6  , column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.entry_temp = ctk.CTkEntry(self.right_frame, justify="center")
+        self.label_temp.grid(row=7, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.entry_temp = ctk.CTkEntry(self.right_frame, justify="center", width=100)
         self.entry_temp.insert(0, "24.3")
-        self.entry_temp.grid(row=7, column=0, padx=10, pady=0, sticky="nsew")
+        self.entry_temp.grid(row=8, column=0, padx=10, pady=0, sticky="ns")
 
-        self.send_button = ctk.CTkButton(self.right_frame, text="Enviar", command=self.send_button_event)
-        self.send_button.grid(row=8, column=0, padx=10, pady=10, sticky="nsew")
+        self.send_button = ctk.CTkButton(self.right_frame, text="Enviar", command=self.send_button_event, width=100)
+        self.send_button.grid(row=9, column=0, padx=10, pady=(20, 10), sticky="ns")
 
     def co2_button_event(self):
         if self.co2_button.cget("text") == "Encendido":
@@ -236,8 +284,8 @@ class ManualRecordFrame(ctk.CTkFrame):
         self.label_control = ctk.CTkLabel(self, text="Control manual", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_control.grid(row=0, column=0, padx=20, pady=(10, 0), sticky="w")
 
-        self.frame_buttons = ctk.CTkFrame(self)
-        self.frame_buttons.grid(row=1, column=0, padx=20, pady=(10, 0), sticky="ew")
+        self.frame_buttons = ctk.CTkFrame(self, width=100)
+        self.frame_buttons.grid(row=1, column=0, padx=20, pady=(10, 0))#, sticky="ew")
 
         self.frame_buttons.grid_rowconfigure(0, weight=1)
         self.frame_buttons.grid_columnconfigure(0, weight=1)
@@ -246,15 +294,15 @@ class ManualRecordFrame(ctk.CTkFrame):
 
         self.play_pause_image = ctk.CTkImage(Image.open(os.path.join(image_path, "play.png")), size=(40, 40))
         self.play_pause_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.play_pause_image)
-        self.play_pause_image_label.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
+        self.play_pause_image_label.grid(row=0, column=0, padx=15, pady=5, sticky="ew")
 
         self.stop_image = ctk.CTkImage(Image.open(os.path.join(image_path, "stop.png")), size=(40, 40))
         self.stop_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.stop_image)
-        self.stop_image_label.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+        self.stop_image_label.grid(row=0, column=1, padx=15, pady=5, sticky="ew")
 
         self.bin_image = ctk.CTkImage(Image.open(os.path.join(image_path, "bin.png")), size=(40, 40))
-        self.bin_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.stop_image)
-        self.bin_image_label.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
+        self.bin_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.bin_image)
+        self.bin_image_label.grid(row=0, column=2, padx=15, pady=5, sticky="ew")
 
         self.frame_commands = ctk.CTkFrame(self)
         self.frame_commands.grid(row=2, column=0, padx=20, pady=(10, 0), sticky="ew")
@@ -264,7 +312,7 @@ class ManualRecordFrame(ctk.CTkFrame):
         self.frame_commands.grid_columnconfigure(1, weight=1)
         self.frame_commands.grid_columnconfigure(2, weight=1)
 
-        self.entry_interval = ctk.CTkLabel(self.frame_commands, text="Intervalo:")
+        self.entry_interval = ctk.CTkLabel(self.frame_commands, text="Intervalo:", justify="right")
         self.entry_interval.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
 
         self.entry_interval = ctk.CTkEntry(self.frame_commands, placeholder_text="15", width=60)
@@ -288,14 +336,14 @@ class ManualFrame(ctk.CTkFrame):
         self.grid_rowconfigure(1, weight=3)      
         
         self.setpoints_frame = SetPointsFrame(self)
-        self.setpoints_frame.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsew")
+        self.setpoints_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         self.instant_values_frame = InstantValuesFrame(self)
-        self.instant_values_frame.grid(row=0, column=1, padx=10, pady=0, sticky="nsew")
+        self.instant_values_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
 
         self.manual_record_frame = ManualRecordFrame(self)
-        self.manual_record_frame.grid(row=0, column=2, padx=10, pady=(10, 0), sticky="nsew")
+        self.manual_record_frame.grid(row=0, column=2, padx=10, pady=10, sticky="nsew")
 
         self.log_frame = LogFrame(self)
-        self.log_frame.grid(row=1, column=0, padx=10, pady=(10, 0), sticky="nsew", columnspan=3)
+        self.log_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew", columnspan=3)
 

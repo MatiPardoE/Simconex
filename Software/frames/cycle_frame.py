@@ -8,34 +8,36 @@ class ActualCycleFrame(ctk.CTkFrame):
         super().__init__(master) 
 
         self.grid_columnconfigure(0, weight=1)
-        #self.grid_rowconfigure(4, weight=1)
+        self.grid_rowconfigure(4, weight=1)
 
         self.label_actual = ctk.CTkLabel(self, text="Ciclo Actual", font=ctk.CTkFont(size=20, weight="bold"))
-        self.label_actual.grid(row=0, column=0, padx=(20, 10), pady=(10, 0), sticky="w")
+        self.label_actual.grid(row=0, column=0, padx=20, pady=(10, 0), sticky="w")
 
         self.label_actual_days = ctk.CTkLabel(self, text="10 Dias", font=ctk.CTkFont(size=18))
-        self.label_actual_days.grid(row=1, column=0, padx=(20, 10), pady=(10, 10), sticky="w")
+        self.label_actual_days.grid(row=1, column=0, padx=20, pady=(10, 10), sticky="w")
 
         self.progressbar_actual = ctk.CTkProgressBar(self)
-        self.progressbar_actual.grid(row=2, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+        self.progressbar_actual.grid(row=2, column=0, padx=20, pady=(10, 10), sticky="ew")
 
         self.frame_actual = ctk.CTkFrame(self)
-        self.frame_actual.grid(row=3, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+        self.frame_actual.grid(row=3, column=0, padx=20, pady=(10, 10), sticky="ew")
 
-        self.frame_actual.grid_columnconfigure((0, 1), weight=1)
-        self.frame_actual.grid_rowconfigure((0, 1), weight=1)
+        self.frame_actual.grid_columnconfigure(0, weight=1)
+        self.frame_actual.grid_columnconfigure(1, weight=1)
+        self.frame_actual.grid_rowconfigure(0, weight=1)
+        self.frame_actual.grid_rowconfigure(1, weight=1)
 
         self.label_done_colour = ctk.CTkLabel(self.frame_actual, text="Completo")
-        self.label_done_colour.grid(row=0, column=0, padx=20, pady=0, sticky="w")
+        self.label_done_colour.grid(row=0, column=0, padx=20, pady=0, sticky="nsew")
 
         self.label_left_colour = ctk.CTkLabel(self.frame_actual, text="Restante")
-        self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="w")
+        self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="nsew")
 
         self.label_done_text = ctk.CTkLabel(self.frame_actual, text="5 dias", font=ctk.CTkFont(size=15, weight="bold"))
-        self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="w")
+        self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="nsew")
 
         self.label_left_text = ctk.CTkLabel(self.frame_actual, text="5 dias", font=ctk.CTkFont(size=15, weight="bold"))
-        self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="w")
+        self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
 
 class ControlCycleFrame(ctk.CTkFrame):
     
@@ -73,24 +75,24 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.frame_buttons.grid_columnconfigure(5, weight=1)
 
         self.play_pause_image = ctk.CTkImage(Image.open(os.path.join(image_path, "play.png")), size=(40, 40))
-        self.play_pause_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.play_pause_image, compound="left", anchor="w")
+        self.play_pause_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.play_pause_image)
         self.play_pause_image_label.bind("<Button-1>", callback)
         self.play_pause_image_label.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
 
         self.stop_image = ctk.CTkImage(Image.open(os.path.join(image_path, "stop.png")), size=(40, 40))
-        self.stop_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.stop_image, compound="left", anchor="w")
+        self.stop_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.stop_image)
         self.stop_image_label.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
-        self.entry_interval = ctk.CTkLabel(self.frame_buttons, text="Intervalo:")
+        self.entry_interval = ctk.CTkLabel(self.frame_buttons, text="Intervalo:", justify="right")
         self.entry_interval.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
 
-        self.entry_interval = ctk.CTkEntry(self.frame_buttons, placeholder_text="15")
+        self.entry_interval = ctk.CTkEntry(self.frame_buttons, placeholder_text="15", width=60)
         self.entry_interval.grid(row=0, column=3, padx=5, pady=5, sticky="ew")
 
-        self.combobox_unit = ctk.CTkComboBox(self.frame_buttons, state="readonly", values=["min", "seg"])
+        self.combobox_unit = ctk.CTkComboBox(self.frame_buttons, state="readonly", values=["min", "seg"], width=80)
         self.combobox_unit.grid(row=0, column=4, padx=5, pady=5, sticky="ew")
 
-        self.main_button_interval = ctk.CTkButton(master=self.frame_buttons, text="Enviar", command=self.send_button_event)
+        self.main_button_interval = ctk.CTkButton(master=self.frame_buttons, text="Enviar", command=self.send_button_event, width=80)
         self.main_button_interval.grid(row=0, column=5, padx=5, pady=5, sticky="ew")
     
     def send_button_event(self):
@@ -133,8 +135,8 @@ class LogFrame(ctk.CTkScrollableFrame):
             ["15:00", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"]
         ]
 
-        self.frame_lines = ctk.CTkFrame(self)
-        self.frame_lines.grid(row=1, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+        self.frame_lines = ctk.CTkFrame(self, width=1500)
+        self.frame_lines.grid(row=1, column=0, padx=10, pady=10)
         self.frame_lines.grid_columnconfigure(0, weight=1)
         self.frame_lines.grid_rowconfigure(0, weight=1)
 
@@ -151,26 +153,26 @@ class LogFrame(ctk.CTkScrollableFrame):
             self.frame_line.grid_columnconfigure(5, weight=1)
             self.frame_line.grid_columnconfigure(6, weight=1)
 
-            self.label_time = ctk.CTkLabel(self.frame_line, text=datalog[i][0], corner_radius=0)
-            self.label_time.grid(row=0, column=0, padx=5, pady=0, sticky="ew")
+            self.label_time = ctk.CTkLabel(self.frame_line, text=datalog[i][0], corner_radius=0, width=100)
+            self.label_time.grid(row=0, column=0, padx=5, pady=0, sticky="ns")
 
-            self.label_date = ctk.CTkLabel(self.frame_line, text=datalog[i][1], corner_radius=0)
-            self.label_date.grid(row=0, column=1, padx=5, pady=0, sticky="ew")
+            self.label_date = ctk.CTkLabel(self.frame_line, text=datalog[i][1], corner_radius=0, width=150)
+            self.label_date.grid(row=0, column=1, padx=5, pady=0, sticky="ns")
 
-            self.label_od = ctk.CTkLabel(self.frame_line, text=datalog[i][2], corner_radius=0)
-            self.label_od.grid(row=0, column=2, padx=5, pady=0, sticky="ew")
+            self.label_od = ctk.CTkLabel(self.frame_line, text=datalog[i][2], corner_radius=0, width=100)
+            self.label_od.grid(row=0, column=2, padx=5, pady=0, sticky="ns")
 
-            self.label_ph = ctk.CTkLabel(self.frame_line, text=datalog[i][3], corner_radius=0)
-            self.label_ph.grid(row=0, column=3, padx=5, pady=0, sticky="ew")
+            self.label_ph = ctk.CTkLabel(self.frame_line, text=datalog[i][3], corner_radius=0, width=100)
+            self.label_ph.grid(row=0, column=3, padx=5, pady=0, sticky="ns")
 
-            self.label_light = ctk.CTkLabel(self.frame_line, text=datalog[i][4], corner_radius=0)
-            self.label_light.grid(row=0, column=4, padx=5, pady=0, sticky="ew")
+            self.label_light = ctk.CTkLabel(self.frame_line, text=datalog[i][4], corner_radius=0, width=100)
+            self.label_light.grid(row=0, column=4, padx=5, pady=0, sticky="ns")
 
-            self.label_temp = ctk.CTkLabel(self.frame_line, text=datalog[i][5], corner_radius=0)
-            self.label_temp.grid(row=0, column=5, padx=5, pady=0, sticky="ew")
+            self.label_temp = ctk.CTkLabel(self.frame_line, text=datalog[i][5], corner_radius=0, width=150)
+            self.label_temp.grid(row=0, column=5, padx=5, pady=0, sticky="ns")
 
-            self.label_cycle = ctk.CTkLabel(self.frame_line, text=datalog[i][6], corner_radius=0)
-            self.label_cycle.grid(row=0, column=6, padx=5, pady=0, sticky="ew")
+            self.label_cycle = ctk.CTkLabel(self.frame_line, text=datalog[i][6], corner_radius=0, width=100)
+            self.label_cycle.grid(row=0, column=6, padx=5, pady=0, sticky="ns")
 
             if i==0:
                 self.label_time.configure(font=ctk.CTkFont(size=15, weight="bold"))
@@ -193,7 +195,7 @@ class CycleFrame(ctk.CTkFrame):
         self.grid_rowconfigure(1, weight=5)
         
         self.instant_values_frame = ActualCycleFrame(self)
-        self.instant_values_frame.grid(row=0, column=0, padx=10, pady=0, sticky="nsew")
+        self.instant_values_frame.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsew")
 
         self.actual_cycle_frame = ControlCycleFrame(self)
         self.actual_cycle_frame.grid(row=0, column=1, padx=10, pady=(10, 0), sticky="nsew")

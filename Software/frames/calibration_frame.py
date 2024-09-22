@@ -10,11 +10,11 @@ class SensorCalibrateFrame(ctk.CTkFrame):
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(1, weight=1) 
         self.grid_rowconfigure(2, weight=1)
         self.grid_rowconfigure(3, weight=1)
 
-        self.label_sensor = ctk.CTkLabel(self, text=f"Calibracion Sensor {sensor_name}", font=ctk.CTkFont(weight="bold"))
+        self.label_sensor = ctk.CTkLabel(self, text=f"Calibracion Sensor {sensor_name}", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_sensor.grid(row=0, column=0, padx=10, pady=(10,0), sticky="nsew")
 
         if sensor_name == "pH":
@@ -24,11 +24,11 @@ class SensorCalibrateFrame(ctk.CTkFrame):
         self.sensor_img_label = ctk.CTkLabel(self, text="", image=self.sensor_img)
         self.sensor_img_label.grid(row=1, column=0, padx=0, pady=0, sticky="nsew")
 
-        self.label_last_cal = ctk.CTkLabel(self, text=f"Ultima calibracion realizada hace {last_calibration} meses", font=ctk.CTkFont(size=10))
+        self.label_last_cal = ctk.CTkLabel(self, text=f"Ultima calibracion realizada hace {last_calibration} meses", font=ctk.CTkFont(size=12))
         self.label_last_cal.grid(row=2, column=0, padx=10, pady=0, sticky="nsew")
 
-        self.cal_button = ctk.CTkButton(self, text="Calibrar sensor", command=self.cal_button_event)
-        self.cal_button.grid(row=3, column=0, padx=10, pady=0, sticky="ns")
+        self.cal_button = ctk.CTkButton(self, text="Calibrar sensor", command=self.cal_button_event, height=40)
+        self.cal_button.grid(row=3, column=0, padx=10, pady=(0,15))
     
     def cal_button_event(self):
         print("Calibrar")
@@ -45,7 +45,7 @@ class RecommendationsFrame(ctk.CTkFrame):
         self.label_control.grid(row=0, column=0, padx=(20, 10), pady=(10, 0), sticky="w")
 
         self.frame_lines = ctk.CTkFrame(self)
-        self.frame_lines.grid(row=1, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+        self.frame_lines.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
         self.frame_lines.grid_columnconfigure(0, weight=1)
         self.frame_lines.grid_rowconfigure(0, weight=1)
 
@@ -57,8 +57,7 @@ class RecommendationsFrame(ctk.CTkFrame):
             self.frame_line.grid_columnconfigure(0, weight=1)
 
             self.line = ctk.CTkLabel(self.frame_line, text=recommendations[i], corner_radius=0)
-            self.line.grid(row=0, column=0, padx=5, pady=0, sticky="w")
-
+            self.line.grid(row=0, column=0, padx=5, pady=0, sticky="ns")
 
 class CalibrationFrame(ctk.CTkFrame):
     def __init__(self, master):
