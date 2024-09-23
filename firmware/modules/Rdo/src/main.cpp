@@ -2,112 +2,45 @@
 //cosas RDO
 #include <rdoApi.h>
 
-// Definir SERIAL_PORT_HARDWARE para el ESP32
-#include <ArduinoRS485.h>
-#include <ModbusMaster.h>
+#include <ModbusMessage.h>
+#include <esp32ModbusRTU.h>
+#include <algorithm>  // for std::reverse
 
+#define TIMEOUT_MS 1500
 
-#include "driver/uart.h"
-#include "driver/gpio.h"
-#include "esp_intr_alloc.h"
-
-
-#include <soc/uart_struct.h>
-#include <soc/uart_reg.h>
-
-
-
-/* ----------------------------------------------------------------------------
-   -- RDO
-   ---------------------------------------------------------------------------- */
-
-volatile bool uart_tx_done = false;
-volatile bool uart_rx_ready = false;
-const char test_str[] = {0xAA,0xF0};
-
-// ISR para la interrupción de UART
-static void IRAM_ATTR uart_isr_handler(void* arg) {
-    uint32_t uart_intr_status = UART1.int_st.val; // UART1 es para UART_NUM_1
-    digitalWrite(LED_BUILTIN, 1);
-
-
-    // Interrupción de transmisión completada
-    if (uart_intr_status & UART_TX_DONE_INT_ST_M) {
-        uart_clear_intr_status(RDO_UART_NUM, UART_TX_DONE_INT_CLR_M);
-        uart_tx_done = true;
-        digitalWrite(RDO_DE_RE_GPIO, 1);
-    }
-
-    // Interrupción de recepción de datos
-    if (uart_intr_status & UART_RXFIFO_FULL_INT_ST_M) {
-        uart_clear_intr_status(RDO_UART_NUM, UART_RXFIFO_FULL_INT_CLR_M);
-        uart_rx_ready = true;
-    }
-}
+esp32ModbusRTU modbus(&Serial1, RDO_DE_RE_GPIO);  // use Serial1 and GPIO11/27 as RTS
 
 
 void setup() {
+  Serial.begin(9600);  // Serial output
+  Serial1.begin(RDO_BAUD_RATE, SERIAL_8E1, RDO_RX_GPIO, RDO_TX_GPIO, true);  // Modbus connection
 
- // Configuración de pines UART
-  gpio_set_direction(RDO_TX_GPIO, GPIO_MODE_OUTPUT);
-  gpio_set_direction(RDO_RX_GPIO, GPIO_MODE_INPUT);
-  gpio_set_pull_mode(RDO_RX_GPIO, GPIO_PULLUP_ONLY);
-
-  pinMode(RDO_DE_RE_GPIO, OUTPUT);
-  digitalWrite(RDO_DE_RE_GPIO, 0);
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, 0);
-
-  // Configuración de UART
-  uart_config_t uart_config = {
-    .baud_rate  = RDO_BAUD_RATE,
-    .data_bits  = UART_DATA_8_BITS,
-    .parity     = RDO_PARITY,
-    .stop_bits  = UART_STOP_BITS_1,
-    .flow_ctrl  = UART_HW_FLOWCTRL_DISABLE,
-    .source_clk = UART_SCLK_APB,
-  };
-
-  uart_param_config(RDO_UART_NUM, &uart_config);
-  uart_set_pin(RDO_UART_NUM, RDO_RX_GPIO, RDO_RX_GPIO, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+  modbus.onData([](uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, size_t length) {
+    Serial.printf("id 0x%02x fc 0x%02x len %u: 0x", serverAddress, fc, length);
+    for (size_t i = 0; i < length; ++i) {
+      Serial.printf("%02x", data[i]);
+    }
+    std::reverse(data, data + 4);  // fix endianness
+    Serial.printf("\nval: %.2f", *reinterpret_cast<float*>(data));
+    Serial.print("\n\n");
+  });
+  modbus.onError([](esp32Modbus::Error error) {
+    Serial.printf("error: 0x%02x\n\n", static_cast<uint8_t>(error));
+  });
+  modbus.begin();
  
-  // Instalar el controlador UART sin buffer para manejo por interrupciones
-  uart_driver_install(RDO_UART_NUM, 1024, 1024, 0, NULL, 0);
-
-  // Configurar las interrupciones UART
-  uart_enable_intr_mask(RDO_UART_NUM, UART_TX_DONE_INT_ENA_M | UART_RXFIFO_FULL_INT_ENA_M);
-  uart_isr_register(RDO_UART_NUM, uart_isr_handler, NULL, ESP_INTR_FLAG_IRAM, NULL);
-
-  // Enviar mensaje inicial
-
-  uart_tx_done = false;
-  uart_write_bytes(RDO_UART_NUM, test_str, strlen(test_str));
 
 }
 
 void loop() {
-
-
-  while(1){
-
-
-  if (uart_tx_done) {
-        uart_tx_done = false;
-        uart_write_bytes(RDO_UART_NUM, test_str, strlen(test_str));
-        digitalWrite(RDO_DE_RE_GPIO, 0);
-    }
-
-    // Procesar datos recibidos si hay
-    if (uart_rx_ready) {
-        uart_rx_ready = false;
-    }
-/*
-    digitalWrite(RDO_DE_RE_GPIO, 0);
-    delay(100);
-    digitalWrite(RDO_DE_RE_GPIO, 1);
-    delay(100);
-*/
+  static uint32_t lastMillis = 0;
+  if (millis() - lastMillis > 2000 ) {
+    lastMillis = millis();
+    Serial.print("sending Modbus request...\n");
+    //modbus.readInputRegisters(0x01, 52, 2);
+    modbus.readHoldingRegisters(0x01,0x00,0x01);
   }
+  
 
 }
 
