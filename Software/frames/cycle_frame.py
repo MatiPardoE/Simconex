@@ -121,18 +121,31 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.frame_buttons.grid_columnconfigure(1, weight=1)
         self.frame_buttons.grid_columnconfigure(2, weight=1)
         
-        self.play_pause_image = ctk.CTkImage(Image.open(os.path.join(image_path, "play.png")), size=(40, 40))
-        self.play_pause_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.play_pause_image)
-        #self.play_pause_image_label.bind("<Button-1>", callback)
+        self.play_image = ctk.CTkImage(Image.open(os.path.join(image_path, "play.png")), size=(40, 40))
+        self.pause_image = ctk.CTkImage(Image.open(os.path.join(image_path, "pause.png")), size=(40, 40))
+
+        self.play_pause_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.play_image)
         self.play_pause_image_label.grid(row=0, column=0, padx=15, pady=5, sticky="ns")
+
+        self.play_pause_image_label.bind("<Enter>", self.on_hover)
+        self.play_pause_image_label.bind("<Leave>", self.off_hover)
+        self.play_pause_image_label.bind("<Button-1>", self.play_pause_event)
+        self.is_playing = True
 
         self.stop_image = ctk.CTkImage(Image.open(os.path.join(image_path, "stop.png")), size=(40, 40))
         self.stop_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.stop_image)
         self.stop_image_label.grid(row=0, column=1, padx=15, pady=5, sticky="ns")
 
+        self.stop_image_label.bind("<Enter>", self.on_hover)
+        self.stop_image_label.bind("<Leave>", self.off_hover)
+
+
         self.bin_image = ctk.CTkImage(Image.open(os.path.join(image_path, "bin.png")), size=(40, 40))
         self.bin_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.bin_image)
         self.bin_image_label.grid(row=0, column=2, padx=15, pady=5, sticky="ns")
+
+        self.bin_image_label.bind("<Enter>", self.on_hover)
+        self.bin_image_label.bind("<Leave>", self.off_hover)
 
         self.frame_commands = ctk.CTkFrame(self)
         self.frame_commands.grid(row=2, column=0, padx=20, pady=(10, 0), sticky="ew")
@@ -154,6 +167,23 @@ class ControlCycleFrame(ctk.CTkFrame):
 
         self.main_button_interval = ctk.CTkButton(master=self.frame_commands, text="Enviar", command=self.send_button_event, width=80)
         self.main_button_interval.grid(row=0, column=3, padx=5, pady=5, sticky="ew")
+
+    def on_hover(self, event):
+        self.play_pause_image_label.configure(cursor="hand2") 
+        self.stop_image_label.configure(cursor="hand2") 
+        self.bin_image_label.configure(cursor="hand2") 
+
+    def off_hover(self, event):
+        self.play_pause_image_label.configure(cursor="arrow") 
+        self.stop_image_label.configure(cursor="hand2") 
+        self.bin_image_label.configure(cursor="hand2") 
+    
+    def play_pause_event(self, event):
+        if self.is_playing:
+            self.play_pause_image_label.configure(image=self.pause_image)
+        else:
+            self.play_pause_image_label.configure(image=self.play_image)
+        self.is_playing = not self.is_playing
     
     def send_button_event(self):
         print("Enviar")
