@@ -1,10 +1,58 @@
 import customtkinter as ctk
 import os
 from PIL import Image
+import csv
+from datetime import datetime
+
+def read_datalog(fname):
+    datetime_list = []
+    ph_list = []
+    od_list = []
+    temp_list = []
+    light_list = []
+    index = {}
+    
+    with open(fname, newline='') as csvfile:
+        handler = csv.reader(csvfile)
+        for i, line in enumerate(handler):
+            if i==0:
+                for j, column in enumerate(line):
+                    if column == "Fecha":
+                        index['fecha'] = j
+                    elif column == "Hora":
+                        index['hora'] = j
+                    elif column == "pH":
+                        index['ph'] = j
+                    elif column == "DO":
+                        index['do'] = j
+                    elif column == "Temperatura":
+                        index['temperatura'] = j
+                    elif column == "LED1":
+                        index['led1'] = j
+                    elif column == "LED2":
+                        index['led2'] = j
+                    elif column == "LED3":
+                        index['led3'] = j
+                    elif column == "LED4":
+                        index['led4'] = j
+                    elif column == "LED5":
+                        index['led5'] = j
+            else: 
+                datetime_str = line[index.get("fecha")] + ' ' + line[index.get("hora")]
+                datetime_single = datetime.strptime(datetime_str, '%d/%m/%Y %H:%M:%S')
+                datetime_list.append(datetime_single)
+                
+                # Extraer los valores
+                ph_list.append(float(line[index.get("ph")]))
+                od_list.append(float(line[index.get("do")]))
+                temp_list.append(float(line[index.get("temperatura")]))
+                light_list.append(float(line[index.get("led1")]))  
+    
+    return datetime_list, ph_list, od_list, temp_list, light_list
 
 class LogFrame(ctk.CTkScrollableFrame):
 
-    def __init__(self, master):
+    def __init__(self, master, fname):
         super().__init__(master) 
 
         self.grid_columnconfigure(0, weight=1)
@@ -14,39 +62,49 @@ class LogFrame(ctk.CTkScrollableFrame):
         self.label_control = ctk.CTkLabel(self, text="Registro de datos", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_control.grid(row=0, column=0, padx=(20, 10), pady=(10, 0), sticky="w")
 
-        datalog = [
-            ["Hora ", "  Fecha   ", "OD [%]", " pH  ", "Luz [%]", "Temperatura [°C]", " Ciclo  "],
-            ["12:00", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["12:30", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["13:00", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["13:30", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["14:00", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["14:30", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["15:00", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["12:00", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["12:30", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["13:00", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["13:30", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["14:00", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["14:30", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["15:00", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["12:00", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["12:30", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["13:00", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["13:30", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["14:00", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["14:30", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"],
-            ["15:00", "21/09/2024", " 350  ", "6.132", "  45   ", "      24.5      ", "Ciclo N1"]
-        ]
+        datetime_list, ph_list, od_list, temp_list, light_list = read_datalog(fname)
 
         self.frame_lines = ctk.CTkFrame(self, width=1500)
         self.frame_lines.grid(row=1, column=0, padx=10, pady=10)
         self.frame_lines.grid_columnconfigure(0, weight=1)
         self.frame_lines.grid_rowconfigure(0, weight=1)
 
-        for i in range(len(datalog)):
+        self.frame_line = ctk.CTkFrame(self.frame_lines)
+        self.frame_line.grid(row=0, column=0, padx=5, pady=0, sticky="ew")
+
+        self.frame_line.grid_rowconfigure(0, weight=1)
+        self.frame_line.grid_columnconfigure(0, weight=1)
+        self.frame_line.grid_columnconfigure(1, weight=1)
+        self.frame_line.grid_columnconfigure(2, weight=1)
+        self.frame_line.grid_columnconfigure(3, weight=1)
+        self.frame_line.grid_columnconfigure(4, weight=1)
+        self.frame_line.grid_columnconfigure(5, weight=1)
+        self.frame_line.grid_columnconfigure(6, weight=1)
+
+        self.label_time = ctk.CTkLabel(self.frame_line, text="Hora", corner_radius=0, width=150, font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_time.grid(row=0, column=0, padx=5, pady=0, sticky="ns")
+
+        self.label_time = ctk.CTkLabel(self.frame_line, text="Fecha", corner_radius=0, width=200, font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_time.grid(row=0, column=1, padx=5, pady=0, sticky="ns")
+
+        self.label_time = ctk.CTkLabel(self.frame_line, text="OD [%]", corner_radius=0, width=150, font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_time.grid(row=0, column=2, padx=5, pady=0, sticky="ns")
+
+        self.label_time = ctk.CTkLabel(self.frame_line, text="pH", corner_radius=0, width=150, font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_time.grid(row=0, column=3, padx=5, pady=0, sticky="ns")
+
+        self.label_time = ctk.CTkLabel(self.frame_line, text="Luz [%]", corner_radius=0, width=150, font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_time.grid(row=0, column=4, padx=5, pady=0, sticky="ns")
+
+        self.label_time = ctk.CTkLabel(self.frame_line, text="Temperatura [°C]", corner_radius=0, width=200, font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_time.grid(row=0, column=5, padx=5, pady=0, sticky="ns")
+
+        self.label_time = ctk.CTkLabel(self.frame_line, text="Ciclo", corner_radius=0, width=150, font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_time.grid(row=0, column=6, padx=5, pady=0, sticky="ns")
+
+        for i in range(len(datetime_list)):
             self.frame_line = ctk.CTkFrame(self.frame_lines)
-            self.frame_line.grid(row=i, column=0, padx=5, pady=0, sticky="ew")
+            self.frame_line.grid(row=i+1, column=0, padx=5, pady=0, sticky="ew")
 
             self.frame_line.grid_rowconfigure(0, weight=1)
             self.frame_line.grid_columnconfigure(0, weight=1)
@@ -57,35 +115,26 @@ class LogFrame(ctk.CTkScrollableFrame):
             self.frame_line.grid_columnconfigure(5, weight=1)
             self.frame_line.grid_columnconfigure(6, weight=1)
 
-            self.label_time = ctk.CTkLabel(self.frame_line, text=datalog[i][0], corner_radius=0, width=100)
+            self.label_time = ctk.CTkLabel(self.frame_line, text=datetime_list[i].strftime("%H:%M"), corner_radius=0, width=150)
             self.label_time.grid(row=0, column=0, padx=5, pady=0, sticky="ns")
 
-            self.label_date = ctk.CTkLabel(self.frame_line, text=datalog[i][1], corner_radius=0, width=150)
+            self.label_date = ctk.CTkLabel(self.frame_line, text=datetime_list[i].strftime("%d/%m/%Y"), corner_radius=0, width=200)
             self.label_date.grid(row=0, column=1, padx=5, pady=0, sticky="ns")
 
-            self.label_od = ctk.CTkLabel(self.frame_line, text=datalog[i][2], corner_radius=0, width=100)
+            self.label_od = ctk.CTkLabel(self.frame_line, text=od_list[i], corner_radius=0, width=150)
             self.label_od.grid(row=0, column=2, padx=5, pady=0, sticky="ns")
 
-            self.label_ph = ctk.CTkLabel(self.frame_line, text=datalog[i][3], corner_radius=0, width=100)
+            self.label_ph = ctk.CTkLabel(self.frame_line, text=ph_list[i], corner_radius=0, width=150)
             self.label_ph.grid(row=0, column=3, padx=5, pady=0, sticky="ns")
 
-            self.label_light = ctk.CTkLabel(self.frame_line, text=datalog[i][4], corner_radius=0, width=100)
+            self.label_light = ctk.CTkLabel(self.frame_line, text=light_list[i], corner_radius=0, width=150)
             self.label_light.grid(row=0, column=4, padx=5, pady=0, sticky="ns")
 
-            self.label_temp = ctk.CTkLabel(self.frame_line, text=datalog[i][5], corner_radius=0, width=150)
+            self.label_temp = ctk.CTkLabel(self.frame_line, text=temp_list[i], corner_radius=0, width=200)
             self.label_temp.grid(row=0, column=5, padx=5, pady=0, sticky="ns")
 
-            self.label_cycle = ctk.CTkLabel(self.frame_line, text=datalog[i][6], corner_radius=0, width=100)
+            self.label_cycle = ctk.CTkLabel(self.frame_line, text="Ciclo1", corner_radius=0, width=150)
             self.label_cycle.grid(row=0, column=6, padx=5, pady=0, sticky="ns")
-
-            if i==0:
-                self.label_time.configure(font=ctk.CTkFont(size=15, weight="bold"))
-                self.label_date.configure(font=ctk.CTkFont(size=15, weight="bold"))
-                self.label_od.configure(font=ctk.CTkFont(size=15, weight="bold"))
-                self.label_ph.configure(font=ctk.CTkFont(size=15, weight="bold"))
-                self.label_light.configure(font=ctk.CTkFont(size=15, weight="bold"))
-                self.label_temp.configure(font=ctk.CTkFont(size=15, weight="bold"))
-                self.label_cycle.configure(font=ctk.CTkFont(size=15, weight="bold"))
 
 class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -330,6 +379,8 @@ class ManualRecordFrame(ctk.CTkFrame):
 class ManualFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, corner_radius=0, fg_color="transparent")
+
+        datalog_path = os.path.join(os.getcwd(), "test_data")
         
         self.grid_columnconfigure((0, 1, 2), weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -344,6 +395,6 @@ class ManualFrame(ctk.CTkFrame):
         self.manual_record_frame = ManualRecordFrame(self)
         self.manual_record_frame.grid(row=0, column=2, padx=10, pady=10, sticky="nsew")
 
-        self.log_frame = LogFrame(self)
+        self.log_frame = LogFrame(self, os.path.join(datalog_path, "datos_generados_logico.csv"))
         self.log_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew", columnspan=3)
 

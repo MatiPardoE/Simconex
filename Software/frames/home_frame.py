@@ -5,6 +5,7 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
+import matplotlib.dates as mdates
 import numpy as np
 import csv
 from datetime import datetime
@@ -215,6 +216,10 @@ class MyPlot(ctk.CTkFrame):
             ax.set_ylabel("[%]")
         
         ax.legend()  
+        locator = mdates.AutoDateLocator(minticks=7, maxticks=10)
+        formatter = mdates.ConciseDateFormatter(locator)
+        ax.xaxis.set_major_locator(locator)
+        ax.xaxis.set_major_formatter(formatter)
         canvas = FigureCanvasTkAgg(fig, master=master)  
         canvas.draw()
 
