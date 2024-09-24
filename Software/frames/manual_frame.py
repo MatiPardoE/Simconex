@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import tkinter
 import os
 from PIL import Image
 import csv
@@ -373,6 +374,8 @@ class ManualRecordFrame(ctk.CTkFrame):
         self.frame_commands.grid_columnconfigure(0, weight=1)
         self.frame_commands.grid_columnconfigure(1, weight=1)
         self.frame_commands.grid_columnconfigure(2, weight=1)
+        self.frame_commands.grid_columnconfigure(3, weight=1)
+        self.frame_commands.grid_columnconfigure(4, weight=1)
 
         self.entry_interval = ctk.CTkLabel(self.frame_commands, text="Intervalo:", justify="right")
         self.entry_interval.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
@@ -380,11 +383,17 @@ class ManualRecordFrame(ctk.CTkFrame):
         self.entry_interval = ctk.CTkEntry(self.frame_commands, placeholder_text="15", width=60)
         self.entry_interval.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
-        self.combobox_unit = ctk.CTkComboBox(self.frame_commands, state="readonly", values=["min", "seg"], width=80)
-        self.combobox_unit.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
+        #self.combobox_unit = ctk.CTkComboBox(self.frame_commands, state="readonly", values=["min", "seg"], width=80)
+        #self.combobox_unit.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
+
+        self.radio_var = tkinter.IntVar(value=0)
+        self.radio_button_seg = ctk.CTkRadioButton(master=self.frame_commands, text="seg", variable=self.radio_var, value=0, width=60)
+        self.radio_button_seg.grid(row=0, column=2, padx=0, pady=5)
+        self.radio_button_min = ctk.CTkRadioButton(master=self.frame_commands, text="min", variable=self.radio_var, value=1, width=60)
+        self.radio_button_min.grid(row=0, column=3, padx=0, pady=5)
 
         self.main_button_interval = ctk.CTkButton(master=self.frame_commands, text="Enviar", command=self.send_button_event, width=80)
-        self.main_button_interval.grid(row=0, column=3, padx=5, pady=5, sticky="ew")
+        self.main_button_interval.grid(row=0, column=4, padx=5, pady=5, sticky="ew")
 
     def on_hover(self, event):
         self.play_pause_image_label.configure(cursor="hand2") 
