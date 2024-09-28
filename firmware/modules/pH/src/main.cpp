@@ -25,12 +25,12 @@ pH pH_Device = pH(20, "EZO pH probe");
 byte shift_outputs = 0;
 
 void me_fbr_simconex() {
-    static state_fbr_t state_fbr = FBR_MEAS_PH;
+    static state_fbr_t state_fbr = FBR_READ_RTC;
 
     switch(state_fbr){
         case FBR_READ_RTC:
             if(me_rtc() == ME_FINISHED) {
-                state_fbr = FBR_FREEZE;
+                state_fbr = FBR_MEAS_PH;
             }
             break;
 
