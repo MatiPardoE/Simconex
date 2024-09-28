@@ -13,6 +13,8 @@ from frames.calibration_frame import CalibrationFrame
 from frames.alerts_frame import AlertsFrame
 from frames.cycle_frame import CycleFrame
 
+ser = serial.Serial()
+
 # Crear un logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)  # Configura el nivel de registro
@@ -65,7 +67,6 @@ class App(ctk.CTk):
         self.alerts_image = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "alert.png")), size=(20, 20))
         self.unlink_image = ctk.CTkImage(Image.open(os.path.join(image_path, "unlink.png")), size=(24, 24))
         self.link_image = ctk.CTkImage(Image.open(os.path.join(image_path, "link.png")), size=(24, 24))
-        self.connection_image = self.unlink_image  # Inicialmente no conectado
 
         # create navigation frame
         self.navigation_frame = ctk.CTkFrame(self, corner_radius=0)
@@ -103,7 +104,7 @@ class App(ctk.CTk):
 
         # Connection Menu SideBar
         self.connection_label = ctk.CTkLabel(self.navigation_frame, text="Estado:   ", anchor="w",
-                                             font=ctk.CTkFont(size=12, weight="bold"), image=self.connection_image, compound="right")
+                                             font=ctk.CTkFont(size=12, weight="bold"), image=self.unlink_image, compound="right")
         self.connection_label.grid(row=7, column=0, padx=20, pady=(10, 0))
         self.connection_button = ctk.CTkButton(self.navigation_frame, text="Conectar", command=self.connection_button_event)
         self.connection_button.grid(row=8, column=0, padx=20, pady=(10, 0))
@@ -184,20 +185,34 @@ class App(ctk.CTk):
             for port in ports:
                 logger.info(f"Trying {port.device}...")
                 try:
-                    ser = serial.Serial(port.device, 115200, timeout=1)
+                    #ser = serial.Serial(port.device, 115200, timeout=1)
+                    ser.baudrate = 115200
+                    ser.port = port.device
+                    ser.timeout = 5
+                    ser.open()
+
+                    logger.info(f"{port.device}: INIT")
                     ser.write(b"INIT")
                     response = ser.readline().decode('utf-8').strip()
                     if response == "ESP":
                         logger.info(f"Connected to ESP on {port.device}")
-                        self.connection_label.configure(image=self.link_image)  # Cambiar la imagen
+                        self.connection_label.configure(image=self.link_image)  
+                        self.connection_button.configure(text="Desconectar")
                         ser.close()
                         break
+                    else:
+                        logger.info(f"Failed {port.device}")
                     ser.close()
                 except (OSError, serial.SerialException) as e:
                     logger.error(f"Failed to connect to {port.device}: {e}")
 
-        # Ejecutar la búsqueda en un hilo separado
-        threading.Thread(target=find_esp).start()
+        if self.connection_button.cget("text") == "Conectar":        
+            threading.Thread(target=find_esp).start()
+        else: 
+            ser.close()
+            self.connection_label.configure(image=self.unlink_image)  
+            self.connection_button.configure(text="Conectar")
+            logger.info(f"Desconectado")
 
 if __name__ == "__main__":
     app = App()
