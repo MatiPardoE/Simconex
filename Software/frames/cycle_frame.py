@@ -19,7 +19,6 @@ def read_datalog(fname):
         for i, line in enumerate(handler):
             if i==0:
                 for j, column in enumerate(line):
-                    #print(line)
                     if column == "Fecha":
                         index['fecha'] = j
                     elif column == "Hora":
@@ -114,13 +113,14 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.label_control = ctk.CTkLabel(self, text="Control del ciclo", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_control.grid(row=0, column=0, padx=20, pady=(10, 0), sticky="w")
 
-        self.frame_buttons = ctk.CTkFrame(self, width=100)
+        self.frame_buttons = ctk.CTkFrame(self, width=150)
         self.frame_buttons.grid(row=1, column=0, padx=20, pady=(10, 0))
 
         self.frame_buttons.grid_rowconfigure(0, weight=1)
         self.frame_buttons.grid_columnconfigure(0, weight=1)
         self.frame_buttons.grid_columnconfigure(1, weight=1)
         self.frame_buttons.grid_columnconfigure(2, weight=1)
+        self.frame_buttons.grid_columnconfigure(3, weight=1)
         
         self.play_image = ctk.CTkImage(Image.open(os.path.join(image_path, "play.png")), size=(40, 40))
         self.pause_image = ctk.CTkImage(Image.open(os.path.join(image_path, "pause.png")), size=(40, 40))
@@ -147,6 +147,13 @@ class ControlCycleFrame(ctk.CTkFrame):
 
         self.bin_image_label.bind("<Enter>", self.on_hover)
         self.bin_image_label.bind("<Leave>", self.off_hover)
+
+        self.add_file_image = ctk.CTkImage(Image.open(os.path.join(image_path, "add-file.png")), size=(40, 40))
+        self.add_file_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.add_file_image)
+        self.add_file_image_label.grid(row=0, column=3, padx=15, pady=5, sticky="ns")
+
+        self.add_file_image_label.bind("<Enter>", self.on_hover)
+        self.add_file_image_label.bind("<Leave>", self.off_hover)
 
         self.frame_commands = ctk.CTkFrame(self)
         self.frame_commands.grid(row=2, column=0, padx=20, pady=(10, 0), sticky="ew")
@@ -176,12 +183,14 @@ class ControlCycleFrame(ctk.CTkFrame):
     def on_hover(self, event):
         self.play_pause_image_label.configure(cursor="hand2") 
         self.stop_image_label.configure(cursor="hand2") 
-        self.bin_image_label.configure(cursor="hand2") 
+        self.bin_image_label.configure(cursor="hand2")
+        self.add_file_image_label.configure(cursor="hand2") 
 
     def off_hover(self, event):
         self.play_pause_image_label.configure(cursor="arrow") 
-        self.stop_image_label.configure(cursor="hand2") 
-        self.bin_image_label.configure(cursor="hand2") 
+        self.stop_image_label.configure(cursor="arrow") 
+        self.bin_image_label.configure(cursor="arrow")
+        self.add_file_image_label.configure(cursor="arrow") 
     
     def play_pause_event(self, event):
         if self.is_playing:
@@ -198,17 +207,26 @@ class LogFrame(ctk.CTkScrollableFrame):
     def __init__(self, master, fname):
         super().__init__(master) 
 
+        image_path = os.path.join(os.getcwd(), "images")
+
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
         self.label_control = ctk.CTkLabel(self, text="Registro de datos", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_control.grid(row=0, column=0, padx=(20, 10), pady=(10, 0), sticky="w")
+        
+        self.export_image = ctk.CTkImage(Image.open(os.path.join(image_path, "download-file.png")), size=(25, 25))
+        self.label_export = ctk.CTkLabel(self, text="", image=self.export_image)
+        self.label_export.grid(row=0, column=1, padx=(10, 20), pady=(10, 0), sticky="e")
+
+        self.label_export.bind("<Enter>", self.on_hover)
+        self.label_export.bind("<Leave>", self.off_hover)
 
         datetime_list, ph_list, od_list, temp_list, light_list = read_datalog(fname)
 
         self.frame_lines = ctk.CTkFrame(self, width=1500)
-        self.frame_lines.grid(row=1, column=0, padx=10, pady=10)
+        self.frame_lines.grid(row=1, column=0, padx=10, pady=10, columnspan=2)
         self.frame_lines.grid_columnconfigure(0, weight=1)
         self.frame_lines.grid_rowconfigure(0, weight=1)
 
@@ -278,6 +296,12 @@ class LogFrame(ctk.CTkScrollableFrame):
 
             self.label_cycle = ctk.CTkLabel(self.frame_line, text="Ciclo1", corner_radius=0, width=150)
             self.label_cycle.grid(row=0, column=6, padx=5, pady=0, sticky="ns")
+
+    def on_hover(self, event):
+        self.label_export.configure(cursor="hand2") 
+
+    def off_hover(self, event):
+        self.label_export.configure(cursor="arrow") 
 
 class CycleFrame(ctk.CTkFrame):
     def __init__(self, master):
