@@ -1,7 +1,5 @@
 **/Ezo_I2c_lib
-__pycache__/
+**/__pycache__/
 .vscode/
 .pio/
 log/app.log
-Software/frames/__pycache__/
-
