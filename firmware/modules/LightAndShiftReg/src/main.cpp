@@ -20,7 +20,7 @@ ShiftRegister74HC595 shiftRegister(SR_DATA_PIN, SR_LATCH_PIN, SR_CLOCK_PIN); // 
 
 void setup()
 {
-    Serial.begin(460800);
+    Serial.begin(MONITOR_SPEED); // MONITOR_SPEED es una constante definida en platformio.ini
 
     // Configurar el logger para usar Serial
     Log.begin(LOG_LEVEL_VERBOSE, &Serial);

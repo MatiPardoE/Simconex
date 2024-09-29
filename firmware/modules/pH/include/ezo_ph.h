@@ -13,6 +13,9 @@
 #define CLEAR_DELAY     400
 
 enum state_calib_t {
+    NONE,
+    WAIT_ENTER,
+    INIT_CALIB,
     CLEAR_CALIB,
     MID_POINT,
     LOW_POINT,
@@ -28,7 +31,7 @@ enum state_ph_t {
 bool init_pH_probe();
 void print_help();
 uint8_t me_ph();
-uint8_t me_calib();
+uint8_t me_calib_ph();
 
 void read_step1();     //forward declarations of functions to use them in the sequencer before defining them
 void read_step2();
