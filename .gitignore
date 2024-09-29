@@ -2,3 +2,6 @@
 __pycache__/
 .vscode/
 .pio/
+log/app.log
+Software/frames/__pycache__/
+
