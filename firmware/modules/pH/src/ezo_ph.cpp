@@ -188,7 +188,7 @@ uint8_t me_calib_ph()
 
                 if (pH_Device.get_error() == pH::SUCCESS)
                 {
-                    Log.info("Valor de pH: %f\n", pH_Device.get_last_received_reading());
+                    Log.info("Valor de pH: %.2F\n", pH_Device.get_last_received_reading());
                 }
                 else
                 {
