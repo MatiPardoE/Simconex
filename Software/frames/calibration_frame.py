@@ -1,7 +1,6 @@
 import customtkinter as ctk
 import os
 from PIL import Image
-import serial
 
 class SensorCalibrateFrame(ctk.CTkFrame):
     def __init__(self, master, sensor_name, last_calibration):
@@ -61,10 +60,8 @@ class RecommendationsFrame(ctk.CTkFrame):
             self.line.grid(row=0, column=0, padx=5, pady=0, sticky="ns")
 
 class CalibrationFrame(ctk.CTkFrame):
-    def __init__(self, master, ser):
+    def __init__(self, master):
         super().__init__(master, corner_radius=0, fg_color="transparent")
-
-        self.serial = ser
         
         self.grid_columnconfigure((0, 1), weight=1)
         self.grid_rowconfigure(0, weight=2)
@@ -82,5 +79,3 @@ class CalibrationFrame(ctk.CTkFrame):
         self.plot2_frame = RecommendationsFrame(self, ["Ajustar fijacion del sensor", "Limpiar cabezal del sensor"])
         self.plot2_frame.grid(row=1, column=1, padx=10, pady=(10, 0), sticky="nsew")
 
-    def update_serial_obj(self, ser):
-        self.serial = ser

@@ -259,3 +259,23 @@
 2024-09-29 10:32:56,361 - __main__ - INFO - Trying COM3...
 2024-09-29 10:32:56,457 - __main__ - INFO - COM3: INIT
 2024-09-29 10:33:01,460 - __main__ - INFO - Connected to ESP on COM3
+2024-09-29 11:02:26,817 - __main__ - INFO - Trying COM3...
+2024-09-29 11:02:26,910 - __main__ - INFO - COM3: INIT
+2024-09-29 11:02:30,351 - __main__ - INFO - Failed COM3
+2024-09-29 11:02:32,482 - __main__ - INFO - Trying COM3...
+2024-09-29 11:02:32,578 - __main__ - INFO - COM3: INIT
+2024-09-29 11:02:33,847 - __main__ - INFO - Failed COM3
+2024-09-29 11:02:42,980 - __main__ - INFO - Trying COM3...
+2024-09-29 11:02:43,077 - __main__ - INFO - COM3: INIT
+2024-09-29 11:02:48,081 - __main__ - INFO - Connected to ESP on COM3
+2024-09-29 11:04:53,100 - __main__ - INFO - Trying COM3...
+2024-09-29 11:04:53,197 - __main__ - INFO - COM3: INIT
+2024-09-29 11:04:56,639 - __main__ - INFO - Failed COM3
+2024-09-29 11:05:02,746 - __main__ - INFO - Trying COM3...
+2024-09-29 11:05:02,845 - __main__ - INFO - COM3: INIT
+2024-09-29 11:05:07,849 - __main__ - INFO - Connected to ESP on COM3
+2024-09-29 15:45:15,880 - __main__ - INFO - Desconectado
+2024-09-29 15:51:18,175 - __main__ - INFO - Desconectado
+2024-09-29 15:54:44,525 - __main__ - INFO - Desconectado
+2024-09-29 16:24:41,005 - __main__ - INFO - Desconectado
+2024-09-29 16:51:55,751 - __main__ - INFO - Desconectado

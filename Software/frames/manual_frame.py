@@ -4,7 +4,6 @@ import os
 from PIL import Image
 import csv
 from datetime import datetime
-import serial
 
 def read_datalog(fname):
     datetime_list = []
@@ -197,10 +196,9 @@ class InstantValuesFrame(ctk.CTkFrame):
 
 class SetPointsFrame(ctk.CTkFrame):
 
-    def __init__(self, master, ser):
+    def __init__(self, master):
         super().__init__(master) 
 
-        self.serial = ser
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -293,50 +291,37 @@ class SetPointsFrame(ctk.CTkFrame):
 
     def co2_button_event(self):
         if self.co2_button.cget("text") == "Encendido":
-            self.serial.write(b"#C0!")
             self.co2_button.configure(text="Apagado")
             self.co2_button.configure(fg_color="red")
         elif self.co2_button.cget("text") == "Apagado":
-            self.serial.write(b"#C1!")
             self.co2_button.configure(text="Encendido")
             self.co2_button.configure(fg_color="green")
 
     def o2_button_event(self):
         if self.o2_button.cget("text") == "Encendido":
-            self.serial.write(b"#O0!")
             self.o2_button.configure(text="Apagado")
             self.o2_button.configure(fg_color="red")
         elif self.o2_button.cget("text") == "Apagado":
-            self.serial.write(b"#O1!")
             self.o2_button.configure(text="Encendido")
             self.o2_button.configure(fg_color="green")
     
     def air_button_event(self):
         if self.air_button.cget("text") == "Encendido":
-            self.serial.write(b"#A0!")
             self.air_button.configure(text="Apagado")
             self.air_button.configure(fg_color="red")
         elif self.air_button.cget("text") == "Apagado":
-            self.serial.write(b"#A1!")
             self.air_button.configure(text="Encendido")
             self.air_button.configure(fg_color="green")
 
     def pump_button_event(self):
         if self.pump_button.cget("text") == "Encendido":
-            self.serial.write(b"#W0!")
             self.pump_button.configure(text="Apagado")
             self.pump_button.configure(fg_color="red")
         elif self.pump_button.cget("text") == "Apagado":
-            self.serial.write(b"#W1!")
             self.pump_button.configure(text="Encendido")
             self.pump_button.configure(fg_color="green")
 
     def send_button_event(self):
-        self.serial.write(str.encode(f"#L{int(self.entry_light.get())}!"))
-        self.serial.write(str.encode(f"#P{int(float(self.entry_ph.get())*100)}!"))
-        self.serial.write(str.encode(f"#O{int(float(self.entry_do.get())*100)}!"))
-        self.serial.write(str.encode(f"#T{int(float(self.entry_temp.get())*100)}!"))
-
         print(int(self.entry_light.get()))
         print(int(float(self.entry_ph.get())*100))
         print(int(float(self.entry_do.get())*100))
@@ -432,10 +417,8 @@ class ManualRecordFrame(ctk.CTkFrame):
         print("Enviar")
 
 class ManualFrame(ctk.CTkFrame):
-    def __init__(self, master, ser):
+    def __init__(self, master):
         super().__init__(master, corner_radius=0, fg_color="transparent")
-
-        self.serial = ser
 
         datalog_path = os.path.join(os.getcwd(), "test_data")
         
@@ -443,7 +426,7 @@ class ManualFrame(ctk.CTkFrame):
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=3)      
         
-        self.setpoints_frame = SetPointsFrame(self, self.serial)
+        self.setpoints_frame = SetPointsFrame(self)
         self.setpoints_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         self.instant_values_frame = InstantValuesFrame(self)
@@ -454,6 +437,3 @@ class ManualFrame(ctk.CTkFrame):
 
         self.log_frame = LogFrame(self, os.path.join(datalog_path, "datos_generados_logico.csv"))
         self.log_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew", columnspan=3)
-
-    def update_serial_obj(self, ser):
-        self.serial = ser

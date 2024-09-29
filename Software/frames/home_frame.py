@@ -10,7 +10,8 @@ import numpy as np
 import csv
 from datetime import datetime
 import random
-import serial
+import frames.serial_handler as ui_serial
+import re
 
 def read_datalog(fname):
     datetime_list = []
@@ -62,6 +63,9 @@ def read_datalog(fname):
 class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
+
+        print("InstantValuesFrame: Me suscribo!")
+        ui_serial.publisher.subscribe(self.process_data)
 
         image_path = os.path.join(os.getcwd(), "images")
 
@@ -153,6 +157,36 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.label_temp.grid(row=7  , column=0, padx=10, pady=(10,0), sticky="nsew")
         self.temp_button = ctk.CTkButton(self.right_frame, text="24.3°C", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.temp_button.grid(row=8, column=0, padx=10, pady=(0,10), sticky="ns")
+    
+    def process_data(self, data):
+        pattern = r"#([LPTDCOWA])(\d+)\!"
+        matches = re.findall(pattern, data)
+        msg_list = [{'id': m[0], 'value': int(m[1])} for m in matches]
+        print(msg_list)
+        self.update_data(msg_list)
+
+
+    def update_data(self, msg_list):
+        for msg in msg_list:
+            id_msg = msg['id']
+            value = msg['value']
+            
+            if id_msg == 'L':
+                self.light_button.configure(text = f"{value}")
+            elif id_msg == 'P':
+                self.ph_button.configure(text = "{0:.2f}".format(value/100))
+            elif id_msg == 'D':
+                self.do_button.configure(text = "{0:.2f}".format(value/100))
+            elif id_msg == 'T':
+                self.temp_button.configure(text = "{0:.2f}".format(value/100))
+            # elif id_msg == 'C':
+            #     accion_C(value)
+            # elif id_msg == 'O':
+            #     accion_O(value)
+            # elif id_msg == 'A':
+            #     accion_A(value)
+            # elif id_msg == 'W':
+            #     accion_W(value)
 
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -264,10 +298,8 @@ class PlotFrame(ctk.CTkFrame):
         
 
 class HomeFrame(ctk.CTkFrame):
-    def __init__(self, master, ser):
+    def __init__(self, master):
         super().__init__(master, corner_radius=0, fg_color="transparent")    
-
-        self.serial = ser
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -285,6 +317,3 @@ class HomeFrame(ctk.CTkFrame):
 
         self.plot2_frame = PlotFrame(self)
         self.plot2_frame.grid(row=1, column=1, padx=10, pady=(10, 0), sticky="nsew")
-        
-    def update_serial_obj(self, ser):
-        self.serial = ser

@@ -1,5 +1,4 @@
 import customtkinter as ctk
-import serial
 
 class LogFrame(ctk.CTkScrollableFrame):
 
@@ -59,16 +58,11 @@ class LogFrame(ctk.CTkScrollableFrame):
                 self.label_priority.configure(font=ctk.CTkFont(size=15, weight="bold"))
 
 class AlertsFrame(ctk.CTkFrame):
-    def __init__(self, master, ser):
+    def __init__(self, master):
         super().__init__(master, corner_radius=0, fg_color="transparent")
-
-        self.serial = ser
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1) 
         
         self.log_frame = LogFrame(self)
         self.log_frame.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsew")
-
-    def update_serial_obj(self, ser):
-        self.serial = ser
