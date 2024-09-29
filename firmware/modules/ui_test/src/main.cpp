@@ -16,6 +16,11 @@
 #define SR_LATCH_PIN 2
 #define SR_CLOCK_PIN 0
 
+enum state_general_t {
+    DESCONECTADO,
+    CONECTADO
+};
+
 enum state_msg_t {
     ESPERO_INICIO,
     ESPERO_CLAVE,
@@ -117,40 +122,53 @@ void setup() {
 }
 
 void loop() {
-    handler_ui();
+    
+    static state_general_t state_general = DESCONECTADO;
 
-
-    if(msg_valido){
-        msg_valido = false;
-        switch (clave) {
-            case 'L':
-                //Serial.printf("Luz: %d\n", valor);
-                ledStrip5.setDuty(valor);
-                break;
-            case 'P':
-                //Serial.printf("pH: %d\n", valor);
-                break;
-            case 'D':
-                //Serial.printf("Oxigeno disuelto: %d\n", valor);
-                break;
-            case 'T':
-                //Serial.printf("Temperatura: %d\n", valor);
-                break;
-            case 'C':
-                //Serial.printf("Carbono: %d\n", valor);
-                shiftRegister.setOutput(1, valor); 
-                break;
-            case 'O':
-                //Serial.printf("Oxigeno: %d\n", valor);
-                shiftRegister.setOutput(2, valor);
-                break;
-            case 'A':
-                //Serial.printf("Aire: %d\n", valor);
-                shiftRegister.setOutput(3, valor);
-                break;
-            case 'W':
-                //Serial.printf("Agua: %d\n", valor);
-                break;
-        }
-    }
+    switch(state_general){
+        case DESCONECTADO:
+            if (Serial.available() > 0) {
+                if (Serial.readString().equals("INIT")) {
+                    Serial.printf("ESP\n");
+                    state_general = CONECTADO;
+                }
+            }
+            break;
+        case CONECTADO:
+            handler_ui();            
+            if(msg_valido){
+                msg_valido = false;
+                switch (clave) {
+                    case 'L':
+                        //Serial.printf("Luz: %d\n", valor);
+                        ledStrip5.setDuty(valor);
+                        break;
+                    case 'P':
+                        //Serial.printf("pH: %d\n", valor);
+                        break;
+                    case 'D':
+                        //Serial.printf("Oxigeno disuelto: %d\n", valor);
+                        break;
+                    case 'T':
+                        //Serial.printf("Temperatura: %d\n", valor);
+                        break;
+                    case 'C':
+                        //Serial.printf("Carbono: %d\n", valor);
+                        shiftRegister.setOutput(1, valor); 
+                        break;
+                    case 'O':
+                        //Serial.printf("Oxigeno: %d\n", valor);
+                        shiftRegister.setOutput(2, valor);
+                        break;
+                    case 'A':
+                        //Serial.printf("Aire: %d\n", valor);
+                        shiftRegister.setOutput(3, valor);
+                        break;
+                    case 'W':
+                        //Serial.printf("Agua: %d\n", valor);
+                        break;
+                }
+            }
+            break;
+    }     
 }

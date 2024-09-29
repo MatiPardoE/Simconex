@@ -5,6 +5,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
 import csv
 from datetime import datetime
+import serial
 
 def read_datalog(fname):
     datetime_list = []
@@ -304,8 +305,10 @@ class LogFrame(ctk.CTkScrollableFrame):
         self.label_export.configure(cursor="arrow") 
 
 class CycleFrame(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, ser):
         super().__init__(master, corner_radius=0, fg_color="transparent")
+
+        self.serial = ser
 
         datalog_path = os.path.join(os.getcwd(), "test_data")
 
@@ -323,4 +326,7 @@ class CycleFrame(ctk.CTkFrame):
 
         self.log_frame = LogFrame(self, os.path.join(datalog_path, "datos_generados_logico.csv"))
         self.log_frame.grid(row=1, column=0, padx=10, pady=(10, 0), sticky="nsew", columnspan=2)
+    
+    def update_serial_obj(self, ser):
+        self.serial = ser
 

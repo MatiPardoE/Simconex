@@ -4,6 +4,7 @@ import os
 from PIL import Image
 import csv
 from datetime import datetime
+import serial
 
 def read_datalog(fname):
     datetime_list = []
@@ -196,9 +197,10 @@ class InstantValuesFrame(ctk.CTkFrame):
 
 class SetPointsFrame(ctk.CTkFrame):
 
-    def __init__(self, master):
+    def __init__(self, master, ser):
         super().__init__(master) 
 
+        self.serial = ser
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -258,27 +260,31 @@ class SetPointsFrame(ctk.CTkFrame):
         self.label_control = ctk.CTkLabel(self.right_frame, text="Control Variables", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_control.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsew")
 
+        self.light_text_var = tkinter.StringVar()
         self.label_light = ctk.CTkLabel(self.right_frame, text="Luz [%]", font=ctk.CTkFont(weight="bold"))
         self.label_light.grid(row=1, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.entry_light = ctk.CTkEntry(self.right_frame, justify="center", width=100)
+        self.entry_light = ctk.CTkEntry(self.right_frame, textvariable=self.light_text_var, justify="center", width=100)
         self.entry_light.insert(0, "42")
         self.entry_light.grid(row=2, column=0, padx=10, pady=0, sticky="ns")
 
+        self.ph_text_var = tkinter.StringVar()
         self.label_ph = ctk.CTkLabel(self.right_frame, text="pH", font=ctk.CTkFont(weight="bold"))
         self.label_ph.grid(row=3, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.entry_ph = ctk.CTkEntry(self.right_frame, justify="center", width=100)
+        self.entry_ph = ctk.CTkEntry(self.right_frame, textvariable=self.ph_text_var, justify="center", width=100)
         self.entry_ph.insert(0, "6.536")
         self.entry_ph.grid(row=4, column=0, padx=10, pady=0, sticky="ns")
 
+        self.do_text_var = tkinter.StringVar()
         self.label_do = ctk.CTkLabel(self.right_frame, text="OD [%]", font=ctk.CTkFont(weight="bold"))
         self.label_do.grid(row=5, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.entry_do = ctk.CTkEntry(self.right_frame, justify="center", width=100)
+        self.entry_do = ctk.CTkEntry(self.right_frame, textvariable=self.do_text_var, justify="center", width=100)
         self.entry_do.insert(0, "342.4")
         self.entry_do.grid(row=6, column=0, padx=10, pady=0, sticky="ns")
 
+        self.temp_text_var = tkinter.StringVar()
         self.label_temp = ctk.CTkLabel(self.right_frame, text="Temperatura [°C]", font=ctk.CTkFont(weight="bold"))
         self.label_temp.grid(row=7, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.entry_temp = ctk.CTkEntry(self.right_frame, justify="center", width=100)
+        self.entry_temp = ctk.CTkEntry(self.right_frame, textvariable=self.temp_text_var, justify="center", width=100)
         self.entry_temp.insert(0, "24.3")
         self.entry_temp.grid(row=8, column=0, padx=10, pady=0, sticky="ns")
 
@@ -287,41 +293,54 @@ class SetPointsFrame(ctk.CTkFrame):
 
     def co2_button_event(self):
         if self.co2_button.cget("text") == "Encendido":
+            self.serial.write(b"#C0!")
             self.co2_button.configure(text="Apagado")
             self.co2_button.configure(fg_color="red")
         elif self.co2_button.cget("text") == "Apagado":
+            self.serial.write(b"#C1!")
             self.co2_button.configure(text="Encendido")
             self.co2_button.configure(fg_color="green")
 
     def o2_button_event(self):
         if self.o2_button.cget("text") == "Encendido":
+            self.serial.write(b"#O0!")
             self.o2_button.configure(text="Apagado")
             self.o2_button.configure(fg_color="red")
         elif self.o2_button.cget("text") == "Apagado":
+            self.serial.write(b"#O1!")
             self.o2_button.configure(text="Encendido")
             self.o2_button.configure(fg_color="green")
     
     def air_button_event(self):
         if self.air_button.cget("text") == "Encendido":
+            self.serial.write(b"#A0!")
             self.air_button.configure(text="Apagado")
             self.air_button.configure(fg_color="red")
         elif self.air_button.cget("text") == "Apagado":
+            self.serial.write(b"#A1!")
             self.air_button.configure(text="Encendido")
             self.air_button.configure(fg_color="green")
 
     def pump_button_event(self):
         if self.pump_button.cget("text") == "Encendido":
+            self.serial.write(b"#W0!")
             self.pump_button.configure(text="Apagado")
             self.pump_button.configure(fg_color="red")
         elif self.pump_button.cget("text") == "Apagado":
+            self.serial.write(b"#W1!")
             self.pump_button.configure(text="Encendido")
             self.pump_button.configure(fg_color="green")
 
     def send_button_event(self):
-        print(self.entry_light.cget("textvariable"))
-        print(self.entry_ph.cget("textvariable"))
-        print(self.entry_do.cget("textvariable"))
-        print(self.entry_temp.cget("textvariable"))
+        self.serial.write(str.encode(f"#L{int(self.entry_light.get())}!"))
+        self.serial.write(str.encode(f"#P{int(float(self.entry_ph.get())*100)}!"))
+        self.serial.write(str.encode(f"#O{int(float(self.entry_do.get())*100)}!"))
+        self.serial.write(str.encode(f"#T{int(float(self.entry_temp.get())*100)}!"))
+
+        print(int(self.entry_light.get()))
+        print(int(float(self.entry_ph.get())*100))
+        print(int(float(self.entry_do.get())*100))
+        print(int(float(self.entry_temp.get())*100))
 
 class ManualRecordFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -383,9 +402,6 @@ class ManualRecordFrame(ctk.CTkFrame):
         self.entry_interval = ctk.CTkEntry(self.frame_commands, placeholder_text="15", width=60)
         self.entry_interval.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
-        #self.combobox_unit = ctk.CTkComboBox(self.frame_commands, state="readonly", values=["min", "seg"], width=80)
-        #self.combobox_unit.grid(row=0, column=2, padx=5, pady=5, sticky="ew")
-
         self.radio_var = tkinter.IntVar(value=0)
         self.radio_button_seg = ctk.CTkRadioButton(master=self.frame_commands, text="seg", variable=self.radio_var, value=0, width=60)
         self.radio_button_seg.grid(row=0, column=2, padx=0, pady=5)
@@ -416,8 +432,10 @@ class ManualRecordFrame(ctk.CTkFrame):
         print("Enviar")
 
 class ManualFrame(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, ser):
         super().__init__(master, corner_radius=0, fg_color="transparent")
+
+        self.serial = ser
 
         datalog_path = os.path.join(os.getcwd(), "test_data")
         
@@ -425,7 +443,7 @@ class ManualFrame(ctk.CTkFrame):
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=3)      
         
-        self.setpoints_frame = SetPointsFrame(self)
+        self.setpoints_frame = SetPointsFrame(self, self.serial)
         self.setpoints_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
 
         self.instant_values_frame = InstantValuesFrame(self)
@@ -437,3 +455,5 @@ class ManualFrame(ctk.CTkFrame):
         self.log_frame = LogFrame(self, os.path.join(datalog_path, "datos_generados_logico.csv"))
         self.log_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew", columnspan=3)
 
+    def update_serial_obj(self, ser):
+        self.serial = ser

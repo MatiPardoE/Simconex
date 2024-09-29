@@ -118,11 +118,11 @@ class App(ctk.CTk):
         self.scaling_optionemenu.grid(row=10, column=0, padx=20, pady=(10, 20), sticky="s")
 
         # create frames
-        self.home_frame = HomeFrame(self)
-        self.cycle_frame = CycleFrame(self)
-        self.manual_frame = ManualFrame(self)
-        self.calibration_frame = CalibrationFrame(self)
-        self.alerts_frame = AlertsFrame(self)
+        self.home_frame = HomeFrame(self, ser)
+        self.cycle_frame = CycleFrame(self, ser)
+        self.manual_frame = ManualFrame(self, ser)
+        self.calibration_frame = CalibrationFrame(self, ser)
+        self.alerts_frame = AlertsFrame(self, ser)
 
         # select default frame
         self.select_frame_by_name("home")
@@ -185,10 +185,9 @@ class App(ctk.CTk):
             for port in ports:
                 logger.info(f"Trying {port.device}...")
                 try:
-                    #ser = serial.Serial(port.device, 115200, timeout=1)
                     ser.baudrate = 115200
                     ser.port = port.device
-                    ser.timeout = 5
+                    ser.timeout = 10
                     ser.open()
 
                     logger.info(f"{port.device}: INIT")
@@ -198,7 +197,11 @@ class App(ctk.CTk):
                         logger.info(f"Connected to ESP on {port.device}")
                         self.connection_label.configure(image=self.link_image)  
                         self.connection_button.configure(text="Desconectar")
-                        ser.close()
+                        self.home_frame.update_serial_obj(ser)
+                        self.cycle_frame.update_serial_obj(ser)
+                        self.manual_frame.update_serial_obj(ser)
+                        self.calibration_frame.update_serial_obj(ser)
+                        self.alerts_frame.update_serial_obj(ser)
                         break
                     else:
                         logger.info(f"Failed {port.device}")
@@ -213,6 +216,11 @@ class App(ctk.CTk):
             self.connection_label.configure(image=self.unlink_image)  
             self.connection_button.configure(text="Conectar")
             logger.info(f"Desconectado")
+            self.home_frame.update_serial_obj(ser)
+            self.cycle_frame.update_serial_obj(ser)
+            self.manual_frame.update_serial_obj(ser)
+            self.calibration_frame.update_serial_obj(ser)
+            self.alerts_frame.update_serial_obj(ser)
 
 if __name__ == "__main__":
     app = App()

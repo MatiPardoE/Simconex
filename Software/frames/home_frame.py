@@ -10,6 +10,7 @@ import numpy as np
 import csv
 from datetime import datetime
 import random
+import serial
 
 def read_datalog(fname):
     datetime_list = []
@@ -263,8 +264,10 @@ class PlotFrame(ctk.CTkFrame):
         
 
 class HomeFrame(ctk.CTkFrame):
-    def __init__(self, master):
+    def __init__(self, master, ser):
         super().__init__(master, corner_radius=0, fg_color="transparent")    
+
+        self.serial = ser
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -283,3 +286,5 @@ class HomeFrame(ctk.CTkFrame):
         self.plot2_frame = PlotFrame(self)
         self.plot2_frame.grid(row=1, column=1, padx=10, pady=(10, 0), sticky="nsew")
         
+    def update_serial_obj(self, ser):
+        self.serial = ser
