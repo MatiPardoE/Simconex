@@ -22,6 +22,12 @@ This guide will walk you through the installation process for customTkinter and 
     pip install pyserial
     ```
 
+4. Install matplotlib library by running the following command:
+
+    ```shell
+    pip install matplotlib
+    ```
+
 ## Usage
 
 Once you have installed the libraries, you can import them in your Python code using the following statements:
