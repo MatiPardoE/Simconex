@@ -75,4 +75,7 @@ class SerialPublisher:
     def start_find_thread(self):
         self.find_thread.start()
 
+    def send_data(self, data):
+        self.ser.write(data)
+
 publisher = SerialPublisher()

@@ -4,6 +4,8 @@ import os
 from PIL import Image
 import csv
 from datetime import datetime
+import frames.serial_handler as ui_serial
+import re
 
 def read_datalog(fname):
     datetime_list = []
@@ -141,6 +143,7 @@ class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
 
+        ui_serial.publisher.subscribe(self.process_data)
         image_path = os.path.join(os.getcwd(), "images")
 
         self.grid_rowconfigure(0, weight=1)
@@ -194,10 +197,32 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.temp_button = ctk.CTkButton(self.right_frame, text="24.3", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.temp_button.grid(row=8, column=0, padx=10, pady=(0, 10), sticky="ns")
 
+    def process_data(self, data):
+        pattern = r"#([LPTDCOWA])(\d+)\!"
+        matches = re.findall(pattern, data)
+        msg_list = [{'id': m[0], 'value': int(m[1])} for m in matches]
+        self.update_data(msg_list)
+
+    def update_data(self, msg_list):
+        for msg in msg_list:
+            id_msg = msg['id']
+            value = msg['value']
+            
+            if id_msg == 'L':
+                self.light_button.configure(text = f"{value}")
+            elif id_msg == 'P':
+                self.ph_button.configure(text = "{0:.2f}".format(value/100))
+            elif id_msg == 'D':
+                self.do_button.configure(text = "{0:.2f}".format(value/100))
+            elif id_msg == 'T':
+                self.temp_button.configure(text = "{0:.2f}".format(value/100))
+
 class SetPointsFrame(ctk.CTkFrame):
 
     def __init__(self, master):
         super().__init__(master) 
+
+        ui_serial.publisher.subscribe(self.process_data)
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -289,43 +314,91 @@ class SetPointsFrame(ctk.CTkFrame):
         self.send_button = ctk.CTkButton(self.right_frame, text="Enviar", command=self.send_button_event, width=100)
         self.send_button.grid(row=9, column=0, padx=10, pady=(20, 10), sticky="ns")
 
+    def process_data(self, data):
+        pattern = r"#([LPTDCOWA])(\d+)\!"
+        matches = re.findall(pattern, data)
+        msg_list = [{'id': m[0], 'value': int(m[1])} for m in matches]
+        self.update_data(msg_list)
+
+    def update_data(self, msg_list):
+        for msg in msg_list:
+            id_msg = msg['id']
+            value = msg['value']
+            
+            if id_msg == 'C':
+                if value == 0:
+                    self.co2_button.configure(text="Apagado")
+                    self.co2_button.configure(fg_color="red")
+                elif value == 1:
+                    self.co2_button.configure(text="Encendido")
+                    self.co2_button.configure(fg_color="green")
+            elif id_msg == 'O':
+                if value == 0:
+                    self.o2_button.configure(text="Apagado")
+                    self.o2_button.configure(fg_color="red")
+                elif value == 1:
+                    self.o2_button.configure(text="Encendido")
+                    self.o2_button.configure(fg_color="green")
+            elif id_msg == 'A':
+                if value == 0:
+                    self.air_button.configure(text="Apagado")
+                    self.air_button.configure(fg_color="red")
+                elif value == 1:
+                    self.air_button.configure(text="Encendido")
+                    self.air_button.configure(fg_color="green")
+            elif id_msg == 'W':
+                if value == 0:
+                    self.pump_button.configure(text="Apagado")
+                    self.pump_button.configure(fg_color="red")
+                elif value == 1:
+                    self.pump_button.configure(text="Encendido")
+                    self.pump_button.configure(fg_color="green")
+
     def co2_button_event(self):
         if self.co2_button.cget("text") == "Encendido":
+            ui_serial.publisher.send_data(b"#C0!")
             self.co2_button.configure(text="Apagado")
             self.co2_button.configure(fg_color="red")
         elif self.co2_button.cget("text") == "Apagado":
+            ui_serial.publisher.send_data(b"#C1!")
             self.co2_button.configure(text="Encendido")
             self.co2_button.configure(fg_color="green")
 
     def o2_button_event(self):
         if self.o2_button.cget("text") == "Encendido":
+            ui_serial.publisher.send_data(b"#O0!")
             self.o2_button.configure(text="Apagado")
             self.o2_button.configure(fg_color="red")
         elif self.o2_button.cget("text") == "Apagado":
+            ui_serial.publisher.send_data(b"#O1!")
             self.o2_button.configure(text="Encendido")
             self.o2_button.configure(fg_color="green")
     
     def air_button_event(self):
         if self.air_button.cget("text") == "Encendido":
+            ui_serial.publisher.send_data(b"#A0!")
             self.air_button.configure(text="Apagado")
             self.air_button.configure(fg_color="red")
         elif self.air_button.cget("text") == "Apagado":
+            ui_serial.publisher.send_data(b"#A1!")
             self.air_button.configure(text="Encendido")
             self.air_button.configure(fg_color="green")
 
     def pump_button_event(self):
         if self.pump_button.cget("text") == "Encendido":
+            ui_serial.publisher.send_data(b"#W0!")
             self.pump_button.configure(text="Apagado")
             self.pump_button.configure(fg_color="red")
         elif self.pump_button.cget("text") == "Apagado":
+            ui_serial.publisher.send_data(b"#W1!")
             self.pump_button.configure(text="Encendido")
             self.pump_button.configure(fg_color="green")
 
     def send_button_event(self):
-        print(int(self.entry_light.get()))
-        print(int(float(self.entry_ph.get())*100))
-        print(int(float(self.entry_do.get())*100))
-        print(int(float(self.entry_temp.get())*100))
+        ui_serial.publisher.send_data(str.encode(f"#L{int(self.entry_light.get())}!"))
+        ui_serial.publisher.send_data(str.encode(f"#P{int(float(self.entry_ph.get())*100)}!"))
+        ui_serial.publisher.send_data(str.encode(f"#O{int(float(self.entry_do.get())*100)}!"))
+        ui_serial.publisher.send_data(str.encode(f"#T{int(float(self.entry_temp.get())*100)}!"))
 
 class ManualRecordFrame(ctk.CTkFrame):
     def __init__(self, master):

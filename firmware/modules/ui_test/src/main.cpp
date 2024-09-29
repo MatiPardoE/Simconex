@@ -118,6 +118,13 @@ void setup() {
     init_pH_probe();
     ledStrip5.begin(PIN_LED_STRIP_5, 4, 5000, 8);
     ledStrip5.setDuty(0);
+    shiftRegister.setOutput(0, valor);
+    shiftRegister.setOutput(1, valor);
+    shiftRegister.setOutput(2, valor);
+    shiftRegister.setOutput(3, valor);
+    shiftRegister.setOutput(4, valor);
+    shiftRegister.setOutput(5, valor);
+    shiftRegister.setOutput(6, valor);
     Serial.println();    
 }
 
@@ -131,6 +138,11 @@ void loop() {
                 if (Serial.readString().equals("INIT")) {
                     Serial.printf("ESP\n");
                     state_general = CONECTADO;
+                    Serial.printf("#L00!\n");
+                    Serial.printf("#C0!\n");
+                    Serial.printf("#O0!\n");
+                    Serial.printf("#A0!\n");
+                    Serial.printf("#W0!\n");
                 }
             }
             break;
@@ -140,7 +152,7 @@ void loop() {
                 msg_valido = false;
                 switch (clave) {
                     case 'L':
-                        //Serial.printf("Luz: %d\n", valor);
+                        Serial.printf("#L%02d!\n", valor);
                         ledStrip5.setDuty(valor);
                         break;
                     case 'P':
@@ -153,19 +165,20 @@ void loop() {
                         //Serial.printf("Temperatura: %d\n", valor);
                         break;
                     case 'C':
-                        //Serial.printf("Carbono: %d\n", valor);
+                        Serial.printf("#C%d!\n", valor);
                         shiftRegister.setOutput(1, valor); 
                         break;
                     case 'O':
-                        //Serial.printf("Oxigeno: %d\n", valor);
+                        Serial.printf("#O%d!\n", valor);
                         shiftRegister.setOutput(2, valor);
                         break;
                     case 'A':
-                        //Serial.printf("Aire: %d\n", valor);
+                        Serial.printf("#A%d!\n", valor);
                         shiftRegister.setOutput(3, valor);
                         break;
                     case 'W':
-                        //Serial.printf("Agua: %d\n", valor);
+                        Serial.printf("#W%d!\n", valor);
+                        shiftRegister.setOutput(4, valor);
                         break;
                 }
             }

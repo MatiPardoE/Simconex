@@ -185,8 +185,9 @@ class App(ctk.CTk):
         if self.connection_button.cget("text") == "Conectar":        
             ui_serial.publisher.start_find_thread()
             ui_serial.publisher.find_thread.join()
-            self.connection_label.configure(image=self.link_image)  
-            self.connection_button.configure(text="Desconectar")
+            if ui_serial.publisher.ser.is_open:
+                self.connection_label.configure(image=self.link_image)  
+                self.connection_button.configure(text="Desconectar")
         else: 
             ui_serial.publisher.stop_read_thread()
             self.connection_label.configure(image=self.unlink_image)  
@@ -194,7 +195,6 @@ class App(ctk.CTk):
             logger.info(f"Desconectado")
 
 if __name__ == "__main__":
-    print("simConex.py: Me suscribo!")
     ui_serial.publisher.subscribe(view_data)
 
     app = App()

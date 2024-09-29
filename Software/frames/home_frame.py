@@ -162,7 +162,6 @@ class InstantValuesFrame(ctk.CTkFrame):
         pattern = r"#([LPTDCOWA])(\d+)\!"
         matches = re.findall(pattern, data)
         msg_list = [{'id': m[0], 'value': int(m[1])} for m in matches]
-        print(msg_list)
         self.update_data(msg_list)
 
 
@@ -179,14 +178,34 @@ class InstantValuesFrame(ctk.CTkFrame):
                 self.do_button.configure(text = "{0:.2f}".format(value/100))
             elif id_msg == 'T':
                 self.temp_button.configure(text = "{0:.2f}".format(value/100))
-            # elif id_msg == 'C':
-            #     accion_C(value)
-            # elif id_msg == 'O':
-            #     accion_O(value)
-            # elif id_msg == 'A':
-            #     accion_A(value)
-            # elif id_msg == 'W':
-            #     accion_W(value)
+            elif id_msg == 'C':
+                if value == 0:
+                    self.co2_button.configure(text="Apagado")
+                    self.co2_button.configure(fg_color="red")
+                elif value == 1:
+                    self.co2_button.configure(text="Encendido")
+                    self.co2_button.configure(fg_color="green")
+            elif id_msg == 'O':
+                if value == 0:
+                    self.o2_button.configure(text="Apagado")
+                    self.o2_button.configure(fg_color="red")
+                elif value == 1:
+                    self.o2_button.configure(text="Encendido")
+                    self.o2_button.configure(fg_color="green")
+            elif id_msg == 'A':
+                if value == 0:
+                    self.air_button.configure(text="Apagado")
+                    self.air_button.configure(fg_color="red")
+                elif value == 1:
+                    self.air_button.configure(text="Encendido")
+                    self.air_button.configure(fg_color="green")
+            elif id_msg == 'W':
+                if value == 0:
+                    self.pump_button.configure(text="Apagado")
+                    self.pump_button.configure(fg_color="red")
+                elif value == 1:
+                    self.pump_button.configure(text="Encendido")
+                    self.pump_button.configure(fg_color="green")
 
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
