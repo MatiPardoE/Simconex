@@ -173,14 +173,14 @@ uint8_t me_calib_ph()
     switch (state_calib)
     {
     case INIT_CALIB:
-        Log.info("Comienzo de proceso de calibracion de pH, presione enter para eliminar la calibracion actual...");
+        Log.info("Comienzo de proceso de calibracion de pH, presione enter para eliminar la calibracion actual...\n");
         previous_state_calib = INIT_CALIB;
         state_calib = WAIT_ENTER;
         break;
     case WAIT_ENTER:
         // Muestro cada 10 segundos la lectura, solamente en estados de medicion de ph
         if (millis() - last_read_time >= 10000 &&
-            (previous_state_calib == CLEAR_CALIB || previous_state_calib == LOW_POINT || previous_state_calib == LOW_POINT))
+            (previous_state_calib == CLEAR_CALIB || previous_state_calib == LOW_POINT || previous_state_calib == MID_POINT))
         {
             if (read_seq.run() == read_seq.FINISHED)
             {
@@ -188,11 +188,11 @@ uint8_t me_calib_ph()
 
                 if (pH_Device.get_error() == pH::SUCCESS)
                 {
-                    Log.info("Valor de pH: %.2f", pH_Device.get_last_received_reading());
+                    Log.info("Valor de pH: %f\n", pH_Device.get_last_received_reading());
                 }
                 else
                 {
-                    Log.error("ph read error in Calib state");
+                    Log.error("ph read error in Calib state\n");
                 }
             }
         }
@@ -213,10 +213,10 @@ uint8_t me_calib_ph()
             previous_state_calib = CLEAR_CALIB;
             state_calib = WAIT_ENTER;
 
-            Log.info("Calibracion reseteada");
+            Log.info("Calibracion reseteada\n");
             // Mensaje instrucciones para Mid Point
-            Log.info("Coloque la sonda en la solucion de calibracion de 7.00");
-            Log.info("Espere que se estabilice la medicion y presione enter para continuar...");
+            Log.info("Coloque la sonda en la solucion de calibracion de 7.00\n");
+            Log.info("Espere que se estabilice la medicion y presione enter para continuar...\n");
         }
         break;
     case MID_POINT:
@@ -224,10 +224,10 @@ uint8_t me_calib_ph()
         {
             previous_state_calib = MID_POINT;
             state_calib = WAIT_ENTER;
-            Log.info("Calibracion en ph 7.00 finalizada");
+            Log.info("Calibracion en ph 7.00 finalizada\n");
             // Mensaje instrucciones para Low Point
-            Log.info("Coloque la sonda en la solucion de calibracion de 4.00");
-            Log.info("Espere que se estabilice la medicion y presione enter para continuar...");
+            Log.info("Coloque la sonda en la solucion de calibracion de 4.00\n");
+            Log.info("Espere que se estabilice la medicion y presione enter para continuar...\n");
         }
         break;
 
@@ -236,10 +236,10 @@ uint8_t me_calib_ph()
         {
             previous_state_calib = LOW_POINT;
             state_calib = WAIT_ENTER;
-            Log.info("Calibracion en ph 4.00 finalizada");
+            Log.info("Calibracion en ph 4.00 finalizada\n");
             // Mensaje instrucciones para High Point
-            Log.info("Coloque la sonda en la solucion de calibracion de 10.00");
-            Log.info("Espere que se estabilice la medicion y presione enter para continuar...");
+            Log.info("Coloque la sonda en la solucion de calibracion de 10.00\n");
+            Log.info("Espere que se estabilice la medicion y presione enter para continuar...\n");
         }
         break;
 
@@ -248,8 +248,8 @@ uint8_t me_calib_ph()
         {
             previous_state_calib = HIGH_POINT;
             state_calib = CHECK_CALIB; // Aca ya no espero al enter
-            Log.info("Calibracion en ph 10.00 finalizada");
-            Log.info("Vamos a chequear la calibracion");
+            Log.info("Calibracion en ph 10.00 finalizada\n");
+            Log.info("Vamos a chequear la calibracion\n");
         }
         break;
 
