@@ -67,12 +67,16 @@ class SerialPublisher:
         print("Termina find_esp")
     
     def start_read_thread(self):
+        self.read_thread = threading.Thread(target=self.read_port)
+        self.read_thread.daemon = True
         self.read_thread.start()
 
     def stop_read_thread(self):
         self.ser.close()
 
     def start_find_thread(self):
+        self.find_thread = threading.Thread(target=self.find_esp)
+        self.find_thread.daemon = True
         self.find_thread.start()
 
     def send_data(self, data):

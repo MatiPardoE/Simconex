@@ -192,7 +192,7 @@ class App(ctk.CTk):
             ui_serial.publisher.stop_read_thread()
             self.connection_label.configure(image=self.unlink_image)  
             self.connection_button.configure(text="Conectar")
-            logger.info(f"Desconectado")
+            print(f"Desconectado")
 
 if __name__ == "__main__":
     ui_serial.publisher.subscribe(view_data)

@@ -64,7 +64,6 @@ class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
 
-        print("InstantValuesFrame: Me suscribo!")
         ui_serial.publisher.subscribe(self.process_data)
 
         image_path = os.path.join(os.getcwd(), "images")
@@ -93,22 +92,22 @@ class InstantValuesFrame(ctk.CTkFrame):
 
         self.label_co2 = ctk.CTkLabel(self.left_frame, text="CO2", font=ctk.CTkFont(weight="bold"))
         self.label_co2.grid(row=1, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.co2_button = ctk.CTkButton(self.left_frame, text="Encendido", fg_color="green", text_color_disabled="white", hover=False, state="disabled", width=100)
+        self.co2_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, state="disabled", width=100)
         self.co2_button.grid(row=2, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_o2 = ctk.CTkLabel(self.left_frame, text="O2", font=ctk.CTkFont(weight="bold"))
         self.label_o2.grid(row=3, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.o2_button = ctk.CTkButton(self.left_frame, text="Encendido", fg_color="green", text_color_disabled="white", hover=False, state="disabled", width=100)
+        self.o2_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, state="disabled", width=100)
         self.o2_button.grid(row=4, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_air = ctk.CTkLabel(self.left_frame, text="Aire", font=ctk.CTkFont(weight="bold"))
         self.label_air.grid(row=5, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.air_button = ctk.CTkButton(self.left_frame, text="Encendido", fg_color="green", text_color_disabled="white", hover=False, state="disabled", width=100)
+        self.air_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, state="disabled", width=100)
         self.air_button.grid(row=6, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_pump = ctk.CTkLabel(self.left_frame, text="Bomba", font=ctk.CTkFont(weight="bold"))
         self.label_pump.grid(row=7  , column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.pump_button = ctk.CTkButton(self.left_frame, text="Encendido", fg_color="green", text_color_disabled="white", hover=False, state="disabled", width=100)
+        self.pump_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, state="disabled", width=100)
         self.pump_button.grid(row=8, column=0, padx=10, pady=(0,10), sticky="ns")
 
         self.center_frame = ctk.CTkFrame(self)
@@ -140,22 +139,22 @@ class InstantValuesFrame(ctk.CTkFrame):
 
         self.label_light = ctk.CTkLabel(self.right_frame, text="Luz", font=ctk.CTkFont(weight="bold"))
         self.label_light.grid(row=1, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.light_button = ctk.CTkButton(self.right_frame, text="42%", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
+        self.light_button = ctk.CTkButton(self.right_frame, text="--%", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.light_button.grid(row=2, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_ph = ctk.CTkLabel(self.right_frame, text="pH", font=ctk.CTkFont(weight="bold"))
         self.label_ph.grid(row=3, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.ph_button = ctk.CTkButton(self.right_frame, text="6.536", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
+        self.ph_button = ctk.CTkButton(self.right_frame, text="--", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.ph_button.grid(row=4, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_do = ctk.CTkLabel(self.right_frame, text="OD", font=ctk.CTkFont(weight="bold"))
         self.label_do.grid(row=5, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.do_button = ctk.CTkButton(self.right_frame, text="342.4", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
+        self.do_button = ctk.CTkButton(self.right_frame, text="--%", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.do_button.grid(row=6, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_temp = ctk.CTkLabel(self.right_frame, text="Temperatura", font=ctk.CTkFont(weight="bold"))
         self.label_temp.grid(row=7  , column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.temp_button = ctk.CTkButton(self.right_frame, text="24.3°C", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
+        self.temp_button = ctk.CTkButton(self.right_frame, text="--°C", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.temp_button.grid(row=8, column=0, padx=10, pady=(0,10), sticky="ns")
     
     def process_data(self, data):
