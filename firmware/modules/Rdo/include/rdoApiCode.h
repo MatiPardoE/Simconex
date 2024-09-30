@@ -22,19 +22,26 @@
 /***********************************************
  * @brief			: Header's inclusion
  **********************************************/
+#include <rdoApiDefs.h>
+#include <rdoApi.h>
+#include <rdoApiGlobalVariables.h>
+
 
 /***********************************************
  * @brief			: 	Function initialization prototype
  **********************************************/
 /*RET	NAME			argN							*/
-extern void initGpiosRDO (void);
-extern void initUartRDO  (void);
-extern void driverUartRDO(void);
+void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, size_t length);
+void rxErrorRDO (esp32Modbus::Error error);
 
 /***********************************************
  * @brief			: 	Function project prototype
  **********************************************/
 
 /*RET	NAME			argN							*/
+extern void clearRDO   ( void  );
+extern void requestRDO ( volatile rdo_t * rdo );
+
+
 
 #endif
