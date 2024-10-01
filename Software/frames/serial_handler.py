@@ -33,10 +33,15 @@ class SerialPublisher:
     
     def read_port(self):
             while True:
-                if self.ser.in_waiting > 0:
-                    data = self.ser.readline().decode('utf-8').strip()
-                    if data:
-                        self.save_to_queue(data)  
+                try:
+                    if self.ser.in_waiting > 0:
+                        data = self.ser.readline().decode('utf-8').strip()
+                        if data:
+                            self.save_to_queue(data)  
+                except:
+                    if not self.ser.is_open:
+                        self.notify_subscribers("#Z1!")
+                        break                     
 
     def start_read_port(self):       
         self.read_thread.start()

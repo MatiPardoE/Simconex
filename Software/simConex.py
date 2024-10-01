@@ -189,10 +189,11 @@ class App(ctk.CTk):
                 self.connection_label.configure(image=self.link_image)  
                 self.connection_button.configure(text="Desconectar")
         else: 
-            ui_serial.publisher.stop_read_thread()
+            ui_serial.publisher.send_data(b"#Z1!")
             self.connection_label.configure(image=self.unlink_image)  
             self.connection_button.configure(text="Conectar")
             print(f"Desconectado")
+            ui_serial.publisher.stop_read_thread()
 
 if __name__ == "__main__":
     ui_serial.publisher.subscribe(view_data)

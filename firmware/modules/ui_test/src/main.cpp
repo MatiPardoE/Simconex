@@ -52,6 +52,7 @@ int validar_clave(int byte){
         case 'O':
         case 'A':
         case 'W':
+        case 'Z':
             return byte;
         
         default:
@@ -179,6 +180,10 @@ void loop() {
                     case 'W':
                         Serial.printf("#W%d!\n", valor);
                         shiftRegister.setOutput(4, valor);
+                        break;
+                    case 'Z':
+                        Serial.printf("#Z1!\n");
+                        state_general = DESCONECTADO;
                         break;
                 }
             }
