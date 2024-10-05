@@ -138,23 +138,6 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
   Serial.printf("\nval: %.2f", *reinterpret_cast<float*>(data));
   Serial.print("\n\n");
 */
-  for (size_t i = 0; i < length; ++i) {
-    Serial.printf("%02x", data[i]);
-  }
-  Serial.printf("%d\n", rdo.status);
-
-  if( rdo.consecutiveErrors > 0){ 
-    rdo.consecutiveErrors = 0;
-#ifdef __DEBUG__
-    Serial.printf("VENGO DE UN ERROR \n");
-#endif
-    return;
-  }
-  else{
-    rdo.consecutiveReplies++;
-  }
-
-  if(rdo.consecutiveReplies < 1 ) return;
 
 
   switch (rdo.status)
@@ -230,6 +213,8 @@ void rxErrorRDO (esp32Modbus::Error error) {
 #ifdef __DEBUG__
   Serial.printf("error: 0x%02x\n\n", static_cast<uint8_t>(error));
 #endif
+  _updateTimeout_;
+  lastMillisRDO+=10000;
 }
 
 
