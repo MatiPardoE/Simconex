@@ -138,15 +138,13 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
   std::reverse(data, data + 4);  // fix endianness
   Serial.printf("\nval: %.2f", *reinterpret_cast<float*>(data));
   Serial.print("\n\n");
-*/
 
-#ifdef __DEBUG__
   for (size_t i = 0; i < length; ++i) {
     Serial.printf("%02x", data[i]);
   }
   Serial.printf("%d\n", rdo.status);
-#endif
-
+*/
+/*
   if( rdo.consecutiveErrors > 0){ 
     rdo.consecutiveErrors = 0;
 #ifdef __DEBUG__
@@ -159,6 +157,7 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
   }
 
   if(rdo.consecutiveReplies < 1 ) return;
+  */
 
 
   switch (rdo.status)
@@ -193,14 +192,12 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
     //Serial.printf("id 0x%02x fc 0x%02x len %u: 0x", serverAddress, fc, length);
     Serial.printf("OD %.2f\n", rdo.doConcentration.measuredValue);
 #endif
-
 #ifdef __PC__
+    //Serial.printf("id 0x%02x fc 0x%02x len %u: 0x", serverAddress, fc, length);
+    //Serial.printf("OD %.2f\n", rdo.doConcentration.measuredValue);
     Serial.printf("#D%d!\n", (int)(rdo.doConcentration.measuredValue*100.0));
 #endif
-
-
     rdo.replies++;
-    //rdo.status = GET_TEMP;
     rdo.status = GET_DO;
     return;
     break;
@@ -212,12 +209,6 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
     //Serial.printf("id 0x%02x fc 0x%02x len %u: 0x", serverAddress, fc, length);
     Serial.printf("TEMP %.2f\n", rdo.temperature.measuredValue);
 #endif
-
-#ifdef __PC__
-    Serial.printf("#T%d!\n", (int)(rdo.temperature.measuredValue*100.0));
-#endif
-
-
     rdo.replies++;
     rdo.status = GET_DO;
     return;

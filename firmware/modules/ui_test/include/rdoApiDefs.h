@@ -33,7 +33,8 @@
 #define RDO_BAUD_RATE       19200
 
 //
-#define _TIMEOUT_RDO_REQUEST_   3000
+//#define _TIMEOUT_RDO_REQUEST_   3000
+#define _TIMEOUT_RDO_REQUEST_   1000
 
 #define RDO_SLAVE_ID            0x01
 
