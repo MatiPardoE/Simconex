@@ -134,9 +134,9 @@ void handler_ui(){
                 break;
             case LEIDO:
                 Serial.printf("#P%d!\n", (int)(pH_Device.get_last_received_reading()*100.0));
-                state_ph = LEYENDO_RDO;
+                state_ph = ESPERANDO;
                 break;
-            case LEYENDO_RDO:
+            /*case LEYENDO_RDO:
                 if ( _TIMEOUT_TO_RDO_REQUEST_ ) {
                     _updateTimeout_;
                     //Serial.print("sending Modbus request...\n");
@@ -144,7 +144,7 @@ void handler_ui(){
                     requestRDO( &rdo );
                 }
                 state_ph = ESPERANDO;
-                break;
+                break;*/
         }
     }
 }
@@ -237,4 +237,10 @@ void loop() {
             }
             break;
     }     
+    if ( _TIMEOUT_TO_RDO_REQUEST_ ) {
+        _updateTimeout_;
+        //Serial.print("sending Modbus request...\n");
+        //modbus.readHoldingRegisters(0x01,0x00,0x01);
+        requestRDO( &rdo );
+    }
 }
