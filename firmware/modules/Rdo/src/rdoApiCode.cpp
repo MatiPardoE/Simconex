@@ -129,11 +129,12 @@ void requestRDO ( volatile rdo_t * rdo ){
   **********************************************************************************/
 void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, size_t length ) {
 
-/*
   Serial.printf("id 0x%02x fc 0x%02x len %u: 0x", serverAddress, fc, length);
   for (size_t i = 0; i < length; ++i) {
     Serial.printf("%02x", data[i]);
   }
+
+/*
   std::reverse(data, data + 4);  // fix endianness
   Serial.printf("\nval: %.2f", *reinterpret_cast<float*>(data));
   Serial.print("\n\n");
@@ -167,10 +168,12 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
 
   case GET_DO:
     std::reverse(data, data + 4);  // Invertir los primeros 4 bytes
-    rdo.doConcentration.measuredValue = *reinterpret_cast<float*>(data);
+    //rdo.doConcentration.measuredValue = *reinterpret_cast<float*>(data);
+    rdo.temperature.measuredValue = *reinterpret_cast<float*>(data);
 #ifdef __DEBUG__
-    //Serial.printf("id 0x%02x fc 0x%02x len %u: 0x", serverAddress, fc, length);
-    Serial.printf("OD %.2f\n", rdo.doConcentration.measuredValue);
+    Serial.printf("id 0x%02x fc 0x%02x len %u: 0x", serverAddress, fc, length);
+    //Serial.printf("OD %.2f\n", rdo.doConcentration.measuredValue);
+    Serial.printf("TEMP %.2f\n", rdo.temperature.measuredValue);
 #endif
     rdo.replies++;
     rdo.status = GET_TEMP;
@@ -179,10 +182,12 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
 
   case GET_TEMP:
     std::reverse(data, data + 4);  // Invertir los primeros 4 bytes
-    rdo.temperature.measuredValue = *reinterpret_cast<float*>(data);
+    //rdo.temperature.measuredValue = *reinterpret_cast<float*>(data);
+    rdo.doConcentration.measuredValue = *reinterpret_cast<float*>(data);
 #ifdef __DEBUG__
     //Serial.printf("id 0x%02x fc 0x%02x len %u: 0x", serverAddress, fc, length);
-    Serial.printf("TEMP %.2f\n", rdo.temperature.measuredValue);
+    //Serial.printf("TEMP %.2f\n", rdo.temperature.measuredValue);
+    Serial.printf("OD %.2f\n", rdo.doConcentration.measuredValue);
 #endif
     rdo.replies++;
     rdo.status = GET_DO;
@@ -213,8 +218,8 @@ void rxErrorRDO (esp32Modbus::Error error) {
 #ifdef __DEBUG__
   Serial.printf("error: 0x%02x\n\n", static_cast<uint8_t>(error));
 #endif
-  _updateTimeout_;
-  lastMillisRDO+=10000;
+  //_updateTimeout_;
+  //lastMillisRDO+=1000;
 }
 
 
