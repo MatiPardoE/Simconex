@@ -6,6 +6,14 @@
 #include "LedStrip.h"
 #include "ShiftRegister74HC595.h"
 
+//includes rdo
+//cosas RDO
+#include <rdoApiCode.h>
+//MODBUS
+#include <ModbusMessage.h>
+#include <esp32ModbusRTU.h>
+#include <algorithm>  // for std::reverse
+
 #define PIN_LED_STRIP_1 5
 #define PIN_LED_STRIP_2 18
 #define PIN_LED_STRIP_3 19
@@ -15,6 +23,10 @@
 #define SR_DATA_PIN 15
 #define SR_LATCH_PIN 2
 #define SR_CLOCK_PIN 0
+
+#define RELE_OUTPUT 23
+
+#define PERIOD 3000
 
 enum state_general_t {
     DESCONECTADO,
@@ -28,8 +40,10 @@ enum state_msg_t {
 };
 
 enum my_state_ph_t {
+    ESPERANDO,
     LEYENDO,
-    LEIDO
+    LEIDO,
+    LEYENDO_RDO
 };
 
 DateTime date = DateTime(F(__DATE__), F(__TIME__)); // por ahora uso la hora de compilacion
@@ -41,6 +55,14 @@ ShiftRegister74HC595 shiftRegister(SR_DATA_PIN, SR_LATCH_PIN, SR_CLOCK_PIN); // 
 int clave = 0;
 int valor = 0;
 bool msg_valido = false;
+unsigned long time_now = 0;
+
+/* ----------------------------------------------------------------------------
+  -- RDO
+  ---------------------------------------------------------------------------- */
+esp32ModbusRTU modbus(&Serial1, RDO_DE_RE_GPIO);  // use Serial1 and GPIO11/27 as RTS
+uint32_t lastMillisRDO = -_TIMEOUT_RDO_REQUEST_; //para que arranque de una
+volatile rdo_t rdo;
 
 int validar_clave(int byte){
     switch (byte) {
@@ -62,7 +84,7 @@ int validar_clave(int byte){
 
 void handler_ui(){
     static state_msg_t state_msg = ESPERO_INICIO;
-    static my_state_ph_t state_ph = LEYENDO;
+    static my_state_ph_t state_ph = ESPERANDO;
     int byte;
 
     if(Serial.available() > 0){
@@ -99,6 +121,12 @@ void handler_ui(){
         }
     } else {
         switch(state_ph){
+            case ESPERANDO:
+                if(millis() >= time_now + PERIOD){
+                    time_now += PERIOD;
+                    state_ph = LEYENDO;
+                }
+                break;
             case LEYENDO:
                 if(me_ph() == ME_FINISHED) {
                     state_ph = LEIDO;
@@ -106,7 +134,16 @@ void handler_ui(){
                 break;
             case LEIDO:
                 Serial.printf("#P%d!\n", (int)(pH_Device.get_last_received_reading()*100.0));
-                state_ph = LEYENDO;
+                state_ph = LEYENDO_RDO;
+                break;
+            case LEYENDO_RDO:
+                if ( _TIMEOUT_TO_RDO_REQUEST_ ) {
+                    _updateTimeout_;
+                    //Serial.print("sending Modbus request...\n");
+                    //modbus.readHoldingRegisters(0x01,0x00,0x01);
+                    requestRDO( &rdo );
+                }
+                state_ph = ESPERANDO;
                 break;
         }
     }
@@ -126,7 +163,17 @@ void setup() {
     shiftRegister.setOutput(4, valor);
     shiftRegister.setOutput(5, valor);
     shiftRegister.setOutput(6, valor);
-    Serial.println();    
+    pinMode(RELE_OUTPUT, OUTPUT);
+    Serial.println();   
+
+    //setup RDO
+    Serial1.begin(RDO_BAUD_RATE, SERIAL_8E1, RDO_RX_GPIO, RDO_TX_GPIO, true);  // Modbus connection de libreria
+
+    modbus.onData(rxRDO);  // Pasas la función directamente
+    modbus.onError(rxErrorRDO);
+    modbus.begin();
+
+    clearRDO(); 
 }
 
 void loop() {
@@ -179,7 +226,8 @@ void loop() {
                         break;
                     case 'W':
                         Serial.printf("#W%d!\n", valor);
-                        shiftRegister.setOutput(4, valor);
+                        digitalWrite(RELE_OUTPUT, valor);
+                        //shiftRegister.setOutput(4, valor);
                         break;
                     case 'Z':
                         Serial.printf("#Z1!\n");

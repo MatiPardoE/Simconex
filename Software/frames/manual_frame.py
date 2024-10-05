@@ -52,11 +52,14 @@ def read_datalog(fname):
                 light_list.append(float(line[index.get("led1")]))  
     
     return datetime_list, ph_list, od_list, temp_list, light_list
+    #return list(reversed(datetime_list)), list(reversed(ph_list)), list(reversed(od_list)), list(reversed(temp_list)), list(reversed(light_list))
 
 class LogFrame(ctk.CTkScrollableFrame):
 
     def __init__(self, master, fname):
         super().__init__(master) 
+
+        #ui_serial.publisher.subscribe(self.process_data)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -65,7 +68,7 @@ class LogFrame(ctk.CTkScrollableFrame):
         self.label_control = ctk.CTkLabel(self, text="Registro de datos", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_control.grid(row=0, column=0, padx=(20, 10), pady=(10, 0), sticky="w")
 
-        datetime_list, ph_list, od_list, temp_list, light_list = read_datalog(fname)
+        self.datetime_list, self.ph_list, self.od_list, self.temp_list, self.light_list = read_datalog(fname)
 
         self.frame_lines = ctk.CTkFrame(self, width=1500)
         self.frame_lines.grid(row=1, column=0, padx=10, pady=10)
@@ -105,7 +108,74 @@ class LogFrame(ctk.CTkScrollableFrame):
         self.label_time = ctk.CTkLabel(self.frame_line, text="Ciclo", corner_radius=0, width=150, font=ctk.CTkFont(size=15, weight="bold"))
         self.label_time.grid(row=0, column=6, padx=5, pady=0, sticky="ns")
 
-        for i in range(len(datetime_list)):
+        self.refresh_log()
+
+        # for i in range(len(self.datetime_list)):
+        #     self.frame_line = ctk.CTkFrame(self.frame_lines)
+        #     self.frame_line.grid(row=i+1, column=0, padx=5, pady=0, sticky="ew")
+
+        #     self.frame_line.grid_rowconfigure(0, weight=1)
+        #     self.frame_line.grid_columnconfigure(0, weight=1)
+        #     self.frame_line.grid_columnconfigure(1, weight=1)
+        #     self.frame_line.grid_columnconfigure(2, weight=1)
+        #     self.frame_line.grid_columnconfigure(3, weight=1)
+        #     self.frame_line.grid_columnconfigure(4, weight=1)
+        #     self.frame_line.grid_columnconfigure(5, weight=1)
+        #     self.frame_line.grid_columnconfigure(6, weight=1)
+
+        #     self.label_time = ctk.CTkLabel(self.frame_line, text=self.datetime_list[i].strftime("%H:%M"), corner_radius=0, width=150)
+        #     self.label_time.grid(row=0, column=0, padx=5, pady=0, sticky="ns")
+
+        #     self.label_date = ctk.CTkLabel(self.frame_line, text=self.datetime_list[i].strftime("%d/%m/%Y"), corner_radius=0, width=200)
+        #     self.label_date.grid(row=0, column=1, padx=5, pady=0, sticky="ns")
+
+        #     self.label_od = ctk.CTkLabel(self.frame_line, text=self.od_list[i], corner_radius=0, width=150)
+        #     self.label_od.grid(row=0, column=2, padx=5, pady=0, sticky="ns")
+
+        #     self.label_ph = ctk.CTkLabel(self.frame_line, text=self.ph_list[i], corner_radius=0, width=150)
+        #     self.label_ph.grid(row=0, column=3, padx=5, pady=0, sticky="ns")
+
+        #     self.label_light = ctk.CTkLabel(self.frame_line, text=self.light_list[i], corner_radius=0, width=150)
+        #     self.label_light.grid(row=0, column=4, padx=5, pady=0, sticky="ns")
+
+        #     self.label_temp = ctk.CTkLabel(self.frame_line, text=self.temp_list[i], corner_radius=0, width=200)
+        #     self.label_temp.grid(row=0, column=5, padx=5, pady=0, sticky="ns")
+
+        #     self.label_cycle = ctk.CTkLabel(self.frame_line, text="Ciclo1", corner_radius=0, width=150)
+        #     self.label_cycle.grid(row=0, column=6, padx=5, pady=0, sticky="ns")
+    
+    def process_data(self, data):
+        pattern = r"#([LPTDCOWAZ])(\d+)\!"
+        matches = re.findall(pattern, data)
+        msg_list = [{'id': m[0], 'value': int(m[1])} for m in matches]
+        self.update_log(msg_list)
+
+    def update_log(self, msg_list):
+        for msg in msg_list:
+            id_msg = msg['id']
+            value = msg['value']
+            print(f"update_data {id_msg} {value}")
+            if id_msg == 'P':
+                print(f"refresh_log")
+                #self.datetime_list.append(datetime.datetime.now())
+                print(f"refresh_log1") 
+                #self.ph_list.append(float(value/100))
+                print(f"refresh_log2") 
+                #self.od_list.append(0)
+                print(f"refresh_log3") 
+                #self.temp_list.append(0)
+                print(f"refresh_log4") 
+                #self.light_list.append(0)  
+                print(f"refresh_log5")              
+                self.refresh_log()
+                print(f"refresh_log6") 
+            else:
+                print(f"NO refresh_log {id_msg}")
+    
+    def refresh_log(self):
+        print(f"refresh_log")
+        for i in range(len(self.datetime_list)):
+            print(f"Actualizo log: {i} pH: {self.ph_list[i]}")
             self.frame_line = ctk.CTkFrame(self.frame_lines)
             self.frame_line.grid(row=i+1, column=0, padx=5, pady=0, sticky="ew")
 
@@ -118,26 +188,29 @@ class LogFrame(ctk.CTkScrollableFrame):
             self.frame_line.grid_columnconfigure(5, weight=1)
             self.frame_line.grid_columnconfigure(6, weight=1)
 
-            self.label_time = ctk.CTkLabel(self.frame_line, text=datetime_list[i].strftime("%H:%M"), corner_radius=0, width=150)
+            self.label_time = ctk.CTkLabel(self.frame_line, text=self.datetime_list[i].strftime("%H:%M"), corner_radius=0, width=150)
             self.label_time.grid(row=0, column=0, padx=5, pady=0, sticky="ns")
 
-            self.label_date = ctk.CTkLabel(self.frame_line, text=datetime_list[i].strftime("%d/%m/%Y"), corner_radius=0, width=200)
+            self.label_date = ctk.CTkLabel(self.frame_line, text=self.datetime_list[i].strftime("%d/%m/%Y"), corner_radius=0, width=200)
             self.label_date.grid(row=0, column=1, padx=5, pady=0, sticky="ns")
 
-            self.label_od = ctk.CTkLabel(self.frame_line, text=od_list[i], corner_radius=0, width=150)
+            self.label_od = ctk.CTkLabel(self.frame_line, text=self.od_list[i], corner_radius=0, width=150)
             self.label_od.grid(row=0, column=2, padx=5, pady=0, sticky="ns")
 
-            self.label_ph = ctk.CTkLabel(self.frame_line, text=ph_list[i], corner_radius=0, width=150)
+            self.label_ph = ctk.CTkLabel(self.frame_line, text=self.ph_list[i], corner_radius=0, width=150)
             self.label_ph.grid(row=0, column=3, padx=5, pady=0, sticky="ns")
 
-            self.label_light = ctk.CTkLabel(self.frame_line, text=light_list[i], corner_radius=0, width=150)
+            self.label_light = ctk.CTkLabel(self.frame_line, text=self.light_list[i], corner_radius=0, width=150)
             self.label_light.grid(row=0, column=4, padx=5, pady=0, sticky="ns")
 
-            self.label_temp = ctk.CTkLabel(self.frame_line, text=temp_list[i], corner_radius=0, width=200)
+            self.label_temp = ctk.CTkLabel(self.frame_line, text=self.temp_list[i], corner_radius=0, width=200)
             self.label_temp.grid(row=0, column=5, padx=5, pady=0, sticky="ns")
 
             self.label_cycle = ctk.CTkLabel(self.frame_line, text="Ciclo1", corner_radius=0, width=150)
             self.label_cycle.grid(row=0, column=6, padx=5, pady=0, sticky="ns")
+        
+        #self.after(10, self._parent_canvas.yview_moveto, 1.0)
+
 
 class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
