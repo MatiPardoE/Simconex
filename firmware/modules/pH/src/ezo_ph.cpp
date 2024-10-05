@@ -143,7 +143,7 @@ uint8_t me_ph()
             {
                 Serial.println("ph read error");
             }
-            state_ph = CALIB_PH;
+            //state_ph = CALIB_PH;
             delay(1000);
         }
         break;
@@ -179,7 +179,7 @@ uint8_t me_calib_ph()
         break;
     case WAIT_ENTER:
         // Muestro cada 10 segundos la lectura, solamente en estados de medicion de ph
-        if (millis() - last_read_time >= 10000 &&
+        if (millis() - last_read_time >= 2000 &&
             (previous_state_calib == CLEAR_CALIB || previous_state_calib == LOW_POINT || previous_state_calib == MID_POINT))
         {
             if (read_seq.run() == read_seq.FINISHED)
@@ -188,7 +188,7 @@ uint8_t me_calib_ph()
 
                 if (pH_Device.get_error() == pH::SUCCESS)
                 {
-                    Log.info("Valor de pH: %.2F\n", pH_Device.get_last_received_reading());
+                    Serial.printf("Valor de pH: %.2f\n", pH_Device.get_last_received_reading());
                 }
                 else
                 {
@@ -235,15 +235,17 @@ uint8_t me_calib_ph()
         if (calib_low_seq.run() == calib_low_seq.FINISHED)
         {
             previous_state_calib = LOW_POINT;
-            state_calib = WAIT_ENTER;
+            state_calib = CHECK_CALIB;
             Log.info("Calibracion en ph 4.00 finalizada\n");
             // Mensaje instrucciones para High Point
-            Log.info("Coloque la sonda en la solucion de calibracion de 10.00\n");
-            Log.info("Espere que se estabilice la medicion y presione enter para continuar...\n");
+            //Log.info("Coloque la sonda en la solucion de calibracion de 10.00\n");
+            //Log.info("Espere que se estabilice la medicion y presione enter para continuar...\n");
+            //Log.info("Calibracion en ph 4.00 finalizada\n");
+            Log.info("Vamos a chequear la calibracion\n");
         }
         break;
 
-    case HIGH_POINT:
+/*     case HIGH_POINT:
         if (calib_high_seq.run() == calib_high_seq.FINISHED)
         {
             previous_state_calib = HIGH_POINT;
@@ -251,14 +253,18 @@ uint8_t me_calib_ph()
             Log.info("Calibracion en ph 10.00 finalizada\n");
             Log.info("Vamos a chequear la calibracion\n");
         }
-        break;
+        break; */
 
     case CHECK_CALIB:
         if (calib_check_seq.run() == calib_check_seq.FINISHED)
         {
             state_calib = INIT_CALIB;
             previous_state_calib = NONE;
+            Log.info("Calibracion chequeada!\n");
             return ME_FINISHED;
+        } else {
+            Log.info("La calibracion no se chequeo bien!\n");
+            delay(1000);
         }
         break;
 

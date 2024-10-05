@@ -19,7 +19,6 @@ enum state_calib_t {
     CLEAR_CALIB,
     MID_POINT,
     LOW_POINT,
-    HIGH_POINT,
     CHECK_CALIB
 };
 

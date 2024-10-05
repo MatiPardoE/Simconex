@@ -44,14 +44,14 @@ void me_fbr_simconex()
     case FBR_CALIB_PH:
         if (me_calib_ph() == ME_FINISHED)
         {
-            state_fbr = FBR_FREEZE;
+            state_fbr = FBR_MEAS_PH;
         }
         break;
 
     case FBR_MEAS_PH:
         if (me_ph() == ME_FINISHED)
         {
-            state_fbr = FBR_SET_OUTPUTS;
+            //state_fbr = FBR_SET_OUTPUTS;
         }
         break;
 
