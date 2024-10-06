@@ -33,15 +33,16 @@
 #define RDO_BAUD_RATE       19200
 
 //
-//#define _TIMEOUT_RDO_REQUEST_   3000
-//#define _TIMEOUT_RDO_REQUEST_   3000
-
-//#define _TIMEOUT_RDO_REQUEST_   3000
-#define _TIMEOUT_RDO_REQUEST_   1000
+#define _TIMEOUT_RDO_INIT_      1000
+#define _TIMEOUT_RDO_REQUEST_   6000
 
 #define RDO_SLAVE_ID            0x01
 
-
+//TEST GPIO
+#define RDO_LED1  GPIO_NUM_5
+#define RDO_LED2  GPIO_NUM_18
+#define RDO_LED3  GPIO_NUM_19
+#define RDO_LED4  GPIO_NUM_21
 
 
 
@@ -215,16 +216,15 @@ typedef enum{
     NEXT_FACTORY_CALIBRATION    ,
     LAST_USER_CALIBRATION       ,
     NEXT_USER_CALIBRATION       ,
-
     GET_DO                      ,
-
     GET_TEMP
 } rdoStatus_t;
 
 /***********************************************
  * @brief			: Macros
  **********************************************/
-#define _TIMEOUT_TO_RDO_REQUEST_    ( (millis() - lastMillisRDO) > _TIMEOUT_RDO_REQUEST_ )
+#define _TIMEOUT_TO_RDO_INIT_       ( (uint32_t)(millis() - lastMillisRDO) > (uint32_t)(_TIMEOUT_RDO_INIT_) )
+#define _TIMEOUT_TO_RDO_REQUEST_    ( (uint32_t)(millis() - lastMillisRDO) > (uint32_t)(_TIMEOUT_RDO_REQUEST_) )
 #define _updateTimeout_             lastMillisRDO = millis()
 
 #endif

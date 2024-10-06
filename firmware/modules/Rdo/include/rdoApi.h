@@ -125,8 +125,6 @@ typedef struct{
     uint32_t errors;    //numero de errores
     
     //! Errors track
-    uint32_t        consecutiveErrors;
-    uint32_t        consecutiveReplies;  
     rdoStatus_t     lastError;          //estado/comando que provoco el ultimo error
 
 

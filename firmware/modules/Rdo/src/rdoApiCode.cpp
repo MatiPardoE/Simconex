@@ -29,7 +29,9 @@
 
 #include <rdoApiGlobalVariables.h>
 
-#define __DEBUG__
+//#define __DEBUG__
+//#define __PREV_REPLY__
+#define __PIN_DEBUG__
 
 /***********************************************
  * @brief			: 	Function project prototype
@@ -50,9 +52,10 @@ void clearRDO (void){
   rdo.replies   = 0;
   rdo.errors    = 0;
 
-  rdo.consecutiveErrors = 0;
   rdo.lastError         = SENSOR_ID;
-
+  // para probar
+  rdo.doConcentration.measuredValue = 0;
+  rdo.temperature.measuredValue     = 0;
 }
 
 /***********************************************************************************
@@ -67,55 +70,60 @@ void requestRDO ( volatile rdo_t * rdo ){
   {
 
     case SENSOR_ID:
-#ifdef __DEBUG__
-      Serial.printf("REQUEST SENSOR ID \n");
-#endif
       modbus.readHoldingRegisters(RDO_SLAVE_ID,_SENSOR_ID_,_SENSOR_ID_SIZE_);
-#ifdef __DEBUG__
-      Serial.printf("STATUS = %d \n",rdo->status);
-#endif
       rdo->requests++;
       break;
 
     case SERIAL_NUMBER:
-#ifdef __DEBUG__
-        Serial.printf("REQUEST SERIAL NUMBER \n");
-#endif
       modbus.readHoldingRegisters(RDO_SLAVE_ID,_SERIAL_NUMBER_,_SERIAL_NUMBER_SIZE_);
-#ifdef __DEBUG__
-      Serial.printf("STATUS = %d \n",rdo->status);
-#endif
       rdo->requests++;
       break;
 
     case GET_DO:
-#ifdef __DEBUG__
-        Serial.printf("REQUEST DO \n");
-#endif
       modbus.readHoldingRegisters(RDO_SLAVE_ID,_MEASURED_VALUE_DO_,_MEASURED_VALUE_DO_SIZE_);
-#ifdef __DEBUG__
-      Serial.printf("STATUS = %d \n",rdo->status);
-#endif
       rdo->requests++;
       break;
 
     case GET_TEMP:
-#ifdef __DEBUG__
-        Serial.printf("REQUEST TEMP \n");
-#endif
       modbus.readHoldingRegisters(RDO_SLAVE_ID,_MEASURED_VALUE_TEMP_,_MEASURED_VALUE_TEMP_SIZE_);
-#ifdef __DEBUG__
-      Serial.printf("STATUS = %d \n",rdo->status);
-#endif
       rdo->requests++;
       break;
 
-    
     default:
       break;
   }
-  
 
+#ifdef __DEBUG__
+
+  Serial.print("\n\t<--- TX --->\n");
+  Serial.printf("STATUS = %d \n",rdo->status);
+  switch (rdo->status)
+  {
+    case SENSOR_ID:
+      Serial.printf("REQUEST SENSOR ID \n");
+      break;
+
+    case SERIAL_NUMBER:
+      Serial.printf("REQUEST SERIAL NUMBER \n");
+      break;
+
+    case GET_DO:
+      Serial.printf("REQUEST DO \n");
+      break;
+
+    case GET_TEMP:
+      Serial.printf("REQUEST TEMP \n");
+      break;
+
+    default:
+      break;
+  }
+  Serial.printf("ENVIOS:\t %d \n",rdo->requests);
+  Serial.printf("REPLIES:\t %d \n",rdo->replies);
+  Serial.printf("ERRORES:\t %d \n",rdo->errors);
+  Serial.print("\t<--- TX --->\n");
+#endif
+  
 }
 
 /***********************************************
@@ -129,76 +137,103 @@ void requestRDO ( volatile rdo_t * rdo ){
   **********************************************************************************/
 void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, size_t length ) {
 
+  rdoStatus_t statusRx = rdo.status;
+
+#ifdef __DEBUG__
+  Serial.print("\n\t<--- RX --->\n");
   Serial.printf("id 0x%02x fc 0x%02x len %u: 0x", serverAddress, fc, length);
-  for (size_t i = 0; i < length; ++i) {
+  //for (size_t i = 0; i < length; ++i) {
+  for (size_t i = 0; i < 4; ++i) {
     Serial.printf("%02x", data[i]);
   }
-
-/*
-  std::reverse(data, data + 4);  // fix endianness
-  Serial.printf("\nval: %.2f", *reinterpret_cast<float*>(data));
-  Serial.print("\n\n");
-*/
+  Serial.print("\n\t\t<---  --->\n");
+#endif
 
 
   switch (rdo.status)
   {
   case SENSOR_ID:
-    std::reverse(data, data + 4);  // Invertir los primeros 2 bytes
-    rdo.headers.sensorId = *reinterpret_cast<uint16_t*>(data);
-#ifdef __DEBUG__
-    //Serial.printf("id 0x%02x fc 0x%02x len %u: 0x", serverAddress, fc, length);
-    Serial.printf("SENSOR ID %d\n", rdo.headers.sensorId);
-#endif
+    //entiendo que es un solo byte
+    rdo.headers.sensorId = *reinterpret_cast<uint8_t*>(data);
     rdo.status = SERIAL_NUMBER;
     rdo.replies++;
     break;
 
   case SERIAL_NUMBER:
-    std::reverse(data, data + 4);  // Invertir los primeros 4 bytes
+    std::reverse(data, data + 2);
     rdo.headers.serialNumber = *reinterpret_cast<uint16_t*>(data);
-#ifdef __DEBUG__
-    //Serial.printf("id 0x%02x fc 0x%02x len %u: 0x", serverAddress, fc, length);
-    Serial.printf("SERIAL NUMBER %d\n", rdo.headers.serialNumber);
-#endif
     rdo.status = GET_DO;
     rdo.replies++;
     break;
   //
 
   case GET_DO:
-    std::reverse(data, data + 4);  // Invertir los primeros 4 bytes
-    //rdo.doConcentration.measuredValue = *reinterpret_cast<float*>(data);
+    std::reverse(data, data + 4);
+#ifndef __PREV_REPLY__ 
+    rdo.doConcentration.measuredValue = *reinterpret_cast<float*>(data);
+#endif
+#ifdef __PREV_REPLY__
     rdo.temperature.measuredValue = *reinterpret_cast<float*>(data);
-#ifdef __DEBUG__
-    Serial.printf("id 0x%02x fc 0x%02x len %u: 0x", serverAddress, fc, length);
-    //Serial.printf("OD %.2f\n", rdo.doConcentration.measuredValue);
-    Serial.printf("TEMP %.2f\n", rdo.temperature.measuredValue);
 #endif
     rdo.replies++;
     rdo.status = GET_TEMP;
-    return;
     break;
 
   case GET_TEMP:
-    std::reverse(data, data + 4);  // Invertir los primeros 4 bytes
-    //rdo.temperature.measuredValue = *reinterpret_cast<float*>(data);
+    std::reverse(data, data + 4);
+#ifndef __PREV_REPLY__ 
+    rdo.temperature.measuredValue = *reinterpret_cast<float*>(data);
+#endif
+#ifdef __PREV_REPLY__
     rdo.doConcentration.measuredValue = *reinterpret_cast<float*>(data);
-#ifdef __DEBUG__
-    //Serial.printf("id 0x%02x fc 0x%02x len %u: 0x", serverAddress, fc, length);
-    //Serial.printf("TEMP %.2f\n", rdo.temperature.measuredValue);
-    Serial.printf("OD %.2f\n", rdo.doConcentration.measuredValue);
 #endif
     rdo.replies++;
     rdo.status = GET_DO;
-    return;
     break;
 
-  
   default:
-    Serial.printf("id 0x%02x fc 0x%02x len %u: 0x", serverAddress, fc, length);
     break;
   }
+
+#ifdef __DEBUG__
+  switch (statusRx)
+  {
+  case SENSOR_ID:
+    Serial.printf("SENSOR ID %d\n", rdo.headers.sensorId);
+    break;
+
+  case SERIAL_NUMBER:
+    Serial.printf("SERIAL NUMBER %d\n", rdo.headers.serialNumber);
+    break;
+  //
+
+  case GET_DO:
+#ifndef __PREV_REPLY__ 
+    Serial.printf("OD %.2f\n", rdo.doConcentration.measuredValue);
+#endif
+#ifdef __PREV_REPLY__
+    Serial.printf("TEMP %.2f\n", rdo.temperature.measuredValue);
+#endif
+    break;
+
+  case GET_TEMP:
+  #ifndef __PREV_REPLY__ 
+    Serial.printf("TEMP %.2f\n", rdo.temperature.measuredValue);
+  #endif
+  #ifdef __PREV_REPLY__
+    Serial.printf("OD %.2f\n", rdo.doConcentration.measuredValue);
+  #endif
+    break;
+
+  default:
+    break;
+
+  }
+  Serial.printf("ENVIOS:\t %d \n",rdo.requests);
+  Serial.printf("REPLIES:\t %d \n",rdo.replies);
+  Serial.printf("ERRORES:\t %d \n",rdo.errors);
+  Serial.print("\t<--- RX --->\n");
+#endif
 
 }
 
@@ -209,17 +244,25 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
 * @retval
 **********************************************************************************/
 void rxErrorRDO (esp32Modbus::Error error) {
-  //Serial.printf("error: 0x%02x\n\n", static_cast<uint8_t>(error));
-  
-  //dejo registrado el error
   rdo.lastError = rdo.status;
   rdo.errors++;
-  rdo.consecutiveErrors++;
+  _updateTimeout_;
+  //lastMillisRDO -= _TIMEOUT_RDO_REQUEST_;
+
+
+  uint8_t ledActual = digitalRead(RDO_LED1);
+  digitalWrite(RDO_LED1,!ledActual);
+  
 #ifdef __DEBUG__
-  Serial.printf("error: 0x%02x\n\n", static_cast<uint8_t>(error));
+  Serial.print("\n\t<--- ERROR --->\n");
+  Serial.printf("0x%02x\n\n", static_cast<uint8_t>(error));
+  Serial.printf("ENVIOS:\t %d \n",rdo.requests);
+  Serial.printf("REPLIES:\t %d \n",rdo.replies);
+  Serial.printf("ERRORES:\t %d \n",rdo.errors);
+  Serial.printf("STATUS:\t %d \n",rdo.lastError);
 #endif
-  //_updateTimeout_;
-  //lastMillisRDO+=1000;
+
+
 }
 
 

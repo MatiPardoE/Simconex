@@ -47,6 +47,7 @@
    extern esp32ModbusRTU modbus;
    extern uint32_t lastMillisRDO;
    extern volatile rdo_t   rdo;
+   extern bool initRDO;    
 
 
 
