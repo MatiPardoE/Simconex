@@ -11,7 +11,7 @@
   -- RDO
   ---------------------------------------------------------------------------- */
 esp32ModbusRTU modbus(&Serial1, RDO_DE_RE_GPIO);  // use Serial1 and GPIO11/27 as RTS
-uint32_t lastMillisRDO = -_TIMEOUT_RDO_REQUEST_; //para que arranque de una
+uint32_t lastMillisRDO = 0; //para que arranque de una
 volatile rdo_t rdo;
 bool initRDO = true;
 
@@ -34,7 +34,7 @@ void setup() {
 }
 
 void loop() {
-  
+  /*
   if( initRDO == false){
     if ( _TIMEOUT_TO_RDO_INIT_ ) {
       requestRDO( &rdo );
@@ -46,6 +46,11 @@ void loop() {
     }
   }
   else if ( _TIMEOUT_TO_RDO_REQUEST_ ) {
+    requestRDO( &rdo );
+    _updateTimeout_;
+  }
+  */
+  if ( _TIMEOUT_TO_RDO_REQUEST_ ) {
     requestRDO( &rdo );
     _updateTimeout_;
   }

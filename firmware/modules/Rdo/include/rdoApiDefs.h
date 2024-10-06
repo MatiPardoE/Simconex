@@ -34,7 +34,7 @@
 
 //
 #define _TIMEOUT_RDO_INIT_      1000
-#define _TIMEOUT_RDO_REQUEST_   6000
+#define _TIMEOUT_RDO_REQUEST_   5000
 
 #define RDO_SLAVE_ID            0x01
 

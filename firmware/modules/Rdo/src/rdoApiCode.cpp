@@ -29,7 +29,7 @@
 
 #include <rdoApiGlobalVariables.h>
 
-//#define __DEBUG__
+#define __DEBUG__
 //#define __PREV_REPLY__
 #define __PIN_DEBUG__
 
@@ -246,7 +246,7 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
 void rxErrorRDO (esp32Modbus::Error error) {
   rdo.lastError = rdo.status;
   rdo.errors++;
-  _updateTimeout_;
+  //_updateTimeout_;
   //lastMillisRDO -= _TIMEOUT_RDO_REQUEST_;
 
 
