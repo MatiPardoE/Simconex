@@ -563,8 +563,8 @@ class ManualRecordFrame(ctk.CTkFrame):
 
     def off_hover(self, event):
         self.play_pause_image_label.configure(cursor="arrow") 
-        self.stop_image_label.configure(cursor="hand2") 
-        self.bin_image_label.configure(cursor="hand2") 
+        self.stop_image_label.configure(cursor="arrow") 
+        self.bin_image_label.configure(cursor="arrow") 
     
     def play_pause_event(self, event):
         if self.is_playing:
