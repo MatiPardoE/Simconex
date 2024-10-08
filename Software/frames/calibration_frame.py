@@ -1,5 +1,7 @@
 import customtkinter as ctk
 import os
+import time
+import threading
 from PIL import Image
 
 class CalibWindow(ctk.CTkToplevel):
@@ -14,16 +16,18 @@ class CalibWindow(ctk.CTkToplevel):
         self.resizable(0,0)
 
         self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1) 
         self.grid_rowconfigure(2, weight=1)
         self.grid_rowconfigure(3, weight=1)
+        self.grid_rowconfigure(4, weight=1)
 
         self.label_title = ctk.CTkLabel(self, text="Como es el proceso de calibracion del sensor de pH", font=ctk.CTkFont(size=20, weight="bold"))
-        self.label_title.grid(column=0, row=0)
+        self.label_title.grid(column=0, row=0, columnspan=2)
 
         self.label_text = ctk.CTkLabel(self, text="Se recomienda calibrar el sensor en 3 puntos: medio (7), bajo (4) y alto (10)", font=ctk.CTkFont(size=15))
-        self.label_text.grid(column=0, row=1)
+        self.label_text.grid(column=0, row=1, columnspan=2)
 
         self.img_steps = ctk.CTkImage(Image.open(os.path.join(image_path, "calib_steps.png")), size=(565, 282))
         self.img_solutions = ctk.CTkImage(Image.open(os.path.join(image_path, "calib_solutions.png")), size=(476, 282))
@@ -34,10 +38,30 @@ class CalibWindow(ctk.CTkToplevel):
         self.img_high = ctk.CTkImage(Image.open(os.path.join(image_path, "calib_high.png")), size=(560, 282))
         self.img_check = ctk.CTkImage(Image.open(os.path.join(image_path, "calib_check.png")), size=(300, 282))
         self.img_label = ctk.CTkLabel(self, text="", image=self.img_steps)
-        self.img_label.grid(row=2, column=0, padx=0, pady=0, sticky="nsew")
+        self.img_label.grid(row=2, column=0, padx=0, pady=0, sticky="nsew", columnspan=2)
+
+        self.ph_button = ctk.CTkButton(self, text="pH: --", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
+        self.ph_button.grid(column=0, row=3, padx=10, pady=0, sticky="ns", columnspan=2)
+        self.ph_button.grid_forget()
+
+        self.btn_end = ctk.CTkButton(self, text="Terminar calibracion", command=self.btn_end_press, fg_color="red")
+        self.btn_end.grid(column=0, row=4, pady=15)
+        self.btn_end.grid_forget()
 
         self.btn = ctk.CTkButton(self, text="Siguiente", command=self.btn_press)
-        self.btn.grid(column=0, row=3, pady=15)
+        self.btn.grid(column=0, row=4, pady=15, columnspan=2)
+    
+    def update_seconds(self):
+        for i in range(5, 0 ,-1):
+            self.btn.configure(text="Siguiente ({seconds})".format(seconds=i))
+            time.sleep(1)
+        self.btn.configure(text="Siguiente".format(seconds=i))
+        self.btn.configure(state="normal")
+        self.btn.grid(column=1, row=4, padx=15, pady=15, columnspan=1, sticky="w")
+        self.btn_end.grid(column=0, row=4, padx=15, pady=15, sticky="e")
+
+    def btn_end_press(self):
+        self.destroy()
 
     def btn_press(self):
         if self.label_title.cget("text") == "Como es el proceso de calibracion del sensor de pH":
@@ -55,17 +79,30 @@ class CalibWindow(ctk.CTkToplevel):
         elif self.label_title.cget("text") == "Comienzo del proceso de calibracion":
             self.label_title.configure(text="Punto medio")
             self.label_text.configure(text="Coloque el sensor en la solucion. Espere durante al menos un minuto y hasta que las lecturas sean estables")
+            self.ph_button.grid(column=0, row=3, padx=10, pady=0, sticky="ns", columnspan=2)
             self.img_label.configure(image=self.img_mid)
+            self.btn.configure(state="disabled")
+            thread = threading.Thread(target=self.update_seconds)
+            thread.start()            
         elif self.label_title.cget("text") == "Punto medio":
             self.label_title.configure(text="Punto bajo")
             self.img_label.configure(image=self.img_low)
+            self.btn.configure(state="disabled")
+            
+            thread = threading.Thread(target=self.update_seconds)
+            thread.start() 
         elif self.label_title.cget("text") == "Punto bajo":
             self.label_title.configure(text="Punto alto")
             self.img_label.configure(image=self.img_high)
+            self.btn.configure(state="disabled")
+            thread = threading.Thread(target=self.update_seconds)
+            thread.start() 
         elif self.label_title.cget("text") == "Punto alto":
             self.label_title.configure(text="Verificacion")
             self.label_text.configure(text="Espere a verificar la correcta finalizacion de la calibracion")
+            self.btn_end.grid_forget()
             self.btn.configure(text="Finalizar")
+            self.btn.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
             self.img_label.configure(image=self.img_check)
         elif self.label_title.cget("text") == "Verificacion":
             self.destroy()
