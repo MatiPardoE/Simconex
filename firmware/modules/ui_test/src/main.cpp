@@ -5,14 +5,10 @@
 #include "ezo_ph.h"
 #include "LedStrip.h"
 #include "ShiftRegister74HC595.h"
-
-//includes rdo
-//cosas RDO
 #include <rdoApiCode.h>
-//MODBUS
 #include <ModbusMessage.h>
 #include <esp32ModbusRTU.h>
-#include <algorithm>  // for std::reverse
+#include <algorithm>
 
 #define PIN_LED_STRIP_1 5
 #define PIN_LED_STRIP_2 18
@@ -26,11 +22,12 @@
 
 #define RELE_OUTPUT 23
 
-#define PERIOD 3000
+#define PERIOD 5000
 
 enum state_general_t {
     DESCONECTADO,
-    CONECTADO
+    CONECTADO,
+    CONECTADO_FAKE
 };
 
 enum state_msg_t {
@@ -46,22 +43,18 @@ enum my_state_ph_t {
     LEYENDO_RDO
 };
 
-DateTime date = DateTime(F(__DATE__), F(__TIME__)); // por ahora uso la hora de compilacion
+DateTime date = DateTime(F(__DATE__), F(__TIME__)); 
 pH pH_Device = pH(20, "EZO pH probe"); 
 LedStrip ledStrip1, ledStrip2, ledStrip3, ledStrip4, ledStrip5;
-ShiftRegister74HC595 shiftRegister(SR_DATA_PIN, SR_LATCH_PIN, SR_CLOCK_PIN); // Conexiones: DATA = 15, LATCH = 2, CLOCK = 0
-
+ShiftRegister74HC595 shiftRegister(SR_DATA_PIN, SR_LATCH_PIN, SR_CLOCK_PIN); 
 
 int clave = 0;
 int valor = 0;
 bool msg_valido = false;
 unsigned long time_now = 0;
 
-/* ----------------------------------------------------------------------------
-  -- RDO
-  ---------------------------------------------------------------------------- */
-esp32ModbusRTU modbus(&Serial1, RDO_DE_RE_GPIO);  // use Serial1 and GPIO11/27 as RTS
-uint32_t lastMillisRDO = -_TIMEOUT_RDO_REQUEST_; //para que arranque de una
+esp32ModbusRTU modbus(&Serial1, RDO_DE_RE_GPIO);  
+uint32_t lastMillisRDO = -_TIMEOUT_RDO_REQUEST_; 
 volatile rdo_t rdo;
 
 int validar_clave(int byte){
@@ -166,13 +159,10 @@ void setup() {
     pinMode(RELE_OUTPUT, OUTPUT);
     Serial.println();   
 
-    //setup RDO
-    Serial1.begin(RDO_BAUD_RATE, SERIAL_8E1, RDO_RX_GPIO, RDO_TX_GPIO, true);  // Modbus connection de libreria
-
-    modbus.onData(rxRDO);  // Pasas la función directamente
+    Serial1.begin(RDO_BAUD_RATE, SERIAL_8E1, RDO_RX_GPIO, RDO_TX_GPIO, true); 
+    modbus.onData(rxRDO);  
     modbus.onError(rxErrorRDO);
     modbus.begin();
-
     clearRDO(); 
 }
 
@@ -185,7 +175,8 @@ void loop() {
             if (Serial.available() > 0) {
                 if (Serial.readString().equals("INIT")) {
                     Serial.printf("ESP\n");
-                    state_general = CONECTADO;
+                    state_general = CONECTADO_FAKE;
+                    //state_general = CONECTADO;
                     Serial.printf("#L00!\n");
                     Serial.printf("#C0!\n");
                     Serial.printf("#O0!\n");
@@ -236,11 +227,25 @@ void loop() {
                 }
             }
             break;
+        case CONECTADO_FAKE:          
+            if (Serial.available() > 0) {
+                if (Serial.readString().equals("#Z1!")) {
+                    Serial.printf("#Z1!\n");
+                    state_general = DESCONECTADO;
+                }
+            }
+            if(millis() >= time_now + PERIOD){
+                time_now += PERIOD;
+                Serial.printf("#P%d!\n", random(650, 750));
+                Serial.printf("#D%d!\n", random(50, 150));
+                Serial.printf("#T%d!\n", random(15, 25));
+            }
+
     }     
-    if ( _TIMEOUT_TO_RDO_REQUEST_ ) {
+    /*if ( _TIMEOUT_TO_RDO_REQUEST_ ) {
         _updateTimeout_;
         //Serial.print("sending Modbus request...\n");
         //modbus.readHoldingRegisters(0x01,0x00,0x01);
         requestRDO( &rdo );
-    }
+    }*/
 }

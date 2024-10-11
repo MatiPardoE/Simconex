@@ -61,7 +61,12 @@ class CalibWindow(ctk.CTkToplevel):
         self.btn_end.grid(column=0, row=4, padx=15, pady=15, sticky="e")
 
     def btn_end_press(self):
-        self.destroy()
+        self.label_title.configure(text="Verificacion")
+        self.label_text.configure(text="Espere a verificar la correcta finalizacion de la calibracion")
+        self.btn_end.grid_forget()
+        self.btn.configure(text="Finalizar")
+        self.btn.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
+        self.img_label.configure(image=self.img_check)
 
     def btn_press(self):
         if self.label_title.cget("text") == "Como es el proceso de calibracion del sensor de pH":

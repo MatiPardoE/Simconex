@@ -36,7 +36,7 @@ void me_fbr_simconex() {
 
         case FBR_MEAS_PH:
             if(me_ph() == ME_FINISHED) {
-                state_fbr = FBR_SET_OUTPUTS;
+                state_fbr = FBR_SAVE_LOG;
             }
             break;
 
