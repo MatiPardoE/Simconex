@@ -18,7 +18,7 @@ bool initRDO = true;
 
 void setup() {
   Serial.begin(9600);  // Serial output
-  Serial1.begin(RDO_BAUD_RATE, SERIAL_8E1, RDO_RX_GPIO, RDO_TX_GPIO, true);  // Modbus connection de libreria
+  Serial1.begin(RDO_BAUD_RATE, SERIAL_8E1, RDO_RX_GPIO, RDO_TX_GPIO, false);  // Modbus connection de libreria
   
   modbus.onData(rxRDO);
   modbus.onError(rxErrorRDO);
