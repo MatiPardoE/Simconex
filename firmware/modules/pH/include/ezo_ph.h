@@ -16,9 +16,14 @@ enum state_calib_t {
     NONE,
     WAIT_ENTER,
     INIT_CALIB,
+    WAIT_ENTER_CLEAR,
     CLEAR_CALIB,
+    WAIT_ENTER_MID,
     MID_POINT,
+    WAIT_ENTER_LOW,
     LOW_POINT,
+    WAIT_ENTER_HIGH,
+    HIGH_POINT,
     CHECK_CALIB
 };
 
