@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workingSetManager>
+<workingSet editPageId="org.eclipse.jdt.internal.ui.DynamicSourcesWorkingSet" factoryID="org.eclipse.ui.internal.WorkingSetFactory" id="1728746571255_0" label="Java Main Sources" name="Java Main Sources"/>
+<workingSet editPageId="org.eclipse.jdt.internal.ui.DynamicSourcesWorkingSet" factoryID="org.eclipse.ui.internal.WorkingSetFactory" id="1728746571266_1" label="Java Test Sources" name="Java Test Sources"/>
+<workingSet factoryID="org.eclipse.ui.internal.WorkingSetFactory" id="1728746600062_3" label="modbusTest" name="modbusTest">
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/modbusTest" type="4"/>
+</workingSet>
+<workingSet aggregate="true" factoryID="org.eclipse.ui.internal.WorkingSetFactory" id="1728746573095_2" label="Window Working Set" name="Aggregate for window 1728746573095"/>
+</workingSetManager>

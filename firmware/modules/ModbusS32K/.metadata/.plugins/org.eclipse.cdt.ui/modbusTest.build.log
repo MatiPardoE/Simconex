@@ -1,0 +1,68 @@
+12:40:52 **** Incremental Build of configuration Debug_FLASH for project modbusTest ****
+make -j12 all 
+Building file: ../src/main.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/main.args" -MMD -MP -MF"src/main.d" -MT"src/main.o" -o "src/main.o" "../src/main.c"
+In file included from C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/binarySearch/bs.h:23,
+                 from C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/MbedSW.h:26,
+                 from ../src/main.c:33:
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:53:18: warning: conflicting types for built-in function 'strcpy'; expected 'char *(char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   53 | extern uint8_t * strcpy  (uint8_t * restrict pdst , const uint8_t * restrict psrc  );
+      |                  ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:1:1: note: 'strcpy' is declared in header '<string.h>'
+  +++ |+#include <string.h>
+    1 | /**
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:57:18: warning: conflicting types for built-in function 'strcat'; expected 'char *(char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   57 | extern uint8_t * strcat  (uint8_t * restrict pdst , const uint8_t * restrict psrc  );
+      |                  ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:57:18: note: 'strcat' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:58:17: warning: conflicting types for built-in function 'strlen'; expected 'unsigned int(const char *)' [-Wbuiltin-declaration-mismatch]
+   58 | extern uint8_t  strlen  (const uint8_t * restrict s);
+      |                 ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:58:17: note: 'strlen' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:59:18: warning: conflicting types for built-in function 'strcmp'; expected 'int(const char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   59 | extern  uint8_t  strcmp  (const uint8_t * s1,const uint8_t *s2);
+      |                  ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:59:18: note: 'strcmp' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:60:19: warning: conflicting types for built-in function 'strchr'; expected 'char *(const char *, int)' [-Wbuiltin-declaration-mismatch]
+   60 | extern  uint8_t * strchr  (const uint8_t * restrict s, uint8_t c);
+      |                   ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:60:19: note: 'strchr' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:66:18: warning: conflicting types for built-in function 'isalpha'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   66 | extern  int8_t   isalpha  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:1:1: note: 'isalpha' is declared in header '<ctype.h>'
+  +++ |+#include <ctype.h>
+    1 | /**
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:67:18: warning: conflicting types for built-in function 'islower'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   67 | extern  int8_t   islower  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:67:18: note: 'islower' is declared in header '<ctype.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:68:18: warning: conflicting types for built-in function 'isupper'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   68 | extern  int8_t   isupper  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:68:18: note: 'isupper' is declared in header '<ctype.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:70:18: warning: conflicting types for built-in function 'tolower'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   70 | extern  int8_t   tolower  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:70:18: note: 'tolower' is declared in header '<ctype.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:71:18: warning: conflicting types for built-in function 'toupper'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   71 | extern  int8_t   toupper  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:71:18: note: 'toupper' is declared in header '<ctype.h>'
+Finished building: ../src/main.c
+ 
+Building target: modbusTest.elf
+Invoking: Standard S32DS C Linker
+arm-none-eabi-gcc -o "modbusTest.elf" "@modbusTest.args"   
+Finished building target: modbusTest.elf
+ 
+Invoking: Standard S32DS Print Size
+arm-none-eabi-size --format=berkeley modbusTest.elf
+   text	   data	    bss	    dec	    hex	filename
+   1744	   1068	   1256	   4068	    fe4	modbusTest.elf
+Finished building: modbusTest.siz
+ 
+
+12:40:54 Build Finished. 0 errors, 10 warnings. (took 1s.383ms)
+

@@ -1,0 +1,554 @@
+12:38:55 **** Incremental Build of configuration Debug_FLASH for project modbusTest ****
+make -j12 all 
+Building file: ../src/main.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/main.args" -MMD -MP -MF"src/main.d" -MT"src/main.o" -o "src/main.o" "../src/main.c"
+../src/main.c:33:10: fatal error: include/incMbedSW/MbedSW.h: No such file or directory
+   33 | #include "include/incMbedSW/MbedSW.h"
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [src/subdir.mk:20: src/main.o] Error 1
+"make -j12 all" terminated with exit code 2. Build might be incomplete.
+12:39:37 **** Incremental Build of configuration Debug_FLASH for project modbusTest ****
+make -j12 all 
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_adc.c
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_clock.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_adc.args" -MMD -MP -MF"src/srcS32K1XX/fw_adc.d" -MT"src/srcS32K1XX/fw_adc.o" -o "src/srcS32K1XX/fw_adc.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_adc.c"
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_crc.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_clock.args" -MMD -MP -MF"src/srcS32K1XX/fw_clock.d" -MT"src/srcS32K1XX/fw_clock.o" -o "src/srcS32K1XX/fw_clock.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_clock.c"
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_crc.args" -MMD -MP -MF"src/srcS32K1XX/fw_crc.d" -MT"src/srcS32K1XX/fw_crc.o" -o "src/srcS32K1XX/fw_crc.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_crc.c"
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_dma.c
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_flexcan.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_dma.args" -MMD -MP -MF"src/srcS32K1XX/fw_dma.d" -MT"src/srcS32K1XX/fw_dma.o" -o "src/srcS32K1XX/fw_dma.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_dma.c"
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_flexram.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_flexcan.args" -MMD -MP -MF"src/srcS32K1XX/fw_flexcan.d" -MT"src/srcS32K1XX/fw_flexcan.o" -o "src/srcS32K1XX/fw_flexcan.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_flexcan.c"
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_flexram.args" -MMD -MP -MF"src/srcS32K1XX/fw_flexram.d" -MT"src/srcS32K1XX/fw_flexram.o" -o "src/srcS32K1XX/fw_flexram.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_flexram.c"
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_ftfc.c
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_ftm.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_ftfc.args" -MMD -MP -MF"src/srcS32K1XX/fw_ftfc.d" -MT"src/srcS32K1XX/fw_ftfc.o" -o "src/srcS32K1XX/fw_ftfc.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_ftfc.c"
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_ftm.args" -MMD -MP -MF"src/srcS32K1XX/fw_ftm.d" -MT"src/srcS32K1XX/fw_ftm.o" -o "src/srcS32K1XX/fw_ftm.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_ftm.c"
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_gpio.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_gpio.args" -MMD -MP -MF"src/srcS32K1XX/fw_gpio.d" -MT"src/srcS32K1XX/fw_gpio.o" -o "src/srcS32K1XX/fw_gpio.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_gpio.c"
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_adc.c
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_clock.c
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_crc.c
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_ftfc.c: In function 'FTFC_Init':
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_ftfc.c:33:2: warning: implicit declaration of function 'ClockPortInit' [-Wimplicit-function-declaration]
+   33 |  ClockPortInit(PCC_FTFC_INDEX); //inicializo el periferico
+ 
+      |  ^~~~~~~~~~~~~
+ 
+ 
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_dma.c
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_flexcan.c
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_i2c.c
+ 
+ 
+Invoking: Standard S32DS C Compiler
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_lpit.c
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_i2c.args" -MMD -MP -MF"src/srcS32K1XX/fw_i2c.d" -MT"src/srcS32K1XX/fw_i2c.o" -o "src/srcS32K1XX/fw_i2c.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_i2c.c"
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_lpuart.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_lpit.args" -MMD -MP -MF"src/srcS32K1XX/fw_lpit.d" -MT"src/srcS32K1XX/fw_lpit.o" -o "src/srcS32K1XX/fw_lpit.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_lpit.c"
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_lpuart.args" -MMD -MP -MF"src/srcS32K1XX/fw_lpuart.d" -MT"src/srcS32K1XX/fw_lpuart.o" -o "src/srcS32K1XX/fw_lpuart.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_lpuart.c"
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_ftfc.c
+ 
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_ftm.c
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_flexram.c
+ 
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_gpio.c
+ 
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_nvic.c
+ 
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_pdb.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_nvic.args" -MMD -MP -MF"src/srcS32K1XX/fw_nvic.d" -MT"src/srcS32K1XX/fw_nvic.o" -o "src/srcS32K1XX/fw_nvic.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_nvic.c"
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_rcm.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_pdb.args" -MMD -MP -MF"src/srcS32K1XX/fw_pdb.d" -MT"src/srcS32K1XX/fw_pdb.o" -o "src/srcS32K1XX/fw_pdb.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_pdb.c"
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_rcm.args" -MMD -MP -MF"src/srcS32K1XX/fw_rcm.d" -MT"src/srcS32K1XX/fw_rcm.o" -o "src/srcS32K1XX/fw_rcm.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_rcm.c"
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_spi.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_spi.args" -MMD -MP -MF"src/srcS32K1XX/fw_spi.d" -MT"src/srcS32K1XX/fw_spi.o" -o "src/srcS32K1XX/fw_spi.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_spi.c"
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_i2c.c
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_systick.c
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_lpit.c
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_lpuart.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_systick.args" -MMD -MP -MF"src/srcS32K1XX/fw_systick.d" -MT"src/srcS32K1XX/fw_systick.o" -o "src/srcS32K1XX/fw_systick.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_systick.c"
+ 
+ 
+ 
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_template.c
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/tpic8101/tpic8101.c
+Invoking: Standard S32DS C Compiler
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/time/time.c
+arm-none-eabi-gcc "@src/srcS32K1XX/fw_template.args" -MMD -MP -MF"src/srcS32K1XX/fw_template.d" -MT"src/srcS32K1XX/fw_template.o" -o "src/srcS32K1XX/fw_template.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_template.c"
+Invoking: Standard S32DS C Compiler
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcMbedSW/tpic8101/tpic8101.args" -MMD -MP -MF"src/srcMbedSW/tpic8101/tpic8101.d" -MT"src/srcMbedSW/tpic8101/tpic8101.o" -o "src/srcMbedSW/tpic8101/tpic8101.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/tpic8101/tpic8101.c"
+arm-none-eabi-gcc "@src/srcMbedSW/time/time.args" -MMD -MP -MF"src/srcMbedSW/time/time.d" -MT"src/srcMbedSW/time/time.o" -o "src/srcMbedSW/time/time.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/time/time.c"
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_nvic.c
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_rcm.c
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_pdb.c
+ 
+ 
+ 
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_spi.c
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/thermocouple/thermocouple.c
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/str/string.c
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_template.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcMbedSW/thermocouple/thermocouple.args" -MMD -MP -MF"src/srcMbedSW/thermocouple/thermocouple.d" -MT"src/srcMbedSW/thermocouple/thermocouple.o" -o "src/srcMbedSW/thermocouple/thermocouple.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/thermocouple/thermocouple.c"
+Invoking: Standard S32DS C Compiler
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/baremetal/S32K1XX_HAL/srcS32K1XX/fw_systick.c
+arm-none-eabi-gcc "@src/srcMbedSW/str/string.args" -MMD -MP -MF"src/srcMbedSW/str/string.d" -MT"src/srcMbedSW/str/string.o" -o "src/srcMbedSW/str/string.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/str/string.c"
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/time/time.c
+ 
+ 
+ 
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/tpic8101/tpic8101.c
+ 
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/std/std.c
+In file included from C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/binarySearch/bs.h:23,
+                 from C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/thermocouple/thermocouple.h:27,
+                 from C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/thermocouple/thermocouple.c:20:
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:53:18: warning: conflicting types for built-in function 'strcpy'; expected 'char *(char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   53 | extern uint8_t * strcpy  (uint8_t * restrict pdst , const uint8_t * restrict psrc  );
+      |                  ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:1:1: note: 'strcpy' is declared in header '<string.h>'
+  +++ |+#include <string.h>
+    1 | /**
+ 
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:57:18: warning: conflicting types for built-in function 'strcat'; expected 'char *(char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   57 | extern uint8_t * strcat  (uint8_t * restrict pdst , const uint8_t * restrict psrc  );
+      |                  ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:57:18: note: 'strcat' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:58:17: warning: conflicting types for built-in function 'strlen'; expected 'unsigned int(const char *)' [-Wbuiltin-declaration-mismatch]
+   58 | extern uint8_t  strlen  (const uint8_t * restrict s);
+      |                 ^~~~~~
+Invoking: Standard S32DS C Compiler
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/ssd1309oled/ssd1309.c
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/rpm/rpm.c
+In file included from C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/str/string.c:20:
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:53:18: warning: conflicting types for built-in function 'strcpy'; expected 'char *(char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   53 | extern uint8_t * strcpy  (uint8_t * restrict pdst , const uint8_t * restrict psrc  );
+      |                  ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:58:17: note: 'strlen' is declared in header '<string.h>'
+arm-none-eabi-gcc "@src/srcMbedSW/std/std.args" -MMD -MP -MF"src/srcMbedSW/std/std.d" -MT"src/srcMbedSW/std/std.o" -o "src/srcMbedSW/std/std.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/std/std.c"
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcMbedSW/ssd1309oled/ssd1309.args" -MMD -MP -MF"src/srcMbedSW/ssd1309oled/ssd1309.d" -MT"src/srcMbedSW/ssd1309oled/ssd1309.o" -o "src/srcMbedSW/ssd1309oled/ssd1309.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/ssd1309oled/ssd1309.c"
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:22:1: note: 'strcpy' is declared in header '<string.h>'
+   21 | #include <std/std.h>
+  +++ |+#include <string.h>
+   22 | 
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:59:18: warning: conflicting types for built-in function 'strcmp'; expected 'int(const char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   59 | extern  uint8_t  strcmp  (const uint8_t * s1,const uint8_t *s2);
+      |                  ^~~~~~
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcMbedSW/rpm/rpm.args" -MMD -MP -MF"src/srcMbedSW/rpm/rpm.d" -MT"src/srcMbedSW/rpm/rpm.o" -o "src/srcMbedSW/rpm/rpm.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/rpm/rpm.c"
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/rgb/rgb.c
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/mux507/mux507.c
+Invoking: Standard S32DS C Compiler
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:57:18: warning: conflicting types for built-in function 'strcat'; expected 'char *(char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   57 | extern uint8_t * strcat  (uint8_t * restrict pdst , const uint8_t * restrict psrc  );
+      |                  ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:59:18: note: 'strcmp' is declared in header '<string.h>'
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/mc34gd3000/mc34gd3000.c
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:57:18: note: 'strcat' is declared in header '<string.h>'
+Invoking: Standard S32DS C Compiler
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/max31855/max31855.c
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/math/math.c
+arm-none-eabi-gcc "@src/srcMbedSW/rgb/rgb.args" -MMD -MP -MF"src/srcMbedSW/rgb/rgb.d" -MT"src/srcMbedSW/rgb/rgb.o" -o "src/srcMbedSW/rgb/rgb.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/rgb/rgb.c"
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:60:19: warning: conflicting types for built-in function 'strchr'; expected 'char *(const char *, int)' [-Wbuiltin-declaration-mismatch]
+   60 | extern  uint8_t * strchr  (const uint8_t * restrict s, uint8_t c);
+      |                   ^~~~~~
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcMbedSW/mc34gd3000/mc34gd3000.args" -MMD -MP -MF"src/srcMbedSW/mc34gd3000/mc34gd3000.d" -MT"src/srcMbedSW/mc34gd3000/mc34gd3000.o" -o "src/srcMbedSW/mc34gd3000/mc34gd3000.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/mc34gd3000/mc34gd3000.c"
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/std/std.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcMbedSW/math/math.args" -MMD -MP -MF"src/srcMbedSW/math/math.d" -MT"src/srcMbedSW/math/math.o" -o "src/srcMbedSW/math/math.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/math/math.c"
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:60:19: note: 'strchr' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:58:17: warning: conflicting types for built-in function 'strlen'; expected 'unsigned int(const char *)' [-Wbuiltin-declaration-mismatch]
+   58 | extern uint8_t  strlen  (const uint8_t * restrict s);
+      |                 ^~~~~~
+ 
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:66:18: warning: conflicting types for built-in function 'isalpha'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+arm-none-eabi-gcc "@src/srcMbedSW/mux507/mux507.args" -MMD -MP -MF"src/srcMbedSW/mux507/mux507.d" -MT"src/srcMbedSW/mux507/mux507.o" -o "src/srcMbedSW/mux507/mux507.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/mux507/mux507.c"
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/ssd1309oled/ssd1309.c
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/rpm/rpm.c
+ 
+ 
+Invoking: Standard S32DS C Compiler
+   66 | extern  int8_t   isalpha  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:58:17: note: 'strlen' is declared in header '<string.h>'
+arm-none-eabi-gcc "@src/srcMbedSW/max31855/max31855.args" -MMD -MP -MF"src/srcMbedSW/max31855/max31855.d" -MT"src/srcMbedSW/max31855/max31855.o" -o "src/srcMbedSW/max31855/max31855.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/max31855/max31855.c"
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/lm75/lm75.c
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/knock/knock.c
+Invoking: Standard S32DS C Compiler
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:1:1: note: 'isalpha' is declared in header '<ctype.h>'
+Invoking: Standard S32DS C Compiler
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/fonts/fonts.c
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/fir/fir.c
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/gpio/gpio.c
+arm-none-eabi-gcc "@src/srcMbedSW/lm75/lm75.args" -MMD -MP -MF"src/srcMbedSW/lm75/lm75.d" -MT"src/srcMbedSW/lm75/lm75.o" -o "src/srcMbedSW/lm75/lm75.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/lm75/lm75.c"
+  +++ |+#include <ctype.h>
+    1 | /**
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/math/math.c
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/rgb/rgb.c
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:59:18: warning: conflicting types for built-in function 'strcmp'; expected 'int(const char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   59 | extern  uint8_t  strcmp  (const uint8_t * s1,const uint8_t *s2);
+      |                  ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:59:18: note: 'strcmp' is declared in header '<string.h>'
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/mux507/mux507.c
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:67:18: warning: conflicting types for built-in function 'islower'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   67 | extern  int8_t   islower  (uint8_t c);
+      |                  ^~~~~~~
+ 
+ 
+ 
+Invoking: Standard S32DS C Compiler
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:60:19: warning: conflicting types for built-in function 'strchr'; expected 'char *(const char *, int)' [-Wbuiltin-declaration-mismatch]
+   60 | extern  uint8_t * strchr  (const uint8_t * restrict s, uint8_t c);
+      |                   ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:67:18: note: 'islower' is declared in header '<ctype.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:60:19: note: 'strchr' is declared in header '<string.h>'
+arm-none-eabi-gcc "@src/srcMbedSW/fir/fir.args" -MMD -MP -MF"src/srcMbedSW/fir/fir.d" -MT"src/srcMbedSW/fir/fir.o" -o "src/srcMbedSW/fir/fir.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/fir/fir.c"
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcMbedSW/fonts/fonts.args" -MMD -MP -MF"src/srcMbedSW/fonts/fonts.d" -MT"src/srcMbedSW/fonts/fonts.o" -o "src/srcMbedSW/fonts/fonts.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/fonts/fonts.c"
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:68:18: warning: conflicting types for built-in function 'isupper'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   68 | extern  int8_t   isupper  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:68:18: note: 'isupper' is declared in header '<ctype.h>'
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcMbedSW/gpio/gpio.args" -MMD -MP -MF"src/srcMbedSW/gpio/gpio.d" -MT"src/srcMbedSW/gpio/gpio.o" -o "src/srcMbedSW/gpio/gpio.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/gpio/gpio.c"
+arm-none-eabi-gcc "@src/srcMbedSW/knock/knock.args" -MMD -MP -MF"src/srcMbedSW/knock/knock.d" -MT"src/srcMbedSW/knock/knock.o" -o "src/srcMbedSW/knock/knock.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/knock/knock.c"
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:66:18: warning: conflicting types for built-in function 'isalpha'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   66 | extern  int8_t   isalpha  (uint8_t c);
+      |                  ^~~~~~~
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/mc34gd3000/mc34gd3000.c
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/lm75/lm75.c
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:70:18: warning: conflicting types for built-in function 'tolower'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/max31855/max31855.c
+   70 | extern  int8_t   tolower  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:70:18: note: 'tolower' is declared in header '<ctype.h>'
+ 
+ 
+ 
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:22:1: note: 'isalpha' is declared in header '<ctype.h>'
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/circularBuffer/cBuff.c
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/fir/fir.c
+   21 | #include <std/std.h>
+  +++ |+#include <ctype.h>
+   22 | 
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/blcd/blcdHall.c
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:71:18: warning: conflicting types for built-in function 'toupper'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   71 | extern  int8_t   toupper  (uint8_t c);
+Invoking: Standard S32DS C Compiler
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:71:18: note: 'toupper' is declared in header '<ctype.h>'
+arm-none-eabi-gcc "@src/srcMbedSW/circularBuffer/cBuff.args" -MMD -MP -MF"src/srcMbedSW/circularBuffer/cBuff.d" -MT"src/srcMbedSW/circularBuffer/cBuff.o" -o "src/srcMbedSW/circularBuffer/cBuff.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/circularBuffer/cBuff.c"
+ 
+Invoking: Standard S32DS C Compiler
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:67:18: warning: conflicting types for built-in function 'islower'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   67 | extern  int8_t   islower  (uint8_t c);
+      |                  ^~~~~~~
+arm-none-eabi-gcc "@src/srcMbedSW/blcd/blcdHall.args" -MMD -MP -MF"src/srcMbedSW/blcd/blcdHall.d" -MT"src/srcMbedSW/blcd/blcdHall.o" -o "src/srcMbedSW/blcd/blcdHall.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/blcd/blcdHall.c"
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/thermocouple/thermocouple.c
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:67:18: note: 'islower' is declared in header '<ctype.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:68:18: warning: conflicting types for built-in function 'isupper'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   68 | extern  int8_t   isupper  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:68:18: note: 'isupper' is declared in header '<ctype.h>'
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/blcd/blcdPhases.c
+ 
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/fonts/fonts.c
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/knock/knock.c: In function 'calcKnockFreq':
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:70:18: warning: conflicting types for built-in function 'tolower'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+Invoking: Standard S32DS C Compiler
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/binarySearch/bs.c
+arm-none-eabi-gcc "@src/srcMbedSW/blcd/blcdPhases.args" -MMD -MP -MF"src/srcMbedSW/blcd/blcdPhases.d" -MT"src/srcMbedSW/blcd/blcdPhases.o" -o "src/srcMbedSW/blcd/blcdPhases.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/blcd/blcdPhases.c"
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/array/array.c
+   70 | extern  int8_t   tolower  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:70:18: note: 'tolower' is declared in header '<ctype.h>'
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/gpio/gpio.c
+ 
+Invoking: Standard S32DS C Compiler
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/analog/analog.c
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/knock/knock.c:63:16: warning: implicit declaration of function 'sqrt' [-Wimplicit-function-declaration]
+Building file: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/templateMbed.c
+Building file: ../src/main.c
+ 
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/main.args" -MMD -MP -MF"src/main.d" -MT"src/main.o" -o "src/main.o" "../src/main.c"
+   63 |  sound_speed = sqrt(M_K_ISOENTROPIC_EXP*M_R_UNIV_GAS*M_MEAN_TEMP_TDC);
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/circularBuffer/cBuff.c
+      |                ^~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/knock/knock.c:63:16: warning: incompatible implicit declaration of built-in function 'sqrt'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:71:18: warning: conflicting types for built-in function 'toupper'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/srcMbedSW/array/array.args" -MMD -MP -MF"src/srcMbedSW/array/array.d" -MT"src/srcMbedSW/array/array.o" -o "src/srcMbedSW/array/array.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/array/array.c"
+arm-none-eabi-gcc "@src/srcMbedSW/binarySearch/bs.args" -MMD -MP -MF"src/srcMbedSW/binarySearch/bs.d" -MT"src/srcMbedSW/binarySearch/bs.o" -o "src/srcMbedSW/binarySearch/bs.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/binarySearch/bs.c"
+   71 | extern  int8_t   toupper  (uint8_t c);
+      |                  ^~~~~~~
+ 
+Invoking: Standard S32DS C Compiler
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/blcd/blcdHall.c
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/knock/knock.c:21:1: note: include '<math.h>' or provide a declaration of 'sqrt'
+   20 | #include <knock/knock.h>
+  +++ |+#include <math.h>
+   21 | 
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:71:18: note: 'toupper' is declared in header '<ctype.h>'
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/knock/knock.c
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/blcd/blcdPhases.c: In function 'conmutateBLCDphases':
+Invoking: Standard S32DS C Compiler
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/blcd/blcdPhases.c:93:6: warning: suggest explicit braces to avoid ambiguous 'else' [-Wdangling-else]
+arm-none-eabi-gcc "@src/srcMbedSW/analog/analog.args" -MMD -MP -MF"src/srcMbedSW/analog/analog.d" -MT"src/srcMbedSW/analog/analog.o" -o "src/srcMbedSW/analog/analog.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/analog/analog.c"
+ 
+   93 |    if( mode == PHASE_SOUTH )
+      |      ^
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/str/string.c
+arm-none-eabi-gcc "@src/srcMbedSW/templateMbed.args" -MMD -MP -MF"src/srcMbedSW/templateMbed.d" -MT"src/srcMbedSW/templateMbed.o" -o "src/srcMbedSW/templateMbed.o" "C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/templateMbed.c"
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/array/array.c
+ 
+ 
+ 
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/blcd/blcdPhases.c
+../src/main.c:33:10: fatal error: include/incMbedSW/MbedSW.h: No such file or directory
+   33 | #include "include/incMbedSW/MbedSW.h"
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [src/subdir.mk:20: src/main.o] Error 1
+make: *** Waiting for unfinished jobs....
+In file included from C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/binarySearch/bs.h:23,
+                 from C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/binarySearch/bs.c:21:
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:53:18: warning: conflicting types for built-in function 'strcpy'; expected 'char *(char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   53 | extern uint8_t * strcpy  (uint8_t * restrict pdst , const uint8_t * restrict psrc  );
+      |                  ^~~~~~
+ 
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/analog/analog.c: In function 'newAnalog':
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:1:1: note: 'strcpy' is declared in header '<string.h>'
+  +++ |+#include <string.h>
+    1 | /**
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:57:18: warning: conflicting types for built-in function 'strcat'; expected 'char *(char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   57 | extern uint8_t * strcat  (uint8_t * restrict pdst , const uint8_t * restrict psrc  );
+      |                  ^~~~~~
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/templateMbed.c
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/analog/analog.c:41:18: warning: assignment discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+   41 |  myAnalog.movAvg = movAvg;
+      |                  ^
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:57:18: note: 'strcat' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:58:17: warning: conflicting types for built-in function 'strlen'; expected 'unsigned int(const char *)' [-Wbuiltin-declaration-mismatch]
+   58 | extern uint8_t  strlen  (const uint8_t * restrict s);
+      |                 ^~~~~~
+ 
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:58:17: note: 'strlen' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:59:18: warning: conflicting types for built-in function 'strcmp'; expected 'int(const char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   59 | extern  uint8_t  strcmp  (const uint8_t * s1,const uint8_t *s2);
+      |                  ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:59:18: note: 'strcmp' is declared in header '<string.h>'
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/analog/analog.c
+ 
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:60:19: warning: conflicting types for built-in function 'strchr'; expected 'char *(const char *, int)' [-Wbuiltin-declaration-mismatch]
+   60 | extern  uint8_t * strchr  (const uint8_t * restrict s, uint8_t c);
+      |                   ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:60:19: note: 'strchr' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:66:18: warning: conflicting types for built-in function 'isalpha'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   66 | extern  int8_t   isalpha  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:1:1: note: 'isalpha' is declared in header '<ctype.h>'
+  +++ |+#include <ctype.h>
+    1 | /**
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:67:18: warning: conflicting types for built-in function 'islower'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   67 | extern  int8_t   islower  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:67:18: note: 'islower' is declared in header '<ctype.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:68:18: warning: conflicting types for built-in function 'isupper'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   68 | extern  int8_t   isupper  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:68:18: note: 'isupper' is declared in header '<ctype.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:70:18: warning: conflicting types for built-in function 'tolower'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   70 | extern  int8_t   tolower  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:70:18: note: 'tolower' is declared in header '<ctype.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:71:18: warning: conflicting types for built-in function 'toupper'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   71 | extern  int8_t   toupper  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:71:18: note: 'toupper' is declared in header '<ctype.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/binarySearch/bs.c: In function 'binarySearchIx':
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/binarySearch/bs.c:95:13: warning: assignment discards 'const' qualifier from pointer target type [-Wdiscarded-qualifiers]
+   95 |   arrSorted = arr;
+      |             ^
+Finished building: C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/srcMbedSW/binarySearch/bs.c
+ 
+"make -j12 all" terminated with exit code 2. Build might be incomplete.
+12:40:09 **** Incremental Build of configuration Debug_FLASH for project modbusTest ****
+make -j12 all 
+Building file: ../src/main.c
+Building file: ../Project_Settings/Startup_Code/startup.c
+Invoking: Standard S32DS C Compiler
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/main.args" -MMD -MP -MF"src/main.d" -MT"src/main.o" -o "src/main.o" "../src/main.c"
+Building file: ../Project_Settings/Startup_Code/system_S32K116.c
+arm-none-eabi-gcc "@Project_Settings/Startup_Code/startup.args" -MMD -MP -MF"Project_Settings/Startup_Code/startup.d" -MT"Project_Settings/Startup_Code/startup.o" -o "Project_Settings/Startup_Code/startup.o" "../Project_Settings/Startup_Code/startup.c"
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@Project_Settings/Startup_Code/startup.args" -MMD -MP -MF"Project_Settings/Startup_Code/system_S32K116.d" -MT"Project_Settings/Startup_Code/system_S32K116.o" -o "Project_Settings/Startup_Code/system_S32K116.o" "../Project_Settings/Startup_Code/system_S32K116.c"
+../src/main.c:33:10: fatal error: incMbedSW/MbedSW.h: No such file or directory
+   33 | #include "incMbedSW/MbedSW.h"
+      |          ^~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [src/subdir.mk:20: src/main.o] Error 1
+make: *** Waiting for unfinished jobs....
+Finished building: ../Project_Settings/Startup_Code/startup.c
+ 
+Finished building: ../Project_Settings/Startup_Code/system_S32K116.c
+ 
+"make -j12 all" terminated with exit code 2. Build might be incomplete.
+12:40:20 **** Incremental Build of configuration Debug_FLASH for project modbusTest ****
+make -j12 all 
+Building file: ../src/main.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/main.args" -MMD -MP -MF"src/main.d" -MT"src/main.o" -o "src/main.o" "../src/main.c"
+../src/main.c:33:10: fatal error: incMbedSW/MbedSW.h: No such file or directory
+   33 | #include <incMbedSW/MbedSW.h>
+      |          ^~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [src/subdir.mk:20: src/main.o] Error 1
+"make -j12 all" terminated with exit code 2. Build might be incomplete.
+12:40:26 **** Incremental Build of configuration Debug_FLASH for project modbusTest ****
+make -j12 all 
+Building file: ../src/main.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/main.args" -MMD -MP -MF"src/main.d" -MT"src/main.o" -o "src/main.o" "../src/main.c"
+In file included from C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/binarySearch/bs.h:23,
+                 from C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/MbedSW.h:26,
+                 from ../src/main.c:33:
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:53:18: warning: conflicting types for built-in function 'strcpy'; expected 'char *(char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   53 | extern uint8_t * strcpy  (uint8_t * restrict pdst , const uint8_t * restrict psrc  );
+      |                  ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:1:1: note: 'strcpy' is declared in header '<string.h>'
+  +++ |+#include <string.h>
+    1 | /**
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:57:18: warning: conflicting types for built-in function 'strcat'; expected 'char *(char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   57 | extern uint8_t * strcat  (uint8_t * restrict pdst , const uint8_t * restrict psrc  );
+      |                  ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:57:18: note: 'strcat' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:58:17: warning: conflicting types for built-in function 'strlen'; expected 'unsigned int(const char *)' [-Wbuiltin-declaration-mismatch]
+   58 | extern uint8_t  strlen  (const uint8_t * restrict s);
+      |                 ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:58:17: note: 'strlen' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:59:18: warning: conflicting types for built-in function 'strcmp'; expected 'int(const char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   59 | extern  uint8_t  strcmp  (const uint8_t * s1,const uint8_t *s2);
+      |                  ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:59:18: note: 'strcmp' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:60:19: warning: conflicting types for built-in function 'strchr'; expected 'char *(const char *, int)' [-Wbuiltin-declaration-mismatch]
+   60 | extern  uint8_t * strchr  (const uint8_t * restrict s, uint8_t c);
+      |                   ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:60:19: note: 'strchr' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:66:18: warning: conflicting types for built-in function 'isalpha'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   66 | extern  int8_t   isalpha  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:1:1: note: 'isalpha' is declared in header '<ctype.h>'
+  +++ |+#include <ctype.h>
+    1 | /**
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:67:18: warning: conflicting types for built-in function 'islower'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   67 | extern  int8_t   islower  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:67:18: note: 'islower' is declared in header '<ctype.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:68:18: warning: conflicting types for built-in function 'isupper'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   68 | extern  int8_t   isupper  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:68:18: note: 'isupper' is declared in header '<ctype.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:70:18: warning: conflicting types for built-in function 'tolower'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   70 | extern  int8_t   tolower  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:70:18: note: 'tolower' is declared in header '<ctype.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:71:18: warning: conflicting types for built-in function 'toupper'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   71 | extern  int8_t   toupper  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:71:18: note: 'toupper' is declared in header '<ctype.h>'
+../src/main.c:34:10: fatal error: incS32K1XX/fw_all.h: No such file or directory
+   34 | #include "incS32K1XX/fw_all.h"
+      |          ^~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [src/subdir.mk:20: src/main.o] Error 1
+"make -j12 all" terminated with exit code 2. Build might be incomplete.
+12:40:52 **** Incremental Build of configuration Debug_FLASH for project modbusTest ****
+make -j12 all 
+Building file: ../src/main.c
+Invoking: Standard S32DS C Compiler
+arm-none-eabi-gcc "@src/main.args" -MMD -MP -MF"src/main.d" -MT"src/main.o" -o "src/main.o" "../src/main.c"
+In file included from C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/binarySearch/bs.h:23,
+                 from C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/MbedSW.h:26,
+                 from ../src/main.c:33:
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:53:18: warning: conflicting types for built-in function 'strcpy'; expected 'char *(char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   53 | extern uint8_t * strcpy  (uint8_t * restrict pdst , const uint8_t * restrict psrc  );
+      |                  ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:1:1: note: 'strcpy' is declared in header '<string.h>'
+  +++ |+#include <string.h>
+    1 | /**
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:57:18: warning: conflicting types for built-in function 'strcat'; expected 'char *(char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   57 | extern uint8_t * strcat  (uint8_t * restrict pdst , const uint8_t * restrict psrc  );
+      |                  ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:57:18: note: 'strcat' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:58:17: warning: conflicting types for built-in function 'strlen'; expected 'unsigned int(const char *)' [-Wbuiltin-declaration-mismatch]
+   58 | extern uint8_t  strlen  (const uint8_t * restrict s);
+      |                 ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:58:17: note: 'strlen' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:59:18: warning: conflicting types for built-in function 'strcmp'; expected 'int(const char *, const char *)' [-Wbuiltin-declaration-mismatch]
+   59 | extern  uint8_t  strcmp  (const uint8_t * s1,const uint8_t *s2);
+      |                  ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:59:18: note: 'strcmp' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:60:19: warning: conflicting types for built-in function 'strchr'; expected 'char *(const char *, int)' [-Wbuiltin-declaration-mismatch]
+   60 | extern  uint8_t * strchr  (const uint8_t * restrict s, uint8_t c);
+      |                   ^~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:60:19: note: 'strchr' is declared in header '<string.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:66:18: warning: conflicting types for built-in function 'isalpha'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   66 | extern  int8_t   isalpha  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:1:1: note: 'isalpha' is declared in header '<ctype.h>'
+  +++ |+#include <ctype.h>
+    1 | /**
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:67:18: warning: conflicting types for built-in function 'islower'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   67 | extern  int8_t   islower  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:67:18: note: 'islower' is declared in header '<ctype.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:68:18: warning: conflicting types for built-in function 'isupper'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   68 | extern  int8_t   isupper  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:68:18: note: 'isupper' is declared in header '<ctype.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:70:18: warning: conflicting types for built-in function 'tolower'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   70 | extern  int8_t   tolower  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:70:18: note: 'tolower' is declared in header '<ctype.h>'
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:71:18: warning: conflicting types for built-in function 'toupper'; expected 'int(int)' [-Wbuiltin-declaration-mismatch]
+   71 | extern  int8_t   toupper  (uint8_t c);
+      |                  ^~~~~~~
+C:/Users/toto_/OneDrive/Documentos/Electronics/EmbeddedUtils/mbedSW/incMbedSW/str/string.h:71:18: note: 'toupper' is declared in header '<ctype.h>'
+Finished building: ../src/main.c
+ 
+Building target: modbusTest.elf
+Invoking: Standard S32DS C Linker
+arm-none-eabi-gcc -o "modbusTest.elf" "@modbusTest.args"   
+Finished building target: modbusTest.elf
+ 
+Invoking: Standard S32DS Print Size
+arm-none-eabi-size --format=berkeley modbusTest.elf
+   text	   data	    bss	    dec	    hex	filename
+   1744	   1068	   1256	   4068	    fe4	modbusTest.elf
+Finished building: modbusTest.siz
+ 

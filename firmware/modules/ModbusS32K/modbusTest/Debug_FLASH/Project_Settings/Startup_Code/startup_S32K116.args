@@ -1,0 +1,7 @@
+-c
+-I"C:/Users/toto_/Desktop/FBR-SIMCONEX/Simconex/firmware/modules/ModbusS32K/modbusTest/include"
+-x assembler-with-cpp
+-DSTART_FROM_FLASH
+-g3
+-mcpu=cortex-m0plus
+-specs=nosys.specs
