@@ -9,7 +9,7 @@ void setup()
     Serial.begin(460800);
     Log.begin(LOG_LEVEL_VERBOSE, &Serial, true);
     Log.notice("Starting...\n");
-    cm.begin(true);
+    cm.begin();
 }
 
 void loop()
