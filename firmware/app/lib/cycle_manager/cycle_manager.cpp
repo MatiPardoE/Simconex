@@ -3,45 +3,62 @@
 #include <ArduinoLog.h>
 #include <cycle_manager.h>
 
-#define SD_CS_PIN 5 // Cambia según tu configuración
+#define SPI_MISO 34
+#define SPI_MOSI 33
+#define SPI_SS 26
+#define SPI_CLK 25
+#define SD_CS_PIN SPI_SS // Cambia según tu configuración
 
-const char *hardcodedCSV = R"(
-cycle_name,csv base,,,
-cycle_id,csv_base_20241012_131635,,,
-state,new,,,
-interval_time,15,,,
-interval_total,2,,,
-interval_current,0,,,
-header_finish,,,,
-interval_id,ph,oxygen,temperature,light
-0,0,0,0,0
-1,4.31,104.45,21.35,10
-2,2,,,
+const char *hardcodedHEADER = R"(
+cycle_name,csv base
+cycle_id,csv_base_20241013_182343
+state,new_cycle
+interval_time,15
+interval_total,3
+interval_current,0
+)";
+
+const char *hardcodedDATA = R"(
+0,0,0,0,0,__________________________
+1,4.31,104.45,21.35,10,_____________
+2,2,,,,_____________________________
+3,2.43,45,15,9,_____________________
 )";
 
 cycle_manager::cycle_manager()
 {
-    // Initialize SD card
-    if (!SD.begin(SD_CS_PIN))
-    {
-        Log.errorln("SD Initialization failed!");
-        return;
-    }
-    Log.infoln("SD Initialization done.");
 }
 
 // Inicializa la tarjeta SD
-bool cycle_manager::begin(bool useHardcodedData)
+bool cycle_manager::begin()
 {
     String header = "";
-    if (useHardcodedData) {
-        Log.infoln("Using hardcoded data");
-        header = String(hardcodedCSV);
-    } else {
-        if (!checkInputCSV(header)) {
-            return false;
-        }
+
+#if __HARDCODE_DATA__ == true
+    Log.infoln("Using hardcoded data");
+    header = String(hardcodedHEADER);
+
+#else
+    Log.infoln("Using SD data");
+    // TODO: a chequear cuando se implemente el SPI y la SD
+    // SPI.begin(SPI_CLK, SPI_MISO, SPI_MOSI, SPI_SS);
+    // SPI.setDataMode(SPI_MODE0);
+    //  Initialize SD card
+    if (!SD.begin(SD_CS_PIN))
+    {
+        Log.errorln("SD Initialization failed!");
+        return false;
     }
+    else
+    {
+        Log.infoln("SD Initialization done.");
+    }
+
+    if (!checkInputHeader(header))
+    {
+        return false;
+    }
+#endif
 
     // Parse the data
     parseHeader(header);
@@ -53,6 +70,29 @@ bool cycle_manager::begin(bool useHardcodedData)
     Log.infoln("Interval Time: %d", cycleData.interval_time);
     Log.infoln("Interval Total: %d", cycleData.interval_total);
     Log.infoln("Interval Current: %d", cycleData.interval_current);
+
+    // TODO: Implementar esto en el parseHeader y eliminar la variable cycleData.state xq
+    switch (cycleData.state[0]) // no admite string en switch
+    {
+    case 'n': // 'new'
+        cycleStatus = CYCLE_NEW;
+        break;
+    case 'r': // 'running'
+        cycleStatus = CYCLE_RUNNING;
+        break;
+    case 'p': // 'paused'
+        cycleStatus = CYCLE_PAUSED;
+        break;
+    case 'c': // 'completed'
+        cycleStatus = CYCLE_COMPLETED;
+        break;
+    default:
+        // Handle unknown state
+        Log.errorln("Unknown state: %s", cycleData.state.c_str());
+        cycleStatus = CYCLE_ERROR;
+        return false;
+    }
+    // TODO: Check datos de header sean coherentes
 
     return true;
 }
@@ -101,48 +141,86 @@ void cycle_manager::parseHeader(const String &data)
         end = data.indexOf('\n', start);
     }
 }
-bool cycle_manager::checkInputCSV(String &header) {
-    File root = SD.open("/input");
-    File file;
-    int fileCount = 0;
-    String fileName;
-
-    while (true) {
-        File entry = root.openNextFile();
-        if (!entry) {
-            break; // no more files
-        }
-        if (!entry.isDirectory()) {
-            fileCount++;
-            fileName = String(entry.name());
-        }
-        entry.close();
-    }
-
-    if (fileCount != 1) {
-        Log.errorln("There should be exactly one file in the directory, found %d", fileCount);
+bool cycle_manager::checkInputHeader(String &header)
+{
+    File file = SD.open("/input/header.csv");
+    if (!file)
+    {
+        cycleStatus = NO_CYCLE_IN_SD;
+        Log.errorln("Failed to open input header file");
         return false;
     }
 
-    if (!fileName.endsWith(".csv")) {
-        Log.errorln("The file found is not a .csv file: %s", fileName.c_str());
-        return false;
-    }
-
-    file = SD.open(fileName.c_str());
-    if (!file) {
-        Log.errorln("Failed to open input file");
-        return false;
-    }
-
-    while (file.available()) {
+    while (file.available())
+    {
         String line = file.readStringUntil('\n');
         header += line + "\n";
-        if (line.startsWith("header_finish")) {
-            break;
-        }
     }
 
     file.close();
     return true;
+}
+
+bool cycle_manager::readNextInterval(IntervalData &intervalData)
+{
+#ifdef __HARDCODE_DATA__ == true
+    Log.infoln("Using hardcoded data");
+    
+#else
+    File file = SD.open("/input/data.csv");
+    if (!file)
+    {
+        cycleStatus = NO_CYCLE_IN_SD;
+        Log.errorln("Failed to open input data file");
+        return false;
+    }
+
+    // Leer la primera fila para calcular el ancho
+    String firstLine = file.readStringUntil('\n');
+    int rowWidth = firstLine.length() + 1; // +1 para incluir el salto de línea
+
+    // Calcular la posición de la fila actual
+    int targetLine = cycleData.interval_current + 1; // +1 para moverse al siguiente intervalo
+    int position = targetLine * rowWidth;
+
+    // Mover el puntero a la posición calculada
+    if (!file.seek(position))
+    {
+        Log.errorln("Failed to seek to the target position");
+        file.close();
+        return false;
+    }
+
+    // Leer la siguiente línea
+    if (file.available())
+    {
+        String line = file.readStringUntil('\n');
+        int start = 0;
+        int end = line.indexOf(',');
+
+        intervalData.interval_id = line.substring(start, end).toInt();
+        start = end + 1;
+        end = line.indexOf(',', start);
+        intervalData.ph = line.substring(start, end).toFloat();
+        start = end + 1;
+        end = line.indexOf(',', start);
+        intervalData.oxygen = line.substring(start, end).toFloat();
+        start = end + 1;
+        end = line.indexOf(',', start);
+        intervalData.temperature = line.substring(start, end).toFloat();
+        start = end + 1;
+        end = line.indexOf(',', start);
+        intervalData.light = line.substring(start, end).toInt();
+
+        file.close();
+        return true;
+    }
+    else
+    {
+        Log.errorln("No more intervals available");
+        file.close();
+        return false;
+    }
+
+#endif
 }
