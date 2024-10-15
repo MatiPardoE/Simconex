@@ -32,3 +32,5 @@ void loop()
         }
     }
 }
+
+// TODO: Implementar la alarma por software y que ya la clase cycle_manager la maneje cuando lee el header.

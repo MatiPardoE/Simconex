@@ -418,8 +418,6 @@ bool cycle_manager::resetHeaderForDebug()
         Log.errorln("Failed to open header file for writing");
         return INTERVAL_ERROR;
     }
-
-    // TODO: Un apagon aca nos mata todo porque nos crashea el archivo header.csv
     file.print("cycle_name,");
     file.println("csv base");
     file.print("cycle_id,");
