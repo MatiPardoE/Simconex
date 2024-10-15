@@ -16,16 +16,19 @@ public:
         float ph;
         float oxygen;
         float temperature;
-        float light;
-    } intervalData;
+        int light;
+    };
     cycle_manager();
     bool begin();
-    bool readNextInterval(IntervalData &intervalData);
-
-    bool readInterval(cycle_manager::IntervalData &intervalData);
+    bool readNextInterval();
+    bool readInterval();
+    bool resetHeaderForDebug();
+    // Getter for intervalData
+    const IntervalData &getIntervalData() const;
 
 private:
     // Private variables
+    IntervalData intervalData;
     // Private Structs
     enum CycleStatus
     {
@@ -56,7 +59,7 @@ private:
 
     // Private functions
     void parseHeader(const String &data);
-    bool checkInputHeader(String &header);
+    bool readHeader(String &header);
     CheckNextInterval readAndWriteCurrentIntervalFromCSV();
     void logIntervalDataforDebug(const IntervalData &intervalData);
 };

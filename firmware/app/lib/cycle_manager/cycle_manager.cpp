@@ -27,25 +27,27 @@ const char *hardcodedDATA = R"(
 
 cycle_manager::cycle_manager()
 {
+    intervalData = {0, 0, 0, 0, 0};
+    SPI.begin(SPI_CLK, SPI_MISO, SPI_MOSI, SPI_SS);
+    SPI.setDataMode(SPI_MODE0);
 }
-
 
 /**
  * @brief Initializes the cycle manager.
- * 
+ *
  * This function initializes the cycle manager by either using hardcoded data or reading data from an SD card.
  * It parses the header data and sets the cycle status based on the parsed state.
- * 
+ *
  * @return true if initialization is successful, false otherwise.
- * 
+ *
  * @note If using SD data, ensure that the SD card is properly initialized and the header data is valid.
- * 
+ *
  * @details
  * - If `__HARDCODE_DATA__` is defined as true, the function uses hardcoded data.
  * - If `__HARDCODE_DATA__` is not defined or false, the function attempts to initialize the SD card and read the header data from it.
  * - The function logs the initialization process and the parsed header data.
  * - The cycle status is determined based on the first character of the `cycleData.state` string.
- * 
+ *
  * @todo Implement SPI and SD initialization when using SD data.
  * @todo Implement header data coherence checks.
  * @todo Refactor `parseHeader` to eliminate the `cycleData.state` variable.
@@ -60,9 +62,6 @@ bool cycle_manager::begin()
 
 #else
     Log.infoln("Using SD data");
-    // TODO: a chequear cuando se implemente el SPI y la SD
-    // SPI.begin(SPI_CLK, SPI_MISO, SPI_MOSI, SPI_SS);
-    // SPI.setDataMode(SPI_MODE0);
     //  Initialize SD card
     if (!SD.begin(SD_CS_PIN))
     {
@@ -74,8 +73,9 @@ bool cycle_manager::begin()
         Log.infoln("SD Initialization done.");
     }
 
-    if (!checkInputHeader(header))
+    if (!readHeader(header))
     {
+        Log.errorln("Header Initialization failed!");
         return false;
     }
 #endif
@@ -114,6 +114,8 @@ bool cycle_manager::begin()
     }
     // TODO: Check datos de header sean coherentes
 
+    Log.infoln("Cycle Status: %d", cycleStatus);
+    Log.infoln("Cycle Manager initialized successfully");
     return true;
 }
 
@@ -161,7 +163,7 @@ void cycle_manager::parseHeader(const String &data) // TODO: Cambiar esta funcio
         end = data.indexOf('\n', start);
     }
 }
-bool cycle_manager::checkInputHeader(String &header)
+bool cycle_manager::readHeader(String &header)
 {
     File file = SD.open("/input/header.csv");
     if (!file)
@@ -240,16 +242,16 @@ cycle_manager::CheckNextInterval cycle_manager::readAndWriteCurrentIntervalFromC
 /**
  * @brief Reads the next interval data.
  *
- * This function attempts to read the next interval data from a CSV file. If the 
- * __HARDCODE_DATA__ macro is defined, it will log a message indicating that hardcoded 
- * data is being used and return false. Otherwise, it will read the current interval 
+ * This function attempts to read the next interval data from a CSV file. If the
+ * __HARDCODE_DATA__ macro is defined, it will log a message indicating that hardcoded
+ * data is being used and return false. Otherwise, it will read the current interval
  * from the CSV file and handle the result accordingly.
  *
- * @param intervalData A reference to an IntervalData object where the interval data 
+ * @param intervalData A reference to an IntervalData object where the interval data
  *                     will be stored if available.
  * @return true if the next interval data is successfully read and available, false otherwise.
  */
-bool cycle_manager::readNextInterval(IntervalData &intervalData)
+bool cycle_manager::readNextInterval()
 {
 #ifdef __HARDCODE_DATA__
     Log.infoln("Using hardcoded data, cant check next interval. Cause it uses function from File library");
@@ -270,7 +272,7 @@ bool cycle_manager::readNextInterval(IntervalData &intervalData)
 
     case INTERVAL_AVAILABLE:
         Log.infoln("Interval available: %d", cycleData.interval_current);
-        return readInterval(intervalData);
+        return readInterval();
 
     default:
         return false;
@@ -279,19 +281,18 @@ bool cycle_manager::readNextInterval(IntervalData &intervalData)
     return false;
 }
 
-
 /**
  * @brief Reads the next interval data from the SD card.
- * 
+ *
  * This function reads the next interval data from a CSV file located on the SD card.
  * It updates the provided IntervalData structure with the read values.
- * 
+ *
  * @param intervalData Reference to an IntervalData structure where the read values will be stored.
  * @return true if the interval data was successfully read, false otherwise.
- * 
+ *
  * @note The CSV file is expected to have the following columns in each row:
  *       interval_id, ph, oxygen, temperature, light
- * 
+ *
  * @details The function performs the following steps:
  *          1. Opens the CSV file from the SD card.
  *          2. Reads the first line to calculate the row width.
@@ -300,12 +301,12 @@ bool cycle_manager::readNextInterval(IntervalData &intervalData)
  *          5. Reads the next line and parses the interval data.
  *          6. Updates the intervalData structure with the parsed values.
  *          7. Logs the interval data for debugging purposes.
- * 
+ *
  * @warning If the file cannot be opened or the seek operation fails, the function logs an error and returns false.
- * 
+ *
  * @see cycle_manager::IntervalData
  */
-bool cycle_manager::readInterval(cycle_manager::IntervalData &intervalData)
+bool cycle_manager::readInterval()
 {
     File file = SD.open("/input/data.csv");
     if (!file)
@@ -319,9 +320,18 @@ bool cycle_manager::readInterval(cycle_manager::IntervalData &intervalData)
     String firstLine = file.readStringUntil('\n');
     int rowWidth = firstLine.length() + 1; // +1 para incluir el salto de línea
 
+    Log.noticeln("First line: %s", firstLine.c_str());
+    Log.noticeln("Row width: %d", rowWidth);
+
     // Calcular la posición de la fila actual
-    int targetLine = cycleData.interval_current + 1; // +1 para moverse al siguiente intervalo
+
+    int targetLine = (cycleData.interval_current - 1) + 1;
+    // -1 porque mi valor ya lo actualice en el header
+    //+1 para moverse al siguiente intervalo
     int position = targetLine * rowWidth;
+
+    Log.noticeln("Interval_current: %d Target line: %d", cycleData.interval_current, targetLine);
+    Log.noticeln("Calculated position: %d", position);
 
     // Mover el puntero a la posición calculada
     if (!file.seek(position))
@@ -338,25 +348,38 @@ bool cycle_manager::readInterval(cycle_manager::IntervalData &intervalData)
         int start = 0;
         int end = line.indexOf(',');
 
+        // Parse interval_id
         intervalData.interval_id = line.substring(start, end).toInt();
         start = end + 1;
         end = line.indexOf(',', start);
+
+        // Parse pH
         intervalData.ph = line.substring(start, end).toFloat();
         start = end + 1;
         end = line.indexOf(',', start);
+
+        // Parse oxygen
         intervalData.oxygen = line.substring(start, end).toFloat();
         start = end + 1;
         end = line.indexOf(',', start);
+
+        // Parse temperature
         intervalData.temperature = line.substring(start, end).toFloat();
         start = end + 1;
         end = line.indexOf(',', start);
-        intervalData.light = line.substring(start, end).toInt();
+
+        // Parse light
+        String light_str = line.substring(start);
+        Log.noticeln("Parsed light: %s", light_str.c_str());
+        intervalData.light = light_str.toInt();
 
         file.close();
 
         logIntervalDataforDebug(intervalData);
         return true;
-    }else{
+    }
+    else
+    {
         Log.errorln("Failed to read the next interval");
         file.close();
         return false;
@@ -365,9 +388,51 @@ bool cycle_manager::readInterval(cycle_manager::IntervalData &intervalData)
 
 void cycle_manager::logIntervalDataforDebug(const IntervalData &intervalData)
 {
-    Log.infoln("Interval ID: %d", intervalData.interval_id);
-    Log.infoln("pH: %f", intervalData.ph);
-    Log.infoln("Oxygen: %f", intervalData.oxygen);
-    Log.infoln("Temperature: %f", intervalData.temperature);
-    Log.infoln("Light: %d", intervalData.light);
+    Log.noticeln("Interval ID: %d", intervalData.interval_id);
+    Log.noticeln("pH: %F", intervalData.ph);
+    Log.noticeln("Oxygen: %F", intervalData.oxygen);
+    Log.noticeln("Temperature: %F", intervalData.temperature);
+    Log.noticeln("Light: %d", intervalData.light);
+}
+
+const cycle_manager::IntervalData &cycle_manager::getIntervalData() const
+{
+    return intervalData;
+}
+
+bool cycle_manager::resetHeaderForDebug()
+{
+    if (!SD.begin(SD_CS_PIN))
+    {
+        Log.errorln("SD Initialization failed!");
+        return false;
+    }
+    else
+    {
+        Log.infoln("SD Initialization done.");
+    }
+
+    File file = SD.open("/input/header.csv", FILE_WRITE);
+    if (!file)
+    {
+        Log.errorln("Failed to open header file for writing");
+        return INTERVAL_ERROR;
+    }
+
+    // TODO: Un apagon aca nos mata todo porque nos crashea el archivo header.csv
+    file.print("cycle_name,");
+    file.println("csv base");
+    file.print("cycle_id,");
+    file.println("csv_base_20241013_182343");
+    file.print("state,");
+    file.println("new_cycle");
+    file.print("interval_time,");
+    file.println("15");
+    file.print("interval_total,");
+    file.println("4");
+    file.print("interval_current,");
+    file.println("0");
+    file.close();
+
+    return true;
 }
