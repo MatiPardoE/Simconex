@@ -158,83 +158,56 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.temp_button.grid(row=8, column=0, padx=10, pady=(0,10), sticky="ns")
     
     def process_data(self, data):
-        pattern = r"#([LPTDCOWAZ])(\d+)\!"
-        if re.match(pattern, data):
-            matches = re.findall(pattern, data)
-            msg_list = [{'id': m[0], 'value': int(m[1])} for m in matches]
-            self.update_data(msg_list)
-        
-        pattern = r"#F\d{6}\d{2}\d{4}\d{6}\d{4}\d{1}\d{1}\d{1}\d{1}!"
-        data = re.findall(pattern, data)
-        
-        for values in data:
-            content = values[2:-1]  
-            self.minutes_list.insert(0, int(content[0:6])) 
-            self.light_list.insert(0, int(content[6:8]))
-            self.ph_list.insert(0, float(content[8:12])/100)
-            self.od_list.insert(0, float(content[12:18])/100)
-            self.temp_list.insert(0, float(content[18:22])/100)
-            #self.datetime_list.insert(0, datetime.datetime.now())
-            ev_c = int(content[22])
-            ev_o = int(content[23])
-            pump_a = int(content[24])
-            pump_w = int(content[25])
+        if "#Z1!" in data:
+            self.esp_disconnected()
 
-
-    def update_data(self, msg_list):
-        for msg in msg_list:
-            id_msg = msg['id']
-            value = msg['value']
+        pattern = r"^(\d{10}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(\d{1}),(\d{1}),(\d{1}),(\d{1})$" # linea de log
+        match = re.match(pattern, data)
+        
+        if match:
+            self.light_button.configure(text = f"{int(match.group(5))}")
+            self.ph_button.configure(text = "{0:.2f}".format(float(match.group(2))))
+            self.do_button.configure(text = "{0:.2f}".format(float(match.group(3))))
+            self.temp_button.configure(text = "{0:.2f}".format(float(match.group(4))))            
             
-            if id_msg == 'L':
-                self.light_button.configure(text = f"{value}")
-            elif id_msg == 'P':
-                self.ph_button.configure(text = "{0:.2f}".format(value/100))
-            elif id_msg == 'D':
-                self.do_button.configure(text = "{0:.2f}".format(value/100))
-            elif id_msg == 'T':
-                self.temp_button.configure(text = "{0:.2f}".format(value/100))
-            elif id_msg == 'C':
-                if value == 0:
+            if match.group(6) == '0':
                     self.co2_button.configure(text="Apagado")
                     self.co2_button.configure(fg_color="red")
-                elif value == 1:
+            elif match.group(6) == '1':
                     self.co2_button.configure(text="Encendido")
                     self.co2_button.configure(fg_color="green")
-            elif id_msg == 'O':
-                if value == 0:
-                    self.o2_button.configure(text="Apagado")
-                    self.o2_button.configure(fg_color="red")
-                elif value == 1:
-                    self.o2_button.configure(text="Encendido")
-                    self.o2_button.configure(fg_color="green")
-            elif id_msg == 'A':
-                if value == 0:
-                    self.air_button.configure(text="Apagado")
-                    self.air_button.configure(fg_color="red")
-                elif value == 1:
-                    self.air_button.configure(text="Encendido")
-                    self.air_button.configure(fg_color="green")
-            elif id_msg == 'W':
-                if value == 0:
-                    self.pump_button.configure(text="Apagado")
-                    self.pump_button.configure(fg_color="red")
-                elif value == 1:
-                    self.pump_button.configure(text="Encendido")
-                    self.pump_button.configure(fg_color="green")
-            elif id_msg == 'Z':
-                self.light_button.configure(text = "--")
-                self.ph_button.configure(text = "--")
-                self.do_button.configure(text = "--")
-                self.temp_button.configure(text = "--")
-                self.co2_button.configure(text="Desconectado")
-                self.co2_button.configure(fg_color="orange")
-                self.o2_button.configure(text="Desconectado")
-                self.o2_button.configure(fg_color="orange")
-                self.air_button.configure(text="Desconectado")
-                self.air_button.configure(fg_color="orange")
-                self.pump_button.configure(text="Desconectado")
-                self.pump_button.configure(fg_color="orange")
+            if match.group(7) == '0':
+                self.o2_button.configure(text="Apagado")
+                self.o2_button.configure(fg_color="red")
+            elif match.group(7) == '1':
+                self.o2_button.configure(text="Encendido")
+                self.o2_button.configure(fg_color="green")
+            if match.group(8) == '0':
+                self.air_button.configure(text="Apagado")
+                self.air_button.configure(fg_color="red")
+            elif match.group(8) == '1':
+                self.air_button.configure(text="Encendido")
+                self.air_button.configure(fg_color="green")
+            if match.group(9) == '0':
+                self.pump_button.configure(text="Apagado")
+                self.pump_button.configure(fg_color="red")
+            elif match.group(9) == '1':
+                self.pump_button.configure(text="Encendido")
+                self.pump_button.configure(fg_color="green")
+
+    def esp_disconnected(self):
+        self.light_button.configure(text = "--")
+        self.ph_button.configure(text = "--")
+        self.do_button.configure(text = "--")
+        self.temp_button.configure(text = "--")
+        self.co2_button.configure(text="Desconectado")
+        self.co2_button.configure(fg_color="orange")
+        self.o2_button.configure(text="Desconectado")
+        self.o2_button.configure(fg_color="orange")
+        self.air_button.configure(text="Desconectado")
+        self.air_button.configure(fg_color="orange")
+        self.pump_button.configure(text="Desconectado")
+        self.pump_button.configure(fg_color="orange")
 
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
