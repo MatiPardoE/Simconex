@@ -270,29 +270,23 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.temp_button.grid(row=8, column=0, padx=10, pady=(0, 10), sticky="ns")
 
     def process_data(self, data):
-        pattern = r"#([LPTDCOWAZ])(\d+)\!"
-        matches = re.findall(pattern, data)
-        msg_list = [{'id': m[0], 'value': int(m[1])} for m in matches]
-        self.update_data(msg_list)
+        if "#Z1!" in data:
+            self.esp_disconnected()
 
-    def update_data(self, msg_list):
-        for msg in msg_list:
-            id_msg = msg['id']
-            value = msg['value']
-            
-            if id_msg == 'L':
-                self.light_button.configure(text = f"{value}")
-            elif id_msg == 'P':
-                self.ph_button.configure(text = "{0:.2f}".format(value/100))
-            elif id_msg == 'D':
-                self.do_button.configure(text = "{0:.2f}".format(value/100))
-            elif id_msg == 'T':
-                self.temp_button.configure(text = "{0:.2f}".format(value/100))
-            elif id_msg == 'Z':
-                self.light_button.configure(text = "--")
-                self.ph_button.configure(text = "--")
-                self.do_button.configure(text = "--")
-                self.temp_button.configure(text = "--")
+        pattern = r"^(\d{10}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(\d{1}),(\d{1}),(\d{1}),(\d{1})$" # linea de log
+        match = re.match(pattern, data)
+        
+        if match:
+            self.light_button.configure(text = f"{int(match.group(5))}")
+            self.ph_button.configure(text = "{0:.2f}".format(float(match.group(2))))
+            self.do_button.configure(text = "{0:.2f}".format(float(match.group(3))))
+            self.temp_button.configure(text = "{0:.2f}".format(float(match.group(4))))            
+    
+    def esp_disconnected(self):
+        self.light_button.configure(text = "--")
+        self.ph_button.configure(text = "--")
+        self.do_button.configure(text = "--")
+        self.temp_button.configure(text = "--")
 
 class SetPointsFrame(ctk.CTkFrame):
 

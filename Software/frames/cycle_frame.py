@@ -274,15 +274,13 @@ class LogFrame(ctk.CTkFrame):
     def __init__(self, master, fname):
         super().__init__(master) 
 
-        #self.results = []
         self.datetime_list = []
         self.ph_list = []
         self.od_list = []
         self.temp_list = []
         self.light_list = []
 
-        ui_serial.publisher.subscribe(self.update_list)
-
+        ui_serial.publisher.subscribe(self.update_log)
         image_path = os.path.join(os.getcwd(), "images")
 
         self.grid_columnconfigure(0, weight=1)
@@ -344,73 +342,20 @@ class LogFrame(ctk.CTkFrame):
         self.scrollable_frame = ctk.CTkScrollableFrame(self.frame_log, width=1500)
         self.scrollable_frame.pack(pady=10, padx=10, fill="both", expand=True)
 
-        # for i in range(len(datetime_list)):
-        #     self.frame_line = ctk.CTkFrame(self.frame_lines)
-        #     self.frame_line.grid(row=i+1, column=0, padx=5, pady=0, sticky="ew")
-
-        #     self.frame_line.grid_rowconfigure(0, weight=1)
-        #     self.frame_line.grid_columnconfigure(0, weight=1)
-        #     self.frame_line.grid_columnconfigure(1, weight=1)
-        #     self.frame_line.grid_columnconfigure(2, weight=1)
-        #     self.frame_line.grid_columnconfigure(3, weight=1)
-        #     self.frame_line.grid_columnconfigure(4, weight=1)
-        #     self.frame_line.grid_columnconfigure(5, weight=1)
-        #     self.frame_line.grid_columnconfigure(6, weight=1)
-
-        #     self.label_time = ctk.CTkLabel(self.frame_line, text=datetime_list[i].strftime("%H:%M"), corner_radius=0, width=150)
-        #     self.label_time.grid(row=0, column=0, padx=5, pady=0, sticky="ns")
-
-        #     self.label_date = ctk.CTkLabel(self.frame_line, text=datetime_list[i].strftime("%d/%m/%Y"), corner_radius=0, width=200)
-        #     self.label_date.grid(row=0, column=1, padx=5, pady=0, sticky="ns")
-
-        #     self.label_od = ctk.CTkLabel(self.frame_line, text=od_list[i], corner_radius=0, width=150)
-        #     self.label_od.grid(row=0, column=2, padx=5, pady=0, sticky="ns")
-
-        #     self.label_ph = ctk.CTkLabel(self.frame_line, text=ph_list[i], corner_radius=0, width=150)
-        #     self.label_ph.grid(row=0, column=3, padx=5, pady=0, sticky="ns")
-
-        #     self.label_light = ctk.CTkLabel(self.frame_line, text=light_list[i], corner_radius=0, width=150)
-        #     self.label_light.grid(row=0, column=4, padx=5, pady=0, sticky="ns")
-
-        #     self.label_temp = ctk.CTkLabel(self.frame_line, text=temp_list[i], corner_radius=0, width=200)
-        #     self.label_temp.grid(row=0, column=5, padx=5, pady=0, sticky="ns")
-
-        #     self.label_cycle = ctk.CTkLabel(self.frame_line, text="Ciclo1", corner_radius=0, width=150)
-        #     self.label_cycle.grid(row=0, column=6, padx=5, pady=0, sticky="ns")
-
     def on_hover(self, event):
         self.label_export.configure(cursor="hand2") 
 
     def off_hover(self, event):
         self.label_export.configure(cursor="arrow") 
     
-    def update_list(self, msg):
-        #print("update_list")
-        """ pattern = r"#F\d{6}\d{2}\d{4}\d{6}\d{4}\d{1}\d{1}\d{1}\d{1}!"
-        matches = re.match(pattern, data)
-        print("matches", matches)
-        if matches: 
-            data = re.findall(pattern, msg)
-            print("msg:", msg)
-            print("data:", data)
-            print("Entro al for")
-            
-            for values in data:
-                content = values[2:-1]  
-                #self.minutes_list.insert(0, int(content[0:6])) 
-                self.light_list.insert(0, int(content[6:8]))
-                self.ph_list.insert(0, float(content[8:12])/100)
-                self.od_list.insert(0, float(content[12:18])/100)
-                self.temp_list.insert(0, float(content[18:22])/100)
-                print(self.temp_list)
-                #self.datetime_list.insert(0, datetime.datetime.now())
-                ev_c = int(content[22])
-                ev_o = int(content[23])
-                pump_a = int(content[24])
-                pump_w = int(content[25])
-            
-            print("Ya paso el for") """
-
+    def update_log(self, data):
+        pattern = r"^(\d{10}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(\d{1}),(\d{1}),(\d{1}),(\d{1})$" # linea de log
+        match = re.match(pattern, data)
+        if match: 
+            self.light_list.insert(0, int(match.group(5)))
+            self.ph_list.insert(0, float(match.group(2)))
+            self.od_list.insert(0, float(match.group(3)))
+            self.temp_list.insert(0, float(match.group(4)))
         
         for widget in self.scrollable_frame.winfo_children():
             widget.pack_forget()
@@ -421,44 +366,27 @@ class LogFrame(ctk.CTkFrame):
 
             self.in_frame = ctk.CTkFrame(self.frame_line)
             self.in_frame.pack(fill="x")
-            # self.in_frame.grid_rowconfigure(0, weight=1)
-            # self.in_frame.grid_columnconfigure(0, weight=1)
-            # self.in_frame.grid_columnconfigure(1, weight=1)
-            # self.in_frame.grid_columnconfigure(2, weight=1)
-            # self.in_frame.grid_columnconfigure(3, weight=1)
-            # self.in_frame.grid_columnconfigure(4, weight=1)
-            # self.in_frame.grid_columnconfigure(5, weight=1)
-            # self.in_frame.grid_columnconfigure(6, weight=1)
-
-            #self.label_time = ctk.CTkLabel(self.in_frame, text=self.datetime_list[i].strftime("%H:%M"), corner_radius=0, width=150)
+            
             self.label_time = ctk.CTkLabel(self.in_frame, text="12:30", corner_radius=0, width=150)
             self.label_time.pack(side='left')
-            #self.label_time.grid(row=0, column=0, padx=0, pady=0, sticky="ns")
 
-            #self.label_date = ctk.CTkLabel(self.in_frame, text=self.datetime_list[i].strftime("%d/%m/%Y"), corner_radius=0, width=200)
             self.label_date = ctk.CTkLabel(self.in_frame, text="11/10/2024", corner_radius=0, width=200)
             self.label_date.pack(side='left')
-            #self.label_date.grid(row=0, column=1, padx=5, pady=0, sticky="ns")
 
             self.label_od = ctk.CTkLabel(self.in_frame, text=self.od_list[i], corner_radius=0, width=150)
             self.label_od.pack(side='left')
-            #self.label_od.grid(row=0, column=2, padx=5, pady=0, sticky="ns")
 
             self.label_ph = ctk.CTkLabel(self.in_frame, text=self.ph_list[i], corner_radius=0, width=150)
             self.label_ph.pack(side='left')
-            #self.label_ph.grid(row=0, column=3, padx=5, pady=0, sticky="ns")
 
             self.label_light = ctk.CTkLabel(self.in_frame, text=self.light_list[i], corner_radius=0, width=150)
             self.label_light.pack(side='left')
-            #self.label_light.grid(row=0, column=4, padx=5, pady=0, sticky="ns")
 
             self.label_temp = ctk.CTkLabel(self.in_frame, text=self.temp_list[i], corner_radius=0, width=200)
             self.label_temp.pack(side='left')
-            #self.label_temp.grid(row=0, column=5, padx=5, pady=0, sticky="ns")
 
             self.label_cycle = ctk.CTkLabel(self.in_frame, text="Ciclo1", corner_radius=0, width=150)
             self.label_cycle.pack(side='left')
-            #self.label_cycle.grid(row=0, column=6, padx=5, pady=0, sticky="ns")
 
 class CycleFrame(ctk.CTkFrame):
     def __init__(self, master):
