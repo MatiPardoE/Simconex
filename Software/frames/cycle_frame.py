@@ -8,53 +8,6 @@ from datetime import datetime
 import frames.serial_handler as ui_serial
 import re
 
-def read_datalog(fname):
-    datetime_list = []
-    ph_list = []
-    od_list = []
-    temp_list = []
-    light_list = []
-    index = {}
-    
-    with open(fname, newline='') as csvfile:
-        handler = csv.reader(csvfile)
-        for i, line in enumerate(handler):
-            if i==0:
-                for j, column in enumerate(line):
-                    if column == "Fecha":
-                        index['fecha'] = j
-                    elif column == "Hora":
-                        index['hora'] = j
-                    elif column == "pH":
-                        index['ph'] = j
-                    elif column == "DO":
-                        index['do'] = j
-                    elif column == "Temperatura":
-                        index['temperatura'] = j
-                    elif column == "LED1":
-                        index['led1'] = j
-                    elif column == "LED2":
-                        index['led2'] = j
-                    elif column == "LED3":
-                        index['led3'] = j
-                    elif column == "LED4":
-                        index['led4'] = j
-                    elif column == "LED5":
-                        index['led5'] = j
-            else: 
-                datetime_str = line[index.get("fecha")] + ' ' + line[index.get("hora")]
-                datetime_single = datetime.strptime(datetime_str, '%d/%m/%Y %H:%M:%S')
-                datetime_list.append(datetime_single)
-                
-                # Extraer los valores
-                ph_list.append(float(line[index.get("ph")]))
-                od_list.append(float(line[index.get("do")]))
-                temp_list.append(float(line[index.get("temperatura")]))
-                light_list.append(float(line[index.get("led1")]))  
-    
-    return datetime_list, ph_list, od_list, temp_list, light_list
-
-
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
@@ -151,28 +104,19 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.pause_image = ctk.CTkImage(Image.open(os.path.join(image_path, "pause.png")), size=(40, 40))
 
         self.play_pause_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.play_image)
-        self.play_pause_image_label.grid(row=0, column=0, padx=15, pady=5, sticky="ns")
-
-        
+        self.play_pause_image_label.grid(row=0, column=0, padx=15, pady=5, sticky="ns")        
 
         self.stop_image = ctk.CTkImage(Image.open(os.path.join(image_path, "stop.png")), size=(40, 40))
         self.stop_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.stop_image)
-        self.stop_image_label.grid(row=0, column=1, padx=15, pady=5, sticky="ns")
-
-        
-
+        self.stop_image_label.grid(row=0, column=1, padx=15, pady=5, sticky="ns")    
 
         self.bin_image = ctk.CTkImage(Image.open(os.path.join(image_path, "bin.png")), size=(40, 40))
         self.bin_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.bin_image)
-        self.bin_image_label.grid(row=0, column=2, padx=15, pady=5, sticky="ns")
-
-        
+        self.bin_image_label.grid(row=0, column=2, padx=15, pady=5, sticky="ns")        
 
         self.add_file_image = ctk.CTkImage(Image.open(os.path.join(image_path, "add-file.png")), size=(40, 40))
         self.add_file_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.add_file_image)
-        self.add_file_image_label.grid(row=0, column=3, padx=15, pady=5, sticky="ns")
-
-        
+        self.add_file_image_label.grid(row=0, column=3, padx=15, pady=5, sticky="ns")        
 
         self.frame_commands = ctk.CTkFrame(self)
         self.frame_commands.grid(row=2, column=0, padx=20, pady=(10, 0), sticky="ew")
@@ -271,7 +215,7 @@ class ControlCycleFrame(ctk.CTkFrame):
    
 class LogFrame(ctk.CTkFrame):
 
-    def __init__(self, master, fname):
+    def __init__(self, master):
         super().__init__(master) 
 
         self.datetime_list = []
@@ -406,7 +350,7 @@ class CycleFrame(ctk.CTkFrame):
         self.actual_cycle_frame = ControlCycleFrame(self)
         self.actual_cycle_frame.grid(row=0, column=1, padx=10, pady=(10, 0), sticky="nsew")
 
-        self.log_frame = LogFrame(self, os.path.join(datalog_path, "datos_generados_logico.csv"))
+        self.log_frame = LogFrame(self)#, os.path.join(datalog_path, "datos_generados_logico.csv"))
         self.log_frame.grid(row=1, column=0, padx=10, pady=(10, 0), sticky="nsew", columnspan=2)
 
 
