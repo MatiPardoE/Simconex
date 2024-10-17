@@ -3,6 +3,7 @@ import os
 import time
 import threading
 from PIL import Image
+import frames.serial_handler as ui_serial
 
 class CalibWindow(ctk.CTkToplevel):
     def __init__(self, master = None):

@@ -59,7 +59,7 @@ class LogFrame(ctk.CTkScrollableFrame):
     def __init__(self, master, fname):
         super().__init__(master) 
 
-        #ui_serial.publisher.subscribe(self.process_data)
+        ui_serial.publisher.subscribe(self.process_data)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -173,9 +173,8 @@ class LogFrame(ctk.CTkScrollableFrame):
                 print(f"NO refresh_log {id_msg}")
     
     def refresh_log(self):
-        print(f"refresh_log")
         for i in range(len(self.datetime_list)):
-            print(f"Actualizo log: {i} pH: {self.ph_list[i]}")
+            #print(f"Actualizo log: {i} pH: {self.ph_list[i]}")
             self.frame_line = ctk.CTkFrame(self.frame_lines)
             self.frame_line.grid(row=i+1, column=0, padx=5, pady=0, sticky="ew")
 
@@ -299,7 +298,6 @@ class SetPointsFrame(ctk.CTkFrame):
 
     def __init__(self, master):
         super().__init__(master) 
-
         ui_serial.publisher.subscribe(self.process_data)
 
         self.grid_rowconfigure(0, weight=1)
@@ -325,22 +323,22 @@ class SetPointsFrame(ctk.CTkFrame):
 
         self.label_co2 = ctk.CTkLabel(self.left_frame, text="CO2", font=ctk.CTkFont(weight="bold"))
         self.label_co2.grid(row=1, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.co2_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, command=self.co2_button_event, width=100)
+        self.co2_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, command=self.co2_button_event, width=100, state="disabled")
         self.co2_button.grid(row=2, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_o2 = ctk.CTkLabel(self.left_frame, text="O2", font=ctk.CTkFont(weight="bold"))
         self.label_o2.grid(row=3, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.o2_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, command=self.o2_button_event, width=100)
+        self.o2_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, command=self.o2_button_event, width=100, state="disabled")
         self.o2_button.grid(row=4, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_air = ctk.CTkLabel(self.left_frame, text="Aire", font=ctk.CTkFont(weight="bold"))
         self.label_air.grid(row=5, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.air_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, command=self.air_button_event, width=100)
+        self.air_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, command=self.air_button_event, width=100, state="disabled")
         self.air_button.grid(row=6, column=0, padx=10, pady=0, sticky="ns")
 
         self.label_pump = ctk.CTkLabel(self.left_frame, text="Bomba", font=ctk.CTkFont(weight="bold"))
         self.label_pump.grid(row=7, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.pump_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, command=self.pump_button_event, width=100)
+        self.pump_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, command=self.pump_button_event, width=100, state="disabled")
         self.pump_button.grid(row=8, column=0, padx=10, pady=(0, 10), sticky="ns")
 
         self.right_frame = ctk.CTkFrame(self)
@@ -364,39 +362,56 @@ class SetPointsFrame(ctk.CTkFrame):
         self.light_text_var = tkinter.StringVar()
         self.label_light = ctk.CTkLabel(self.right_frame, text="Luz [%]", font=ctk.CTkFont(weight="bold"))
         self.label_light.grid(row=1, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.entry_light = ctk.CTkEntry(self.right_frame, textvariable=self.light_text_var, justify="center", width=100)
-        #self.entry_light.insert(0, "42")
+        self.entry_light = ctk.CTkEntry(self.right_frame, textvariable=self.light_text_var, justify="center", width=100, state="disabled")
         self.entry_light.grid(row=2, column=0, padx=10, pady=0, sticky="ns")
 
         self.ph_text_var = tkinter.StringVar()
         self.label_ph = ctk.CTkLabel(self.right_frame, text="pH", font=ctk.CTkFont(weight="bold"))
         self.label_ph.grid(row=3, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.entry_ph = ctk.CTkEntry(self.right_frame, textvariable=self.ph_text_var, justify="center", width=100)
-        #self.entry_ph.insert(0, "6.536")
+        self.entry_ph = ctk.CTkEntry(self.right_frame, textvariable=self.ph_text_var, justify="center", width=100, state="disabled")
         self.entry_ph.grid(row=4, column=0, padx=10, pady=0, sticky="ns")
 
         self.do_text_var = tkinter.StringVar()
         self.label_do = ctk.CTkLabel(self.right_frame, text="OD [%]", font=ctk.CTkFont(weight="bold"))
         self.label_do.grid(row=5, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.entry_do = ctk.CTkEntry(self.right_frame, textvariable=self.do_text_var, justify="center", width=100)
-        #self.entry_do.insert(0, "342.4")
+        self.entry_do = ctk.CTkEntry(self.right_frame, textvariable=self.do_text_var, justify="center", width=100, state="disabled")
         self.entry_do.grid(row=6, column=0, padx=10, pady=0, sticky="ns")
 
         self.temp_text_var = tkinter.StringVar()
         self.label_temp = ctk.CTkLabel(self.right_frame, text="Temperatura [°C]", font=ctk.CTkFont(weight="bold"))
         self.label_temp.grid(row=7, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.entry_temp = ctk.CTkEntry(self.right_frame, textvariable=self.temp_text_var, justify="center", width=100)
-        #self.entry_temp.insert(0, "24.3")
+        self.entry_temp = ctk.CTkEntry(self.right_frame, textvariable=self.temp_text_var, justify="center", width=100, state="disabled")
         self.entry_temp.grid(row=8, column=0, padx=10, pady=0, sticky="ns")
 
-        self.send_button = ctk.CTkButton(self.right_frame, text="Enviar", command=self.send_button_event, width=100)
+        self.send_button = ctk.CTkButton(self.right_frame, text="Enviar", command=self.send_button_event, width=100, state="disabled")
         self.send_button.grid(row=9, column=0, padx=10, pady=(20, 10), sticky="ns")
 
     def process_data(self, data):
+        pattern = r"#(STA)([012])\!"
+        if re.match(pattern, data):
+            self.esp_connected()
+        
+        if "#Z1!" in data:
+            self.esp_disconnected()
+
         pattern = r"#([LPTDCOWAZ])(\d+)\!"
         matches = re.findall(pattern, data)
         msg_list = [{'id': m[0], 'value': int(m[1])} for m in matches]
         self.update_data(msg_list)
+
+    def esp_connected(self):
+        self.entry_light.configure(state = "normal")
+        self.entry_ph.configure(state = "normal")
+        self.entry_do.configure(state = "normal")
+        self.entry_temp.configure(state = "normal")
+        self.send_button.configure(state = "normal")
+    
+    def esp_disconnected(self):
+        self.entry_light.configure(state = "disabled")
+        self.entry_ph.configure(state = "disabled")
+        self.entry_do.configure(state = "disabled")
+        self.entry_temp.configure(state = "disabled")
+        self.send_button.configure(state = "disabled")        
 
     def update_data(self, msg_list):
         for msg in msg_list:
@@ -407,39 +422,51 @@ class SetPointsFrame(ctk.CTkFrame):
                 if value == 0:
                     self.co2_button.configure(text="Apagado")
                     self.co2_button.configure(fg_color="red")
+                    self.co2_button.configure(state="normal")
                 elif value == 1:
                     self.co2_button.configure(text="Encendido")
                     self.co2_button.configure(fg_color="green")
+                    self.co2_button.configure(state="normal")
             elif id_msg == 'O':
                 if value == 0:
                     self.o2_button.configure(text="Apagado")
                     self.o2_button.configure(fg_color="red")
+                    self.o2_button.configure(state="normal")
                 elif value == 1:
                     self.o2_button.configure(text="Encendido")
                     self.o2_button.configure(fg_color="green")
+                    self.o2_button.configure(state="normal")
             elif id_msg == 'A':
                 if value == 0:
                     self.air_button.configure(text="Apagado")
                     self.air_button.configure(fg_color="red")
+                    self.air_button.configure(state="normal")
                 elif value == 1:
                     self.air_button.configure(text="Encendido")
                     self.air_button.configure(fg_color="green")
+                    self.air_button.configure(state="normal")
             elif id_msg == 'W':
                 if value == 0:
                     self.pump_button.configure(text="Apagado")
                     self.pump_button.configure(fg_color="red")
+                    self.pump_button.configure(state="normal")
                 elif value == 1:
                     self.pump_button.configure(text="Encendido")
                     self.pump_button.configure(fg_color="green")
+                    self.pump_button.configure(state="normal")
             elif id_msg == 'Z':
                 self.co2_button.configure(text="Desconectado")
                 self.co2_button.configure(fg_color="orange")
+                self.co2_button.configure(state="disabled")
                 self.o2_button.configure(text="Desconectado")
                 self.o2_button.configure(fg_color="orange")
+                self.o2_button.configure(state="disabled")
                 self.air_button.configure(text="Desconectado")
                 self.air_button.configure(fg_color="orange")
+                self.air_button.configure(state="disabled")
                 self.pump_button.configure(text="Desconectado")
                 self.pump_button.configure(fg_color="orange")
+                self.pump_button.configure(state="disabled")
 
     def co2_button_event(self):
         if self.co2_button.cget("text") == "Encendido":
@@ -490,6 +517,7 @@ class SetPointsFrame(ctk.CTkFrame):
 class ManualRecordFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
+        ui_serial.publisher.subscribe(self.process_data)
 
         image_path = os.path.join(os.getcwd(), "images")
 
@@ -512,24 +540,16 @@ class ManualRecordFrame(ctk.CTkFrame):
         self.play_pause_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.play_image)
         self.play_pause_image_label.grid(row=0, column=0, padx=15, pady=5, sticky="ew")
 
-        self.play_pause_image_label.bind("<Enter>", self.on_hover)
-        self.play_pause_image_label.bind("<Leave>", self.off_hover)
-        self.play_pause_image_label.bind("<Button-1>", self.play_pause_event)
         self.is_playing = True
 
         self.stop_image = ctk.CTkImage(Image.open(os.path.join(image_path, "stop.png")), size=(40, 40))
         self.stop_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.stop_image)
         self.stop_image_label.grid(row=0, column=1, padx=15, pady=5, sticky="ew")
 
-        self.stop_image_label.bind("<Enter>", self.on_hover)
-        self.stop_image_label.bind("<Leave>", self.off_hover)
 
         self.bin_image = ctk.CTkImage(Image.open(os.path.join(image_path, "bin.png")), size=(40, 40))
         self.bin_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.bin_image)
         self.bin_image_label.grid(row=0, column=2, padx=15, pady=5, sticky="ew")
-
-        self.bin_image_label.bind("<Enter>", self.on_hover)
-        self.bin_image_label.bind("<Leave>", self.off_hover)
 
         self.frame_commands = ctk.CTkFrame(self)
         self.frame_commands.grid(row=2, column=0, padx=20, pady=(10, 0), sticky="ew")
@@ -544,17 +564,59 @@ class ManualRecordFrame(ctk.CTkFrame):
         self.entry_interval = ctk.CTkLabel(self.frame_commands, text="Intervalo:", justify="right")
         self.entry_interval.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
 
-        self.entry_interval = ctk.CTkEntry(self.frame_commands, placeholder_text="15", width=60)
+        self.entry_interval = ctk.CTkEntry(self.frame_commands, placeholder_text="15", width=60, state="disabled")
         self.entry_interval.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
         self.radio_var = tkinter.IntVar(value=0)
-        self.radio_button_seg = ctk.CTkRadioButton(master=self.frame_commands, text="seg", variable=self.radio_var, value=0, width=60)
+        self.radio_button_seg = ctk.CTkRadioButton(master=self.frame_commands, text="seg", variable=self.radio_var, value=0, width=60, state="disabled")
         self.radio_button_seg.grid(row=0, column=2, padx=0, pady=5)
-        self.radio_button_min = ctk.CTkRadioButton(master=self.frame_commands, text="min", variable=self.radio_var, value=1, width=60)
+        self.radio_button_min = ctk.CTkRadioButton(master=self.frame_commands, text="min", variable=self.radio_var, value=1, width=60, state="disabled")
         self.radio_button_min.grid(row=0, column=3, padx=0, pady=5)
 
-        self.main_button_interval = ctk.CTkButton(master=self.frame_commands, text="Enviar", command=self.send_button_event, width=80)
+        self.main_button_interval = ctk.CTkButton(master=self.frame_commands, text="Enviar", command=self.send_button_event, width=80, state="disabled")
         self.main_button_interval.grid(row=0, column=4, padx=5, pady=5, sticky="ew")
+
+    def process_data(self, data):
+        pattern = r"#(STA)([012])\!"
+        if re.match(pattern, data):
+            self.esp_connected()
+        
+        if "#Z1!" in data:
+            self.esp_disconnected()
+
+    def esp_connected(self):
+        self.play_pause_image_label.bind("<Enter>", self.on_hover)
+        self.play_pause_image_label.bind("<Leave>", self.off_hover)
+        self.play_pause_image_label.bind("<Button-1>", self.play_pause_event)
+        self.is_playing = True
+
+        self.stop_image_label.bind("<Enter>", self.on_hover)
+        self.stop_image_label.bind("<Leave>", self.off_hover)
+
+        self.bin_image_label.bind("<Enter>", self.on_hover)
+        self.bin_image_label.bind("<Leave>", self.off_hover)
+
+        self.main_button_interval.configure(state = "normal")
+        self.entry_interval.configure(state = "normal")
+        self.radio_button_seg.configure(state = "normal")
+        self.radio_button_min.configure(state = "normal")
+
+    def esp_disconnected(self):
+        self.play_pause_image_label.unbind("<Enter>")
+        self.play_pause_image_label.unbind("<Leave>")
+        self.play_pause_image_label.unbind("<Button-1>")
+        self.is_playing = True
+
+        self.stop_image_label.unbind("<Enter>")
+        self.stop_image_label.unbind("<Leave>")
+
+        self.bin_image_label.unbind("<Enter>")
+        self.bin_image_label.unbind("<Leave>")
+
+        self.main_button_interval.configure(state = "disabled")
+        self.entry_interval.configure(state = "disabled")
+        self.radio_button_seg.configure(state = "disabled")
+        self.radio_button_min.configure(state = "disabled")
 
     def on_hover(self, event):
         self.play_pause_image_label.configure(cursor="hand2") 

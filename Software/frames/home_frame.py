@@ -159,9 +159,26 @@ class InstantValuesFrame(ctk.CTkFrame):
     
     def process_data(self, data):
         pattern = r"#([LPTDCOWAZ])(\d+)\!"
-        matches = re.findall(pattern, data)
-        msg_list = [{'id': m[0], 'value': int(m[1])} for m in matches]
-        self.update_data(msg_list)
+        if re.match(pattern, data):
+            matches = re.findall(pattern, data)
+            msg_list = [{'id': m[0], 'value': int(m[1])} for m in matches]
+            self.update_data(msg_list)
+        
+        pattern = r"#F\d{6}\d{2}\d{4}\d{6}\d{4}\d{1}\d{1}\d{1}\d{1}!"
+        data = re.findall(pattern, data)
+        
+        for values in data:
+            content = values[2:-1]  
+            self.minutes_list.insert(0, int(content[0:6])) 
+            self.light_list.insert(0, int(content[6:8]))
+            self.ph_list.insert(0, float(content[8:12])/100)
+            self.od_list.insert(0, float(content[12:18])/100)
+            self.temp_list.insert(0, float(content[18:22])/100)
+            #self.datetime_list.insert(0, datetime.datetime.now())
+            ev_c = int(content[22])
+            ev_o = int(content[23])
+            pump_a = int(content[24])
+            pump_w = int(content[25])
 
 
     def update_data(self, msg_list):
@@ -221,7 +238,8 @@ class InstantValuesFrame(ctk.CTkFrame):
 
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
-        super().__init__(master) 
+        super().__init__(master)         
+        ui_serial.publisher.subscribe(self.process_data)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(4, weight=1)
@@ -231,12 +249,15 @@ class ActualCycleFrame(ctk.CTkFrame):
 
         self.label_actual_days = ctk.CTkLabel(self, text="10 Dias", font=ctk.CTkFont(size=18))
         self.label_actual_days.grid(row=1, column=0, padx=20, pady=(10, 10), sticky="w")
+        self.label_actual_days.grid_forget()
 
         self.progressbar_actual = ctk.CTkProgressBar(self)
         self.progressbar_actual.grid(row=2, column=0, padx=20, pady=(10, 10), sticky="ew")
+        self.progressbar_actual.grid_forget()
 
         self.frame_actual = ctk.CTkFrame(self)
         self.frame_actual.grid(row=3, column=0, padx=20, pady=(10, 10), sticky="ew")
+        self.frame_actual.grid_forget()
 
         self.frame_actual.grid_columnconfigure(0, weight=1)
         self.frame_actual.grid_columnconfigure(1, weight=1)
@@ -245,15 +266,67 @@ class ActualCycleFrame(ctk.CTkFrame):
 
         self.label_done_colour = ctk.CTkLabel(self.frame_actual, text="Completo")
         self.label_done_colour.grid(row=0, column=0, padx=20, pady=0, sticky="nsew")
+        self.label_done_colour.grid_forget()
 
         self.label_left_colour = ctk.CTkLabel(self.frame_actual, text="Restante")
         self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="nsew")
+        self.label_left_colour.grid_forget()
 
         self.label_done_text = ctk.CTkLabel(self.frame_actual, text="5 dias", font=ctk.CTkFont(size=15, weight="bold"))
         self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="nsew")
+        self.label_done_text.grid_forget()
 
         self.label_left_text = ctk.CTkLabel(self.frame_actual, text="5 dias", font=ctk.CTkFont(size=15, weight="bold"))
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
+        self.label_left_text.grid_forget()
+
+    def process_data(self, data):
+        pattern = r"#([LPTDCOWAZ])(\d+)\!"
+        if re.match(pattern, data):
+            matches = re.findall(pattern, data)
+            msg_list = [{'id': m[0], 'value': int(m[1])} for m in matches]
+            #self.update_data(msg_list)
+        
+        pattern = r"#(STA)([012])\!"
+        if re.match(pattern, data):
+            self.esp_connected()
+        
+        if "#Z1!" in data:
+            self.esp_disconnected()
+        
+        pattern = r"#F\d{6}\d{2}\d{4}\d{6}\d{4}\d{1}\d{1}\d{1}\d{1}!"
+        data = re.findall(pattern, data)
+        
+        for values in data:
+            content = values[2:-1] 
+            self.minutes_list.insert(0, int(content[0:6])) 
+            self.light_list.insert(0, int(content[6:8]))
+            self.ph_list.insert(0, float(content[8:12])/100)
+            self.od_list.insert(0, float(content[12:18])/100)
+            self.temp_list.insert(0, float(content[18:22])/100)
+            #self.datetime_list.insert(0, datetime.datetime.now())
+            ev_c = int(content[22])
+            ev_o = int(content[23])
+            pump_a = int(content[24])
+            pump_w = int(content[25])
+    
+    def esp_connected(self):
+        self.label_actual_days.grid(row=1, column=0, padx=20, pady=(10, 10), sticky="w")
+        self.progressbar_actual.grid(row=2, column=0, padx=20, pady=(10, 10), sticky="ew")
+        self.frame_actual.grid(row=3, column=0, padx=20, pady=(10, 10), sticky="ew")
+        self.label_done_colour.grid(row=0, column=0, padx=20, pady=0, sticky="nsew")
+        self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="nsew")
+        self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="nsew")
+        self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
+    
+    def esp_disconnected(self):
+        self.label_actual_days.grid_forget()
+        self.progressbar_actual.grid_forget()
+        self.frame_actual.grid_forget()
+        self.label_done_colour.grid_forget()
+        self.label_left_colour.grid_forget()
+        self.label_done_text.grid_forget()
+        self.label_left_text.grid_forget()
     
 class MyPlot(ctk.CTkFrame):
     def __init__(self, master, var, datalog_meas, datalog_ideal):
@@ -298,6 +371,7 @@ class MyPlot(ctk.CTkFrame):
 class PlotFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
+        ui_serial.publisher.subscribe(self.process_data)
 
         datalog_path = os.path.join(os.getcwd(), "test_data")
 
@@ -306,6 +380,7 @@ class PlotFrame(ctk.CTkFrame):
 
         self.tabview = ctk.CTkTabview(self)
         self.tabview.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
+        self.tabview.grid_forget()
         self.tabview.add("Luz")
         self.tabview.add("pH")
         self.tabview.add("OD")            
@@ -327,6 +402,41 @@ class PlotFrame(ctk.CTkFrame):
         self.plot_od = MyPlot(self.tabview.tab("OD"), "OD", os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
         self.plot_temp = MyPlot(self.tabview.tab("Temperatura"), "Temperatura", os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
         
+    def process_data(self, data):
+        pattern = r"#([LPTDCOWAZ])(\d+)\!"
+        if re.match(pattern, data):
+            matches = re.findall(pattern, data)
+            msg_list = [{'id': m[0], 'value': int(m[1])} for m in matches]
+            #self.update_data(msg_list)
+        
+        pattern = r"#(STA)([012])\!"
+        if re.match(pattern, data):
+            self.esp_connected()
+        
+        if "#Z1!" in data:
+            self.esp_disconnected()
+        
+        pattern = r"#F\d{6}\d{2}\d{4}\d{6}\d{4}\d{1}\d{1}\d{1}\d{1}!"
+        data = re.findall(pattern, data)
+        
+        for values in data:
+            content = values[2:-1]  
+            self.minutes_list.insert(0, int(content[0:6])) 
+            self.light_list.insert(0, int(content[6:8]))
+            self.ph_list.insert(0, float(content[8:12])/100)
+            self.od_list.insert(0, float(content[12:18])/100)
+            self.temp_list.insert(0, float(content[18:22])/100)
+            #self.datetime_list.insert(0, datetime.datetime.now())
+            ev_c = int(content[22])
+            ev_o = int(content[23])
+            pump_a = int(content[24])
+            pump_w = int(content[25])
+    
+    def esp_connected(self):
+        self.tabview.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
+
+    def esp_disconnected(self):
+        self.tabview.grid_forget()
 
 class HomeFrame(ctk.CTkFrame):
     def __init__(self, master):

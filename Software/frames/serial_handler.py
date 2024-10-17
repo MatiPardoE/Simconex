@@ -1,6 +1,7 @@
 import serial
 import threading
 import queue
+import re
 
 
 class SerialPublisher:
@@ -21,11 +22,10 @@ class SerialPublisher:
 
     def notify_subscribers(self, data):
         i=0
-        #print(f"serial_handler.py: Voy a notificar. Cantidad de suscriptores: {len(self.subscribers)}")
         for callback in self.subscribers:
-            callback(data)
-            #print(f"{i} - serial_handler.py: Notifico a alguien!")
             i=i+1
+            print(f"notifico {i}")
+            callback(data)
 
     def subscribe(self, callback):
         self.subscribers.append(callback)
@@ -61,7 +61,7 @@ class SerialPublisher:
                 response = self.ser.readline().decode('utf-8').strip()
 
                 if response == "ESP":
-                    print(f"Connected to ESP on {port.device}")
+                    print(f"Connected to ESP on {port.device}")                   
                     self.start_read_thread()
                     break
                 else:
@@ -69,6 +69,7 @@ class SerialPublisher:
                 self.ser.close()
             except (OSError, serial.SerialException) as e:
                 print(f"Failed to connect to {port.device}: {e}")
+
         print("Termina find_esp")
     
     def start_read_thread(self):
@@ -88,3 +89,4 @@ class SerialPublisher:
         self.ser.write(data)
 
 publisher = SerialPublisher()
+state_fbr = { "state": "disconnected" }
