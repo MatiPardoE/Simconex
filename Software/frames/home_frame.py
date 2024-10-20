@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import matplotlib.dates as mdates
+from matplotlib.animation import FuncAnimation
 import numpy as np
 import csv
 from datetime import datetime
@@ -253,35 +254,13 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
         self.label_left_text.grid_forget()
 
-    def process_data(self, data):
-        pattern = r"#([LPTDCOWAZ])(\d+)\!"
-        if re.match(pattern, data):
-            matches = re.findall(pattern, data)
-            msg_list = [{'id': m[0], 'value': int(m[1])} for m in matches]
-            #self.update_data(msg_list)
-        
+    def process_data(self, data):        
         pattern = r"#(STA)([012])\!"
         if re.match(pattern, data):
             self.esp_connected()
         
         if "#Z1!" in data:
-            self.esp_disconnected()
-        
-        pattern = r"#F\d{6}\d{2}\d{4}\d{6}\d{4}\d{1}\d{1}\d{1}\d{1}!"
-        data = re.findall(pattern, data)
-        
-        for values in data:
-            content = values[2:-1] 
-            self.minutes_list.insert(0, int(content[0:6])) 
-            self.light_list.insert(0, int(content[6:8]))
-            self.ph_list.insert(0, float(content[8:12])/100)
-            self.od_list.insert(0, float(content[12:18])/100)
-            self.temp_list.insert(0, float(content[18:22])/100)
-            #self.datetime_list.insert(0, datetime.datetime.now())
-            ev_c = int(content[22])
-            ev_o = int(content[23])
-            pump_a = int(content[24])
-            pump_w = int(content[25])
+            self.esp_disconnected()    
     
     def esp_connected(self):
         self.label_actual_days.grid(row=1, column=0, padx=20, pady=(10, 10), sticky="w")
@@ -302,44 +281,86 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.grid_forget()
     
 class MyPlot(ctk.CTkFrame):
-    def __init__(self, master, var, datalog_meas, datalog_ideal):
+    def __init__(self, master, var):
         super().__init__(master)
+        ui_serial.publisher.subscribe(self.process_data)
 
-        datetime_list_m, ph_list_m, od_list_m, temp_list_m, light_list_m = read_datalog(datalog_meas)
-        datetime_list_i, ph_list_i, od_list_i, temp_list_i, light_list_i = read_datalog(datalog_ideal)
+        # Crear la figura de Matplotlib
+        self.fig, self.ax = plt.subplots()
+        self.line, = self.ax.plot([], [], 'r-')
 
-        fig = Figure(figsize=(5, 4), dpi=100)
-        ax = fig.add_subplot()
-
-        if var=="pH":
-            ax.plot(datetime_list_i, ph_list_i, label="Valores esperados")
-            ax.plot(datetime_list_m, [x * random.uniform(0.9, 1.1) for x in ph_list_i], label="Valores medidos")
-        elif var=="OD":
-            ax.plot(datetime_list_i, od_list_i, label="Valores esperados")
-            ax.plot(datetime_list_m, [x * random.uniform(0.9, 1.1) for x in od_list_i], label="Valores medidos")
-            ax.set_ylabel("[%]")
-        elif var=="Temperatura":
-            ax.plot(datetime_list_i, temp_list_i, label="Valores esperados")
-            ax.plot(datetime_list_m, [x * random.uniform(0.9, 1.1) for x in temp_list_i], label="Valores medidos")
-            ax.set_ylabel("[°C]")
-        elif var=="Luz":
-            ax.plot(datetime_list_i, light_list_i, label="Valores esperados")
-            ax.plot(datetime_list_m, [x * random.uniform(0.9, 1.1) for x in light_list_i], label="Valores medidos")
-            ax.set_ylabel("[%]")
+        self.ph_data = []
+        self.od_data = []
+        self.temp_data = []
+        self.light_data = []
         
-        ax.legend()  
-        locator = mdates.AutoDateLocator(minticks=7, maxticks=10)
-        formatter = mdates.ConciseDateFormatter(locator)
-        ax.xaxis.set_major_locator(locator)
-        ax.xaxis.set_major_formatter(formatter)
-        canvas = FigureCanvasTkAgg(fig, master=master)  
-        canvas.draw()
+        self.ax.set_xlim(0, 100)
+        
+        if var=="pH":
+            self.ph_line, = self.ax.plot([], [], 'r-')
+            self.ax.set_ylim(0, 14)
+        elif var=="OD":
+            self.od_line, = self.ax.plot([], [], 'r-')
+            self.ax.set_ylabel("[%]")
+            self.ax.set_ylim(0, 100)
+        elif var=="Temperatura":
+            self.temp_line, = self.ax.plot([], [], 'r-')
+            self.ax.set_ylabel("[°C]")
+            self.ax.set_ylim(10, 30)
+        elif var=="Luz":
+            self.light_line, = self.ax.plot([], [], 'r-')
+            self.ax.set_ylabel("[%]")
+            self.ax.set_ylim(0, 100)
+        
+        # ax.legend()  
+        # locator = mdates.AutoDateLocator(minticks=7, maxticks=10)
+        # formatter = mdates.ConciseDateFormatter(locator)
+        # ax.xaxis.set_major_locator(locator)
+        # ax.xaxis.set_major_formatter(formatter)
+        self.canvas = FigureCanvasTkAgg(self.fig, master=master)  
+        self.canvas.draw()
 
-        toolbar = NavigationToolbar2Tk(canvas, master, pack_toolbar=False)
+        toolbar = NavigationToolbar2Tk(self.canvas, master, pack_toolbar=False)
         toolbar.update()
 
         toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
-        canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+        self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+
+        self.update_plot(var)
+
+    def process_data(self, data):
+        pattern = r"^(\d{10}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(\d{1}),(\d{1}),(\d{1}),(\d{1})$" # linea de log
+        match = re.match(pattern, data)
+        
+        if match:
+            self.light_data.append(int(match.group(5)))
+            self.ph_data.append(float(match.group(2)))
+            self.od_data.append(float(match.group(3)))
+            self.temp_data.append(float(match.group(4))) 
+            
+            # Limitar el tamaño de la lista para que el gráfico no crezca indefinidamente
+            if len(self.light_data) > 100:
+                self.light_data.pop(0)
+                self.ph_data.pop(0)
+                self.od_data.pop(0)
+                self.temp_data.pop(0)
+
+    def update_plot(self, var):
+        if var=="pH":
+            self.ph_line.set_ydata(self.ph_data)
+            self.ph_line.set_xdata(np.arange(len(self.ph_data)))
+        elif var=="OD":
+            self.od_line.set_ydata(self.od_data)
+            self.od_line.set_xdata(np.arange(len(self.od_data)))
+        elif var=="Temperatura":
+            self.temp_line.set_ydata(self.temp_data)
+            self.temp_line.set_xdata(np.arange(len(self.temp_data)))
+        elif var=="Luz":
+            self.light_line.set_ydata(self.light_data)
+            self.light_line.set_xdata(np.arange(len(self.light_data)))        
+        self.canvas.draw()
+        self.master.after(1000, lambda: self.update_plot(var))
+
 
 class PlotFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -364,47 +385,19 @@ class PlotFrame(ctk.CTkFrame):
         self.tabview.tab("OD").grid_columnconfigure(0, weight=1)
         self.tabview.tab("Temperatura").grid_columnconfigure(0, weight=1)
 
-        x = np.arange(0, 3, .01)
-        y_light = 2 * np.sin(2 * np.pi * x)
-        y_ph = 2 * np.sin(2 * np.pi * 2 * x)
-        y_od = 2 * np.sin(2 * np.pi * 3 * x)
-        y_temp = 2 * np.sin(2 * np.pi * x)
-
-        self.plot_light = MyPlot(self.tabview.tab("Luz"), "Luz", os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
-        self.plot_ph = MyPlot(self.tabview.tab("pH"), "pH", os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
-        self.plot_od = MyPlot(self.tabview.tab("OD"), "OD", os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
-        self.plot_temp = MyPlot(self.tabview.tab("Temperatura"), "Temperatura", os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
+        self.plot_light = MyPlot(self.tabview.tab("Luz"), "Luz")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
+        self.plot_ph = MyPlot(self.tabview.tab("pH"), "pH")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
+        self.plot_od = MyPlot(self.tabview.tab("OD"), "OD")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
+        self.plot_temp = MyPlot(self.tabview.tab("Temperatura"), "Temperatura")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
         
     def process_data(self, data):
-        pattern = r"#([LPTDCOWAZ])(\d+)\!"
-        if re.match(pattern, data):
-            matches = re.findall(pattern, data)
-            msg_list = [{'id': m[0], 'value': int(m[1])} for m in matches]
-            #self.update_data(msg_list)
-        
         pattern = r"#(STA)([012])\!"
         if re.match(pattern, data):
             self.esp_connected()
         
         if "#Z1!" in data:
-            self.esp_disconnected()
-        
-        pattern = r"#F\d{6}\d{2}\d{4}\d{6}\d{4}\d{1}\d{1}\d{1}\d{1}!"
-        data = re.findall(pattern, data)
-        
-        for values in data:
-            content = values[2:-1]  
-            self.minutes_list.insert(0, int(content[0:6])) 
-            self.light_list.insert(0, int(content[6:8]))
-            self.ph_list.insert(0, float(content[8:12])/100)
-            self.od_list.insert(0, float(content[12:18])/100)
-            self.temp_list.insert(0, float(content[18:22])/100)
-            #self.datetime_list.insert(0, datetime.datetime.now())
-            ev_c = int(content[22])
-            ev_o = int(content[23])
-            pump_a = int(content[24])
-            pump_w = int(content[25])
-    
+            self.esp_disconnected()  
+
     def esp_connected(self):
         self.tabview.grid(row=0, column=0, padx=0, pady=0, sticky="nsew")
 
