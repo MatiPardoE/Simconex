@@ -18,11 +18,12 @@ class LogFrame(ctk.CTkFrame):
         self.temp_list = []
         self.light_list = []
 
-        #ui_serial.publisher.subscribe(self.update_log)
+        ui_serial.publisher.subscribe(self.update_log)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(2, weight=1)
 
         self.label_control = ctk.CTkLabel(self, text="Registro de datos", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_control.grid(row=0, column=0, padx=(20, 10), pady=(10, 0), sticky="w")
@@ -33,7 +34,7 @@ class LogFrame(ctk.CTkFrame):
         self.frame_lines.grid_rowconfigure(0, weight=1)
 
         self.frame_line = ctk.CTkFrame(self.frame_lines)
-        self.frame_line.grid(row=0, column=0, padx=5, pady=0, sticky="ew")
+        self.frame_line.grid(row=0, column=0, padx=0, pady=0, sticky="ew")
 
         self.frame_line.grid_rowconfigure(0, weight=1)
         self.frame_line.grid_columnconfigure(0, weight=1)
@@ -80,10 +81,6 @@ class LogFrame(ctk.CTkFrame):
             self.od_list.insert(0, float(match.group(3)))
             self.temp_list.insert(0, float(match.group(4)))
         
-        for widget in self.scrollable_frame.winfo_children():
-            widget.pack_forget()
-            
-        for i in range(len(self.ph_list)):
             self.frame_line = ctk.CTkFrame(self.scrollable_frame)
             self.frame_line.pack(fill="x")
 
@@ -96,20 +93,22 @@ class LogFrame(ctk.CTkFrame):
             self.label_date = ctk.CTkLabel(self.in_frame, text="11/10/2024", corner_radius=0, width=200)
             self.label_date.pack(side='left')
 
-            self.label_od = ctk.CTkLabel(self.in_frame, text=self.od_list[i], corner_radius=0, width=150)
+            self.label_od = ctk.CTkLabel(self.in_frame, text=match.group(3), corner_radius=0, width=150)
             self.label_od.pack(side='left')
 
-            self.label_ph = ctk.CTkLabel(self.in_frame, text=self.ph_list[i], corner_radius=0, width=150)
+            self.label_ph = ctk.CTkLabel(self.in_frame, text=match.group(2), corner_radius=0, width=150)
             self.label_ph.pack(side='left')
 
-            self.label_light = ctk.CTkLabel(self.in_frame, text=self.light_list[i], corner_radius=0, width=150)
+            self.label_light = ctk.CTkLabel(self.in_frame, text=match.group(5), corner_radius=0, width=150)
             self.label_light.pack(side='left')
 
-            self.label_temp = ctk.CTkLabel(self.in_frame, text=self.temp_list[i], corner_radius=0, width=200)
+            self.label_temp = ctk.CTkLabel(self.in_frame, text=match.group(4), corner_radius=0, width=200)
             self.label_temp.pack(side='left')
 
             self.label_cycle = ctk.CTkLabel(self.in_frame, text="Ciclo1", corner_radius=0, width=150)
             self.label_cycle.pack(side='left')
+
+            self.scrollable_frame._parent_canvas.yview_moveto(1.0)
 
 class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
