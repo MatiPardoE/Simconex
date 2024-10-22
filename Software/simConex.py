@@ -13,6 +13,7 @@ from frames.calibration_frame import CalibrationFrame
 from frames.alerts_frame import AlertsFrame
 from frames.cycle_frame import CycleFrame
 import frames.serial_handler as ui_serial
+import re
 
 # Crear un logger
 logger = logging.getLogger(__name__)
@@ -43,6 +44,18 @@ logger.addHandler(console_handler)
 
 def view_data(data):
     print(f"simConex.py: {data}")
+    pattern = r"#(STA)([012])\!"
+    match = re.match(pattern, data)
+    if match:
+        value = int(match.group(2))
+        if value == 0:
+            ui_serial.state_fbr = { "state": "connected" }
+        elif value == 1:
+            ui_serial.state_fbr = { "state": "running" }
+        elif value == 2:
+            ui_serial.state_fbr = { "state": "finished" }
+        print(ui_serial.state_fbr.get("state"))
+    
 
 class App(ctk.CTk):
     def __init__(self):

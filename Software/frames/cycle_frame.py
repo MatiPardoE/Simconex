@@ -218,13 +218,13 @@ class LogFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
 
-        self.datetime_list = []
+        self.id_list = []
         self.ph_list = []
         self.od_list = []
         self.temp_list = []
         self.light_list = []
 
-        #ui_serial.publisher.subscribe(self.update_log)
+        ui_serial.publisher.subscribe(self.update_log)
         image_path = os.path.join(os.getcwd(), "images")
 
         self.grid_columnconfigure(0, weight=1)
@@ -293,44 +293,68 @@ class LogFrame(ctk.CTkFrame):
         self.label_export.configure(cursor="arrow") 
     
     def update_log(self, data):
+        pattern = r"#(STA)([012])\!"
+        if re.match(pattern, data):
+            self.create_log()
+
         pattern = r"^(\d{10}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(\d{1}),(\d{1}),(\d{1}),(\d{1})$" # linea de log
         match = re.match(pattern, data)
         if match: 
+            self.id_list.insert(0, int(match.group(1)))
             self.light_list.insert(0, int(match.group(5)))
             self.ph_list.insert(0, float(match.group(2)))
             self.od_list.insert(0, float(match.group(3)))
             self.temp_list.insert(0, float(match.group(4)))
+            
+            self.append_log([int(match.group(1)),
+                             float(match.group(2)),
+                             float(match.group(3)),
+                             float(match.group(4)),
+                             int(match.group(5))])
         
-        for widget in self.scrollable_frame.winfo_children():
-            widget.pack_forget()
+        # for widget in self.scrollable_frame.winfo_children():
+        #     widget.pack_forget()
             
-        for i in range(len(self.ph_list)):
-            self.frame_line = ctk.CTkFrame(self.scrollable_frame)
-            self.frame_line.pack(fill="x")
+        # for i in range(len(self.ph_list)):
+        #     self.frame_line = ctk.CTkFrame(self.scrollable_frame)
+        #     self.frame_line.pack(fill="x")
 
-            self.in_frame = ctk.CTkFrame(self.frame_line)
-            self.in_frame.pack(fill="x")
+        #     self.in_frame = ctk.CTkFrame(self.frame_line)
+        #     self.in_frame.pack(fill="x")
             
-            self.label_time = ctk.CTkLabel(self.in_frame, text="12:30", corner_radius=0, width=150)
-            self.label_time.pack(side='left')
+        #     self.label_time = ctk.CTkLabel(self.in_frame, text="12:30", corner_radius=0, width=150)
+        #     self.label_time.pack(side='left')
 
-            self.label_date = ctk.CTkLabel(self.in_frame, text="11/10/2024", corner_radius=0, width=200)
-            self.label_date.pack(side='left')
+        #     self.label_date = ctk.CTkLabel(self.in_frame, text="11/10/2024", corner_radius=0, width=200)
+        #     self.label_date.pack(side='left')
 
-            self.label_od = ctk.CTkLabel(self.in_frame, text=self.od_list[i], corner_radius=0, width=150)
-            self.label_od.pack(side='left')
+        #     self.label_od = ctk.CTkLabel(self.in_frame, text=self.od_list[i], corner_radius=0, width=150)
+        #     self.label_od.pack(side='left')
 
-            self.label_ph = ctk.CTkLabel(self.in_frame, text=self.ph_list[i], corner_radius=0, width=150)
-            self.label_ph.pack(side='left')
+        #     self.label_ph = ctk.CTkLabel(self.in_frame, text=self.ph_list[i], corner_radius=0, width=150)
+        #     self.label_ph.pack(side='left')
 
-            self.label_light = ctk.CTkLabel(self.in_frame, text=self.light_list[i], corner_radius=0, width=150)
-            self.label_light.pack(side='left')
+        #     self.label_light = ctk.CTkLabel(self.in_frame, text=self.light_list[i], corner_radius=0, width=150)
+        #     self.label_light.pack(side='left')
 
-            self.label_temp = ctk.CTkLabel(self.in_frame, text=self.temp_list[i], corner_radius=0, width=200)
-            self.label_temp.pack(side='left')
+        #     self.label_temp = ctk.CTkLabel(self.in_frame, text=self.temp_list[i], corner_radius=0, width=200)
+        #     self.label_temp.pack(side='left')
 
-            self.label_cycle = ctk.CTkLabel(self.in_frame, text="Ciclo1", corner_radius=0, width=150)
-            self.label_cycle.pack(side='left')
+        #     self.label_cycle = ctk.CTkLabel(self.in_frame, text="Ciclo1", corner_radius=0, width=150)
+        #     self.label_cycle.pack(side='left')
+    
+    def create_log(self):
+        fname = "Log/test.csv"
+        header = ['ID', 'pH', 'OD', 'Temperatura', 'Luz']
+        with open(fname, mode='w', newline='') as csv_file:
+            w_csv = csv.writer(csv_file)
+            w_csv.writerow(header) 
+
+    def append_log(self, line):
+        fname = "Log/test.csv"
+        with open(fname, mode='a', newline='') as csv_file:
+            w_csv = csv.writer(csv_file)
+            w_csv.writerow(line)  
 
 class CycleFrame(ctk.CTkFrame):
     def __init__(self, master):
