@@ -1,0 +1,22 @@
+----------------------------------------------------------------------------------------------------------------------------------
+NCDrill File Report For: FRB_Simconex.PcbDoc   13/8/2024  22:40:55
+----------------------------------------------------------------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : FRB_Simconex.TXT
+
+Tool       Hole Size               Hole Tolerance               Hole Type       Hole Count   Plated         Tool Travel
+----------------------------------------------------------------------------------------------------------------------------------
+T1      28mil (0.711mm)                                           Round             97        PTH        0.00inch (0.00mm)
+T2      40mil (1.016mm)                                           Round             55        PTH        0.00inch (0.00mm)
+T3      40mil (1.021mm)                                           Round             12        PTH        0.00inch (0.00mm)
+T4      41mil (1.039mm)                                           Round             38        PTH        0.00inch (0.00mm)
+T5      50mil (1.27mm)                                            Round             4         PTH        0.00inch (0.00mm)
+T6      51mil (1.3mm)                                             Round             47        PTH        0.00inch (0.00mm)
+T7      59mil (1.501mm)                                           Round             5         PTH        0.00inch (0.00mm)
+T8      108mil (2.751mm)                                          Round             4         PTH        0.00inch (0.00mm)
+T9      118mil (3mm)                                              Round             4         PTH        0.00inch (0.00mm)
+----------------------------------------------------------------------------------------------------------------------------------
+Totals                                                                              266
+
+Total Processing Time (hh:mm:ss) : 00:00:00
