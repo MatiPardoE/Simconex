@@ -1,17 +1,24 @@
 #include <Arduino.h>
 #include <ArduinoLog.h>
 #include <cycle_manager.h>
+#include <alarm.h>
 
-cycle_manager cm;
+#define SPI_MISO 34
+#define SPI_MOSI 33
+#define SPI_SS 26
+#define SPI_CLK 25
+#define SD_CS_PIN SPI_SS
+
+cycle_manager cm(SPI_CLK, SPI_MISO, SPI_MOSI, SPI_SS); // Pide los pines SPI de la SD
 
 void setup()
 {
     Serial.begin(460800);
-    Log.begin(LOG_LEVEL_NOTICE, &Serial, true);
+    Log.begin(LOG_LEVEL_VERBOSE, &Serial, true);
     Log.notice("Starting...\n");
-    delay(1000);
-    cm.resetHeaderForDebug();
-    cm.begin();
+    delay(200);
+    cm.resetHeaderForDebug(SD_CS_PIN);
+    cm.begin(SD_CS_PIN);
 }
 
 void loop()
@@ -25,6 +32,7 @@ void loop()
         if (cm.readNextInterval())
         {
             Log.infoln("Interval Read Correct");
+            
         }
         else
         {

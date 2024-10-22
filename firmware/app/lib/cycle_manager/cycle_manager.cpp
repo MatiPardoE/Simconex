@@ -3,12 +3,6 @@
 #include <ArduinoLog.h>
 #include <cycle_manager.h>
 
-#define SPI_MISO 34
-#define SPI_MOSI 33
-#define SPI_SS 26
-#define SPI_CLK 25
-#define SD_CS_PIN SPI_SS // Cambia según tu configuración
-
 const char *hardcodedHEADER = R"(
 cycle_name,csv base
 cycle_id,csv_base_20241013_182343
@@ -25,7 +19,7 @@ const char *hardcodedDATA = R"(
 3,2.43,45,15,9,_____________________
 )";
 
-cycle_manager::cycle_manager()
+cycle_manager::cycle_manager(uint8_t SPI_CLK, uint8_t SPI_MISO, uint8_t SPI_MOSI, uint8_t SPI_SS) : cycleAlarm()
 {
     intervalData = {0, 0, 0, 0, 0};
     SPI.begin(SPI_CLK, SPI_MISO, SPI_MOSI, SPI_SS);
@@ -52,7 +46,7 @@ cycle_manager::cycle_manager()
  * @todo Implement header data coherence checks.
  * @todo Refactor `parseHeader` to eliminate the `cycleData.state` variable.
  */
-bool cycle_manager::begin()
+bool cycle_manager::begin(uint8_t SD_CS_PIN)
 {
     String header = "";
 
@@ -62,72 +56,51 @@ bool cycle_manager::begin()
 
 #else
     Log.infoln("Using SD data");
-    //  Initialize SD card
     if (!SD.begin(SD_CS_PIN))
     {
         Log.errorln("SD Initialization failed!");
+        cycleStatus = NO_CYCLE_IN_SD;
         return false;
     }
     else
     {
         Log.infoln("SD Initialization done.");
     }
-
-    if (!readHeader(header))
-    {
-        Log.errorln("Header Initialization failed!");
-        return false;
-    }
 #endif
 
     // Parse the data
-    parseHeader(header);
+    analyzeHeader();
 
-    Log.infoln("Header Read OK with this data:");
-    Log.infoln("Cycle Name: %s", cycleData.cycle_name.c_str());
-    Log.infoln("Cycle ID: %s", cycleData.cycle_id.c_str());
-    Log.infoln("State: %s", cycleData.state.c_str());
-    Log.infoln("Interval Time: %d", cycleData.interval_time);
-    Log.infoln("Interval Total: %d", cycleData.interval_total);
-    Log.infoln("Interval Current: %d", cycleData.interval_current);
-
-    // TODO: Implementar esto en el parseHeader y eliminar la variable cycleData.state xq
-    switch (cycleData.state[0]) // no admite string en switch
-    {
-    case 'n': // 'new'
-        cycleStatus = CYCLE_NEW;
-        break;
-    case 'r': // 'running'
-        cycleStatus = CYCLE_RUNNING;
-        break;
-    case 'p': // 'paused'
-        cycleStatus = CYCLE_PAUSED;
-        break;
-    case 'c': // 'completed'
-        cycleStatus = CYCLE_COMPLETED;
-        break;
-    default:
-        // Handle unknown state
-        Log.errorln("Unknown state: %s", cycleData.state.c_str());
-        cycleStatus = CYCLE_ERROR;
-        return false;
-    }
-    // TODO: Check datos de header sean coherentes
-
-    Log.infoln("Cycle Status: %d", cycleStatus);
     Log.infoln("Cycle Manager initialized successfully");
     return true;
 }
 
 // Helper method to parse CSV header data
-void cycle_manager::parseHeader(const String &data) // TODO: Cambiar esta funcion a updateVarsFromHeader y que haga la comm con la SD y todo
+cycle_manager::analyzeHeaderState cycle_manager::analyzeHeader() // TODO: Cambiar esta funcion a updateVarsFromHeader y que haga la comm con la SD y todo
 {
+    File file = SD.open(headerPath);
+    if (!file)
+    {
+        Log.errorln("Failed to open header file");
+        cycleStatus = NO_CYCLE_IN_SD;
+        return HEADER_ERROR;
+    }
+
+    String header = "";
+    while (file.available())
+    {
+        header += file.readStringUntil('\n') + "\n";
+    }
+    file.close();
+
+    // Use parseHeader to update cycleData
+
     int start = 0;
-    int end = data.indexOf('\n');
+    int end = header.indexOf('\n');
 
     while (end != -1)
     {
-        String line = data.substring(start, end);
+        String line = header.substring(start, end);
         int firstComma = line.indexOf(',');
         int secondComma = line.indexOf(',', firstComma + 1);
 
@@ -160,47 +133,46 @@ void cycle_manager::parseHeader(const String &data) // TODO: Cambiar esta funcio
         }
 
         start = end + 1;
-        end = data.indexOf('\n', start);
-    }
-}
-bool cycle_manager::readHeader(String &header)
-{
-    File file = SD.open("/input/header.csv");
-    if (!file)
-    {
-        cycleStatus = NO_CYCLE_IN_SD;
-        Log.errorln("Failed to open input header file");
-        return false;
+        end = header.indexOf('\n', start);
     }
 
-    while (file.available())
+    Log.verboseln("Header Read OK, Cycle Name: %s, Cycle ID: %s, State: %s, Interval Time: %d, Interval Total: %d, Interval Current: %d",
+                  cycleData.cycle_name.c_str(),
+                  cycleData.cycle_id.c_str(),
+                  cycleData.state.c_str(),
+                  cycleData.interval_time,
+                  cycleData.interval_total,
+                  cycleData.interval_current);
+
+    // TODO: Implementar esto en el parseHeader y eliminar la variable cycleData.state xq
+    switch (cycleData.state[0]) // no admite string en switch
     {
-        String line = file.readStringUntil('\n');
-        header += line + "\n";
+    case 'n': // 'new'
+        cycleStatus = CYCLE_NEW;
+        break;
+    case 'r': // 'running'
+        cycleStatus = CYCLE_RUNNING;
+        break;
+    case 'p': // 'paused'
+        cycleStatus = CYCLE_PAUSED;
+        break;
+    case 'c': // 'completed'
+        cycleStatus = CYCLE_COMPLETED;
+        break;
+    default:
+        // Handle unknown state
+        Log.errorln("Unknown state of cycle: %s", cycleData.state.c_str());
+        cycleStatus = CYCLE_ERROR;
+        return HEADER_ERROR;
+        break;
     }
 
-    file.close();
-    return true;
+    return HEADER_AVAILABLE;
 }
 
 cycle_manager::CheckNextInterval cycle_manager::readAndWriteCurrentIntervalFromCSV()
 {
-    File file = SD.open("/input/header.csv");
-    if (!file)
-    {
-        Log.errorln("Failed to open header file");
-        return INTERVAL_ERROR;
-    }
-
-    String header = "";
-    while (file.available())
-    {
-        header += file.readStringUntil('\n') + "\n";
-    }
-    file.close();
-
-    // Use parseHeader to update cycleData
-    parseHeader(header);
+    analyzeHeader(); // Actualizo valores del header
 
     if (cycleData.interval_current < 0)
     {
@@ -214,14 +186,14 @@ cycle_manager::CheckNextInterval cycle_manager::readAndWriteCurrentIntervalFromC
 
     // Increment interval_current and write back to the file
     cycleData.interval_current++;
-    file = SD.open("/input/header.csv", FILE_WRITE);
+    File file = SD.open(headerPath, FILE_WRITE);
     if (!file)
     {
         Log.errorln("Failed to open header file for writing");
         return INTERVAL_ERROR;
     }
 
-    // TODO: Un apagon aca nos mata todo porque nos crashea el archivo header.csv
+    // WARN: Un apagon aca nos mata todo porque nos crashea el archivo header.csv
     file.print("cycle_name,");
     file.println(cycleData.cycle_name);
     file.print("cycle_id,");
@@ -308,7 +280,7 @@ bool cycle_manager::readNextInterval()
  */
 bool cycle_manager::readInterval()
 {
-    File file = SD.open("/input/data.csv");
+    File file = SD.open(dataPath);
     if (!file)
     {
         cycleStatus = NO_CYCLE_IN_SD;
@@ -320,18 +292,12 @@ bool cycle_manager::readInterval()
     String firstLine = file.readStringUntil('\n');
     int rowWidth = firstLine.length() + 1; // +1 para incluir el salto de línea
 
-    Log.noticeln("First line: %s", firstLine.c_str());
-    Log.noticeln("Row width: %d", rowWidth);
-
     // Calcular la posición de la fila actual
 
     int targetLine = (cycleData.interval_current - 1) + 1;
     // -1 porque mi valor ya lo actualice en el header
     //+1 para moverse al siguiente intervalo
     int position = targetLine * rowWidth;
-
-    Log.noticeln("Interval_current: %d Target line: %d", cycleData.interval_current, targetLine);
-    Log.noticeln("Calculated position: %d", position);
 
     // Mover el puntero a la posición calculada
     if (!file.seek(position))
@@ -370,7 +336,6 @@ bool cycle_manager::readInterval()
 
         // Parse light
         String light_str = line.substring(start);
-        Log.noticeln("Parsed light: %s", light_str.c_str());
         intervalData.light = light_str.toInt();
 
         file.close();
@@ -388,11 +353,12 @@ bool cycle_manager::readInterval()
 
 void cycle_manager::logIntervalDataforDebug(const IntervalData &intervalData)
 {
-    Log.noticeln("Interval ID: %d", intervalData.interval_id);
-    Log.noticeln("pH: %F", intervalData.ph);
-    Log.noticeln("Oxygen: %F", intervalData.oxygen);
-    Log.noticeln("Temperature: %F", intervalData.temperature);
-    Log.noticeln("Light: %d", intervalData.light);
+    Log.noticeln("ID: %d pH: %F Oxygen: %F Temp: %F Light: %d",
+                 intervalData.interval_id,
+                 intervalData.ph,
+                 intervalData.oxygen,
+                 intervalData.temperature,
+                 intervalData.light);
 }
 
 const cycle_manager::IntervalData &cycle_manager::getIntervalData() const
@@ -400,7 +366,7 @@ const cycle_manager::IntervalData &cycle_manager::getIntervalData() const
     return intervalData;
 }
 
-bool cycle_manager::resetHeaderForDebug()
+bool cycle_manager::resetHeaderForDebug(uint8_t SD_CS_PIN)
 {
     if (!SD.begin(SD_CS_PIN))
     {

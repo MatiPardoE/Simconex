@@ -4,6 +4,7 @@
 
 #include <Arduino.h>
 #include <SD.h>
+#include <alarm.h>
 
 // #define __HARDCODE_DATA__ true
 
@@ -18,18 +19,24 @@ public:
         float temperature;
         int light;
     };
-    cycle_manager();
-    bool begin();
+    cycle_manager(uint8_t SPI_CLK, uint8_t SPI_MISO, uint8_t SPI_MOSI, uint8_t SPI_SS);
+    bool begin(u_int8_t SD_CS_PIN);
     bool readNextInterval();
     bool readInterval();
-    bool resetHeaderForDebug();
+    bool resetHeaderForDebug(u_int8_t SD_CS_PIN);
     // Getter for intervalData
     const IntervalData &getIntervalData() const;
 
 private:
     // Private variables
     IntervalData intervalData;
+    Alarm cycleAlarm;
+
+    // Private Constants
+    const String headerPath = "/input/header.csv";
+    const String dataPath = "/input/data.csv";
     // Private Structs
+
     enum CycleStatus
     {
         NO_CYCLE_IN_SD,
@@ -47,6 +54,13 @@ private:
         NO_MORE_INTERVALS
     };
 
+    enum analyzeHeaderState
+    {
+        HEADER_ERROR,
+        HEADER_AVAILABLE,
+        HEADER_NOT_AVAILABLE
+    };
+
     struct CycleData
     {
         String cycle_name;
@@ -58,8 +72,7 @@ private:
     } cycleData;
 
     // Private functions
-    void parseHeader(const String &data);
-    bool readHeader(String &header);
+    analyzeHeaderState analyzeHeader();
     CheckNextInterval readAndWriteCurrentIntervalFromCSV();
     void logIntervalDataforDebug(const IntervalData &intervalData);
 };

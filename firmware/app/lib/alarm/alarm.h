@@ -5,8 +5,9 @@
 
 class Alarm {
 public:
+    Alarm();
     // Configura el temporizador de la alarma con un intervalo en segundos
-    void setAlarm(int intervalInSeconds);
+    void setAlarm(int intervalInSeconds, void (*onTimer)(void*));
 
     // Pausar la alarma (detiene el temporizador)
     void pauseAlarm();
@@ -15,14 +16,13 @@ public:
     void resumeAlarm();
 
     // Detener la alarma completamente
-    void stopAlarm();
+    void stopAndDeleteAlarm();
 
 private:
     esp_timer_handle_t periodic_timer; // Maneja el temporizador
-    static volatile bool alarmActive;  // Estado de la alarma (activa o pausada)
-
-    // Función que se llama cuando el temporizador se dispara
-    static void onTimer(void* arg);
+    bool alarmActive;  // Estado de la alarma (activa o pausada)
+    bool alarmAlive;  // Estado de la alarma (creada o eliminada)
+    uint64_t alarmIntrevalSeconds;  // Intervalo en segundos
 };
 
 #endif // ALARM_H
