@@ -176,7 +176,8 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
     rdo.temperature.measuredValue = *reinterpret_cast<float*>(data);
 #endif
     rdo.replies++;
-    rdo.status = GET_TEMP;
+    //rdo.status = GET_TEMP;
+    rdo.status = GET_DO;
     break;
 
   case GET_TEMP:
@@ -250,8 +251,8 @@ void rxErrorRDO (esp32Modbus::Error error) {
   //lastMillisRDO -= _TIMEOUT_RDO_REQUEST_;
 
 
-  uint8_t ledActual = digitalRead(RDO_LED1);
-  digitalWrite(RDO_LED1,!ledActual);
+  //uint8_t ledActual = digitalRead(RDO_LED1);
+  //digitalWrite(RDO_LED1,!ledActual);
   
 #ifdef __DEBUG__
   Serial.print("\n\t<--- ERROR --->\n");
