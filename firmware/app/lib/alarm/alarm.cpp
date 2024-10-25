@@ -8,7 +8,7 @@ Alarm::Alarm()
     alarmIntrevalSeconds = 0;
 }
 // Configura el temporizador de la alarma con un intervalo en segundos
-void Alarm::setAlarm(int intervalInSeconds, void (*onTimer)(void *))
+void Alarm::setAlarm(uint64_t intervalInSeconds, void (*onTimer)(void *))
 {
     Log.info("Configurando alarma por software para %d segundos.\n", intervalInSeconds);
     alarmIntrevalSeconds = intervalInSeconds;

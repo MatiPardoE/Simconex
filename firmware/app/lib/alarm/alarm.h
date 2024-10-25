@@ -7,7 +7,7 @@ class Alarm {
 public:
     Alarm();
     // Configura el temporizador de la alarma con un intervalo en segundos
-    void setAlarm(int intervalInSeconds, void (*onTimer)(void*));
+    void setAlarm(uint64_t intervalInSeconds, void (*onTimer)(void*));
 
     // Pausar la alarma (detiene el temporizador)
     void pauseAlarm();

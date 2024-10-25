@@ -21,6 +21,7 @@ public:
     };
     cycle_manager(uint8_t SPI_CLK, uint8_t SPI_MISO, uint8_t SPI_MOSI, uint8_t SPI_SS);
     bool begin(u_int8_t SD_CS_PIN);
+    bool run();
     bool readNextInterval();
     bool readInterval();
     bool resetHeaderForDebug(u_int8_t SD_CS_PIN);
@@ -36,6 +37,16 @@ private:
     const String headerPath = "/input/header.csv";
     const String dataPath = "/input/data.csv";
     // Private Structs
+
+    enum Command
+    {
+        NO_COMMAND,
+        START_CYCLE,
+        PAUSE_CYCLE,
+        RESUME_CYCLE,
+        STOP_CYCLE,
+        READ_INTERVAL
+    } command;
 
     enum CycleStatus
     {
@@ -66,7 +77,7 @@ private:
         String cycle_name;
         String cycle_id;
         String state;
-        int interval_time;
+        uint64_t interval_time;
         int interval_total;
         int interval_current;
     } cycleData;
@@ -75,6 +86,7 @@ private:
     analyzeHeaderState analyzeHeader();
     CheckNextInterval readAndWriteCurrentIntervalFromCSV();
     void logIntervalDataforDebug(const IntervalData &intervalData);
+    static void onAlarm(void *arg); // Make onAlarm static
 };
 
 #endif // CYCLE_MANAGER_H

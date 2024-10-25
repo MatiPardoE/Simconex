@@ -19,7 +19,7 @@ const char *hardcodedDATA = R"(
 3,2.43,45,15,9,_____________________
 )";
 
-cycle_manager::cycle_manager(uint8_t SPI_CLK, uint8_t SPI_MISO, uint8_t SPI_MOSI, uint8_t SPI_SS) : cycleAlarm()
+cycle_manager::cycle_manager(uint8_t SPI_CLK, uint8_t SPI_MISO, uint8_t SPI_MOSI, uint8_t SPI_SS)
 {
     intervalData = {0, 0, 0, 0, 0};
     SPI.begin(SPI_CLK, SPI_MISO, SPI_MOSI, SPI_SS);
@@ -70,7 +70,7 @@ bool cycle_manager::begin(uint8_t SD_CS_PIN)
 
     // Parse the data
     analyzeHeader();
-
+    cycleAlarm.setAlarm(cycleData.interval_time, cycle_manager::onAlarm);
     Log.infoln("Cycle Manager initialized successfully");
     return true;
 }
@@ -209,6 +209,21 @@ cycle_manager::CheckNextInterval cycle_manager::readAndWriteCurrentIntervalFromC
     file.close();
 
     return INTERVAL_AVAILABLE;
+}
+
+bool cycle_manager::run()
+{
+    switch (command)
+    {
+    case NO_COMMAND:
+        break;
+    case READ_INTERVAL:
+        
+        break;
+    default:
+        break;
+    }
+    return true;
 }
 
 /**
@@ -359,6 +374,11 @@ void cycle_manager::logIntervalDataforDebug(const IntervalData &intervalData)
                  intervalData.oxygen,
                  intervalData.temperature,
                  intervalData.light);
+}
+
+void cycle_manager::onAlarm(void *arg)
+{
+    // Implement the alarm handling logic here
 }
 
 const cycle_manager::IntervalData &cycle_manager::getIntervalData() const
