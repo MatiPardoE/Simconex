@@ -8,6 +8,7 @@ from datetime import datetime
 import frames.serial_handler as ui_serial
 import re
 from customtkinter import filedialog    
+from tkinter import messagebox
 
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -234,16 +235,30 @@ class ControlCycleFrame(ctk.CTkFrame):
     
     def delete_cycle_event(self, event):
         self.info_label.configure(text="Nombre del ciclo:")
+        self.fname = ""
+        self.entry_interval.delete(0, "end")
+        self.entry_interval.insert(0,"")
     
     def send_button_event(self):
-        interval = int(self.entry_interval.get())
-        print(interval)
-        interval_unit = self.radio_var.get()
-        if interval_unit == 0:
-            print("Segundos")
-        elif interval_unit == 1:
-            print("Minutos")
+        try:
+            interval = int(self.entry_interval.get())
+            msg = "¿Esta seguro de que desea comenzar el ciclo " + os.path.basename(self.fname) + " con intervalos de medicion de " + str(interval)
+            interval_unit = self.radio_var.get()
+            if interval_unit == 0:
+                msg = msg + " segundos?"
+            elif interval_unit == 1:
+                msg = msg + " minutos?"
+            
+            answer = messagebox.askquestion("Comenzar ciclo", msg)
+            if answer == "yes":
+                print("Comenzar ciclo")
+            else:
+                print("Descartado")
 
+        except:
+            messagebox.showwarning("Advertencia", "Completar todos los campos")
+            return        
+        
     def only_numbers(self, text):
         return text.isdigit() or text == ""
    
