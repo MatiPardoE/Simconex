@@ -15,7 +15,7 @@ import frames.serial_handler as ui_serial
 import re
 
 def read_datalog(fname):
-    datetime_list = []
+    id_list = []
     ph_list = []
     od_list = []
     temp_list = []
@@ -27,18 +27,15 @@ def read_datalog(fname):
         for i, line in enumerate(handler):
             if i==0:
                 for j, column in enumerate(line):
-                    #print(line)
-                    if column == "Fecha":
-                        index['fecha'] = j
-                    elif column == "Hora":
-                        index['hora'] = j
+                    if column == "ID":
+                        index['id'] = j
                     elif column == "pH":
                         index['ph'] = j
-                    elif column == "DO":
+                    elif column == "OD":
                         index['do'] = j
                     elif column == "Temperatura":
                         index['temperatura'] = j
-                    elif column == "LED1":
+                    elif column == "Luz":
                         index['led1'] = j
                     elif column == "LED2":
                         index['led2'] = j
@@ -49,17 +46,13 @@ def read_datalog(fname):
                     elif column == "LED5":
                         index['led5'] = j
             else: 
-                datetime_str = line[index.get("fecha")] + ' ' + line[index.get("hora")]
-                datetime_single = datetime.strptime(datetime_str, '%d/%m/%Y %H:%M:%S')
-                datetime_list.append(datetime_single)
-                
-                # Extraer los valores
+                id_list.append(int(line[index.get("id")]))                
                 ph_list.append(float(line[index.get("ph")]))
                 od_list.append(float(line[index.get("do")]))
                 temp_list.append(float(line[index.get("temperatura")]))
                 light_list.append(float(line[index.get("led1")]))  
     
-    return datetime_list, ph_list, od_list, temp_list, light_list
+    return id_list, ph_list, od_list, temp_list, light_list
 
 class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -285,7 +278,8 @@ class MyPlot(ctk.CTkFrame):
         super().__init__(master)
         ui_serial.publisher.subscribe(self.process_data)
 
-        # Crear la figura de Matplotlib
+        id_list_i, ph_list_i, od_list_i, temp_list_i, light_list_i = read_datalog("Log/test_1.csv")
+
         self.fig, self.ax = plt.subplots()
         self.line, = self.ax.plot([], [], 'r-')
 
@@ -297,22 +291,26 @@ class MyPlot(ctk.CTkFrame):
         self.ax.set_xlim(0, 100)
         
         if var=="pH":
-            self.ph_line, = self.ax.plot([], [], 'r-')
+            self.ph_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
             self.ax.set_ylim(0, 14)
+            self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in ph_list_i], label="Valores esperados")
         elif var=="OD":
-            self.od_line, = self.ax.plot([], [], 'r-')
+            self.od_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
             self.ax.set_ylabel("[%]")
             self.ax.set_ylim(0, 100)
+            self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in od_list_i], label="Valores esperados")
         elif var=="Temperatura":
-            self.temp_line, = self.ax.plot([], [], 'r-')
+            self.temp_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
             self.ax.set_ylabel("[°C]")
             self.ax.set_ylim(10, 30)
+            self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in temp_list_i], label="Valores esperados")
         elif var=="Luz":
-            self.light_line, = self.ax.plot([], [], 'r-')
+            self.light_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
             self.ax.set_ylabel("[%]")
             self.ax.set_ylim(0, 100)
+            self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in light_list_i], label="Valores esperados")
         
-        # ax.legend()  
+        self.ax.legend()  
         # locator = mdates.AutoDateLocator(minticks=7, maxticks=10)
         # formatter = mdates.ConciseDateFormatter(locator)
         # ax.xaxis.set_major_locator(locator)
@@ -392,8 +390,15 @@ class PlotFrame(ctk.CTkFrame):
         
     def process_data(self, data):
         pattern = r"#(STA)([012])\!"
-        if re.match(pattern, data):
+        match = re.match(pattern, data)
+        if match:
             self.esp_connected()
+
+            value = match.group(2) 
+            if value == 1:
+                # Hay un ciclo en curso, tengo que cargar los valores esperados del log
+                print("cargo grafico")
+
         
         if "#Z1!" in data:
             self.esp_disconnected()  
