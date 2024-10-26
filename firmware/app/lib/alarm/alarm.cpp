@@ -72,14 +72,14 @@ void Alarm::stopAndDeleteAlarm()
 {
     if (alarmAlive == true)
     {
-        Log.info("Alarma detenida.\n");
+        Log.infoln("Alarma detenida.");
         esp_timer_stop(periodic_timer);
         esp_timer_delete(periodic_timer);
         alarmAlive = false;
     }
     else
     {
-        Log.error("La alarma ya fue desactivada y no existe.\n");
+        Log.errorln("La alarma ya fue desactivada y no existe.");
     }
     return;
 }

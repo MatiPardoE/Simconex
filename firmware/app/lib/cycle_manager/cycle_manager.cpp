@@ -7,7 +7,7 @@ const char *hardcodedHEADER = R"(
 cycle_name,csv base
 cycle_id,csv_base_20241013_182343
 state,new_cycle
-interval_time,15
+interval_time,10
 interval_total,3
 interval_current,0
 )";
@@ -18,6 +18,8 @@ const char *hardcodedDATA = R"(
 2,2,,,,_____________________________
 3,2.43,45,15,9,_____________________
 )";
+
+volatile bool cycle_manager::alarmFlag = false;
 
 cycle_manager::cycle_manager(uint8_t SPI_CLK, uint8_t SPI_MISO, uint8_t SPI_MOSI, uint8_t SPI_SS)
 {
@@ -59,7 +61,7 @@ bool cycle_manager::begin(uint8_t SD_CS_PIN)
     if (!SD.begin(SD_CS_PIN))
     {
         Log.errorln("SD Initialization failed!");
-        cycleStatus = NO_CYCLE_IN_SD;
+        cycleData.status = NO_CYCLE_IN_SD;
         return false;
     }
     else
@@ -68,10 +70,9 @@ bool cycle_manager::begin(uint8_t SD_CS_PIN)
     }
 #endif
 
-    // Parse the data
-    analyzeHeader();
-    cycleAlarm.setAlarm(cycleData.interval_time, cycle_manager::onAlarm);
-    Log.infoln("Cycle Manager initialized successfully");
+    analyzeHeader();       // Parse the data TODO Handle the return value
+    evaluateAlarmStatus(); // Evaluate the alarm status
+    Log.infoln("Cycle Manager initialized successfully, header data OK");
     return true;
 }
 
@@ -82,7 +83,7 @@ cycle_manager::analyzeHeaderState cycle_manager::analyzeHeader() // TODO: Cambia
     if (!file)
     {
         Log.errorln("Failed to open header file");
-        cycleStatus = NO_CYCLE_IN_SD;
+        cycleData.status = NO_CYCLE_IN_SD;
         return HEADER_ERROR;
     }
 
@@ -97,7 +98,7 @@ cycle_manager::analyzeHeaderState cycle_manager::analyzeHeader() // TODO: Cambia
 
     int start = 0;
     int end = header.indexOf('\n');
-
+    String temp_status = "";
     while (end != -1)
     {
         String line = header.substring(start, end);
@@ -116,8 +117,8 @@ cycle_manager::analyzeHeaderState cycle_manager::analyzeHeader() // TODO: Cambia
         }
         else if (line.startsWith("state"))
         {
-            cycleData.state = line.substring(firstComma + 1, secondComma);
-            cycleData.state.trim();
+            temp_status = line.substring(firstComma + 1, secondComma);
+            temp_status.trim();
         }
         else if (line.startsWith("interval_time"))
         {
@@ -136,36 +137,35 @@ cycle_manager::analyzeHeaderState cycle_manager::analyzeHeader() // TODO: Cambia
         end = header.indexOf('\n', start);
     }
 
-    Log.verboseln("Header Read OK, Cycle Name: %s, Cycle ID: %s, State: %s, Interval Time: %d, Interval Total: %d, Interval Current: %d",
-                  cycleData.cycle_name.c_str(),
-                  cycleData.cycle_id.c_str(),
-                  cycleData.state.c_str(),
-                  cycleData.interval_time,
-                  cycleData.interval_total,
-                  cycleData.interval_current);
-
-    // TODO: Implementar esto en el parseHeader y eliminar la variable cycleData.state xq
-    switch (cycleData.state[0]) // no admite string en switch
+    switch (temp_status[0]) // no admite string en switch
     {
     case 'n': // 'new'
-        cycleStatus = CYCLE_NEW;
+        cycleData.status = CYCLE_NEW;
         break;
     case 'r': // 'running'
-        cycleStatus = CYCLE_RUNNING;
+        cycleData.status = CYCLE_RUNNING;
         break;
     case 'p': // 'paused'
-        cycleStatus = CYCLE_PAUSED;
+        cycleData.status = CYCLE_PAUSED;
         break;
     case 'c': // 'completed'
-        cycleStatus = CYCLE_COMPLETED;
+        cycleData.status = CYCLE_COMPLETED;
         break;
     default:
         // Handle unknown state
-        Log.errorln("Unknown state of cycle: %s", cycleData.state.c_str());
-        cycleStatus = CYCLE_ERROR;
+        Log.errorln("Unknown state of cycle: %s", temp_status.c_str());
+        cycleData.status = CYCLE_ERROR;
         return HEADER_ERROR;
         break;
     }
+
+    Log.verboseln("Header Read OK, Cycle Name: %s, Cycle ID: %s, State: %s, Interval Time: %d, Interval Total: %d, Interval Current: %d",
+                  cycleData.cycle_name.c_str(),
+                  cycleData.cycle_id.c_str(),
+                  cycleStatusToString(cycleData.status).c_str(),
+                  cycleData.interval_time,
+                  cycleData.interval_total,
+                  cycleData.interval_current);
 
     return HEADER_AVAILABLE;
 }
@@ -199,7 +199,7 @@ cycle_manager::CheckNextInterval cycle_manager::readAndWriteCurrentIntervalFromC
     file.print("cycle_id,");
     file.println(cycleData.cycle_id);
     file.print("state,");
-    file.println(cycleData.state);
+    file.println(cycleStatusToString(cycleData.status));
     file.print("interval_time,");
     file.println(cycleData.interval_time);
     file.print("interval_total,");
@@ -211,19 +211,28 @@ cycle_manager::CheckNextInterval cycle_manager::readAndWriteCurrentIntervalFromC
     return INTERVAL_AVAILABLE;
 }
 
-bool cycle_manager::run()
+cycle_manager::CycleBundle cycle_manager::run()
 {
-    switch (command)
+    CycleBundle bundle;
+    if (alarmFlag)
     {
-    case NO_COMMAND:
-        break;
-    case READ_INTERVAL:
-        
-        break;
-    default:
-        break;
+        alarmFlag = false;
+        if (readNextInterval())
+        {
+            Log.infoln("New interval available");
+            bundle.command = CommandBundle::NEW_INTERVAL;
+            bundle.intervalData = intervalData;
+        }
+        else
+        {
+            bundle.command = CommandBundle::STOP_CYCLE;
+        }
     }
-    return true;
+    else
+    {
+        bundle.command = CommandBundle::NO_COMMAND;
+    }
+    return bundle;
 }
 
 /**
@@ -249,7 +258,7 @@ bool cycle_manager::readNextInterval()
     {
     case NO_MORE_INTERVALS:
         Log.infoln("No more intervals available, cycle finished");
-        cycleStatus = CYCLE_COMPLETED;
+        cycleData.status = CYCLE_COMPLETED;
         // TODO: Implementar que se cierre el ciclo
         return false;
 
@@ -298,7 +307,7 @@ bool cycle_manager::readInterval()
     File file = SD.open(dataPath);
     if (!file)
     {
-        cycleStatus = NO_CYCLE_IN_SD;
+        cycleData.status = NO_CYCLE_IN_SD;
         Log.errorln("Failed to open input data file when reading next interval");
         return false;
     }
@@ -378,7 +387,65 @@ void cycle_manager::logIntervalDataforDebug(const IntervalData &intervalData)
 
 void cycle_manager::onAlarm(void *arg)
 {
-    // Implement the alarm handling logic here
+    alarmFlag = true;
+}
+
+bool cycle_manager::evaluateAlarmStatus()
+{
+    // Check the alarm status
+    switch (cycleData.status)
+    {
+    case NO_CYCLE_IN_SD:
+        // Do nothing
+        break;
+    case CYCLE_NEW:
+        // Do nothing
+        cycleAlarm.setAlarm(cycleData.interval_time, cycle_manager::onAlarm);
+        break;
+    case CYCLE_RUNNING:
+        cycleAlarm.setAlarm(cycleData.interval_time, cycle_manager::onAlarm);
+        break;
+    case CYCLE_PAUSED:
+        // Handle cycle paused
+        cycleAlarm.pauseAlarm();
+        break;
+    case CYCLE_COMPLETED:
+        // Handle cycle completed
+        cycleAlarm.stopAndDeleteAlarm();
+        break;
+    case CYCLE_ERROR:
+        // Handle cycle error
+        cycleAlarm.stopAndDeleteAlarm();
+        break;
+    default:
+        // Handle unknown status
+        Log.errorln("Unknown cycle status: %d", cycleData.status);
+        return false;
+        break;
+    }
+    return true;
+}
+
+String cycle_manager::cycleStatusToString(CycleStatus status)
+{
+    switch (status)
+    {
+    case NO_CYCLE_IN_SD:
+        return "no_cycle_in_sd";
+    case CYCLE_NEW:
+        return "new_cycle";
+    case CYCLE_RUNNING:
+        return "running_cycle";
+    case CYCLE_PAUSED:
+        return "paused_cycle";
+    case CYCLE_COMPLETED:
+        return "completed_cycle";
+    case CYCLE_ERROR:
+        return "error_cycle";
+    default:
+        return "Unknown status";
+    }
+    return String();
 }
 
 const cycle_manager::IntervalData &cycle_manager::getIntervalData() const

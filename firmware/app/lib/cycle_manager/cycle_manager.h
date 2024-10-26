@@ -19,9 +19,41 @@ public:
         float temperature;
         int light;
     };
+    enum CommandBundle
+    {
+        NO_COMMAND,
+        START_CYCLE,
+        PAUSE_CYCLE,
+        RESUME_CYCLE,
+        STOP_CYCLE,
+        NEW_INTERVAL,
+    };
+    struct CycleBundle
+    {
+        IntervalData intervalData;
+        CommandBundle command;
+    };
+    enum CycleStatus
+    {
+        NO_CYCLE_IN_SD,
+        CYCLE_NEW,
+        CYCLE_RUNNING,
+        CYCLE_PAUSED,
+        CYCLE_COMPLETED,
+        CYCLE_ERROR
+    };
+    struct CycleData
+    {
+        String cycle_name;
+        String cycle_id;
+        CycleStatus status;
+        uint64_t interval_time;
+        int interval_total;
+        int interval_current;
+    } cycleData;
     cycle_manager(uint8_t SPI_CLK, uint8_t SPI_MISO, uint8_t SPI_MOSI, uint8_t SPI_SS);
     bool begin(u_int8_t SD_CS_PIN);
-    bool run();
+    CycleBundle run();
     bool readNextInterval();
     bool readInterval();
     bool resetHeaderForDebug(u_int8_t SD_CS_PIN);
@@ -32,32 +64,11 @@ private:
     // Private variables
     IntervalData intervalData;
     Alarm cycleAlarm;
-
-    // Private Constants
+    static volatile bool alarmFlag;
+    // Constants
     const String headerPath = "/input/header.csv";
     const String dataPath = "/input/data.csv";
     // Private Structs
-
-    enum Command
-    {
-        NO_COMMAND,
-        START_CYCLE,
-        PAUSE_CYCLE,
-        RESUME_CYCLE,
-        STOP_CYCLE,
-        READ_INTERVAL
-    } command;
-
-    enum CycleStatus
-    {
-        NO_CYCLE_IN_SD,
-        CYCLE_NEW,
-        CYCLE_RUNNING,
-        CYCLE_PAUSED,
-        CYCLE_COMPLETED,
-        CYCLE_ERROR
-    } cycleStatus;
-
     enum CheckNextInterval
     {
         INTERVAL_ERROR,
@@ -72,21 +83,13 @@ private:
         HEADER_NOT_AVAILABLE
     };
 
-    struct CycleData
-    {
-        String cycle_name;
-        String cycle_id;
-        String state;
-        uint64_t interval_time;
-        int interval_total;
-        int interval_current;
-    } cycleData;
-
     // Private functions
     analyzeHeaderState analyzeHeader();
     CheckNextInterval readAndWriteCurrentIntervalFromCSV();
     void logIntervalDataforDebug(const IntervalData &intervalData);
     static void onAlarm(void *arg); // Make onAlarm static
+    bool evaluateAlarmStatus();
+    String cycleStatusToString(CycleStatus status);
 };
 
 #endif // CYCLE_MANAGER_H
