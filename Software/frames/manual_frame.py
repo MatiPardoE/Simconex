@@ -23,7 +23,6 @@ class LogFrame(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
-        self.grid_rowconfigure(2, weight=1)
 
         self.label_control = ctk.CTkLabel(self, text="Registro de datos", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_control.grid(row=0, column=0, padx=(20, 10), pady=(10, 0), sticky="w")

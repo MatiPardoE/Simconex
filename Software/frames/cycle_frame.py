@@ -7,6 +7,7 @@ import csv
 from datetime import datetime
 import frames.serial_handler as ui_serial
 import re
+from customtkinter import filedialog    
 
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -85,6 +86,7 @@ class ControlCycleFrame(ctk.CTkFrame):
         ui_serial.publisher.subscribe(self.process_data)
 
         image_path = os.path.join(os.getcwd(), "images")
+        self.validate = self.register(self.only_numbers)
 
         self.grid_columnconfigure(0, weight=1)
 
@@ -116,7 +118,7 @@ class ControlCycleFrame(ctk.CTkFrame):
 
         self.add_file_image = ctk.CTkImage(Image.open(os.path.join(image_path, "add-file.png")), size=(40, 40))
         self.add_file_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.add_file_image)
-        self.add_file_image_label.grid(row=0, column=3, padx=15, pady=5, sticky="ns")        
+        self.add_file_image_label.grid(row=0, column=3, padx=15, pady=5, sticky="ns")      
 
         self.frame_commands = ctk.CTkFrame(self)
         self.frame_commands.grid(row=2, column=0, padx=20, pady=(10, 0), sticky="ew")
@@ -129,10 +131,10 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.frame_commands.grid_columnconfigure(4, weight=1)
 
         self.entry_interval = ctk.CTkLabel(self.frame_commands, text="Intervalo:", justify="right")
-        self.entry_interval.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
+        self.entry_interval.grid(row=0, column=0, padx=(10,0), pady=5, sticky="ew")
 
-        self.entry_interval = ctk.CTkEntry(self.frame_commands, placeholder_text="15", width=60, state="disabled")
-        self.entry_interval.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+        self.entry_interval = ctk.CTkEntry(self.frame_commands, placeholder_text="15", width=60, state="disabled", validate="key", validatecommand=(self.validate, "%P"))
+        self.entry_interval.grid(row=0, column=1, padx=(0,10), pady=5, sticky="ew")
 
         self.radio_var = tkinter.IntVar(value=0)
         self.radio_button_seg = ctk.CTkRadioButton(master=self.frame_commands, text="seg", variable=self.radio_var, value=0, width=60, state="disabled")
@@ -140,8 +142,14 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.radio_button_min = ctk.CTkRadioButton(master=self.frame_commands, text="min", variable=self.radio_var, value=1, width=60, state="disabled")
         self.radio_button_min.grid(row=0, column=3, padx=0, pady=5)
 
-        self.main_button_interval = ctk.CTkButton(master=self.frame_commands, text="Enviar", command=self.send_button_event, width=80, state="disabled")
-        self.main_button_interval.grid(row=0, column=4, padx=5, pady=5, sticky="ew")
+        self.frame_info = ctk.CTkFrame(self)
+        self.frame_info.grid(row=3, column=0, padx=20, pady=(10, 0), sticky="ew")
+
+        self.info_label = ctk.CTkLabel(self.frame_info, text="Nombre del ciclo:", justify="right")
+        self.info_label.pack(side="left", padx=(60,0), pady=5)
+
+        self.main_button_interval = ctk.CTkButton(master=self.frame_info, text="Enviar", command=self.send_button_event, width=80, state="disabled")
+        self.main_button_interval.pack(side="right", padx=(0,60), pady=5)
     
     def process_data(self, data):
         pattern = r"#(STA)([012])\!"
@@ -162,9 +170,11 @@ class ControlCycleFrame(ctk.CTkFrame):
 
         self.bin_image_label.bind("<Enter>", self.on_hover)
         self.bin_image_label.bind("<Leave>", self.off_hover)
+        self.bin_image_label.bind("<Button-1>", self.delete_cycle_event)
 
         self.add_file_image_label.bind("<Enter>", self.on_hover)
         self.add_file_image_label.bind("<Leave>", self.off_hover)
+        self.add_file_image_label.bind("<Button-1>", self.load_cycle_event)
 
         self.main_button_interval.configure(state = "normal")
         self.entry_interval.configure(state = "normal")
@@ -182,6 +192,7 @@ class ControlCycleFrame(ctk.CTkFrame):
 
         self.bin_image_label.unbind("<Enter>")
         self.bin_image_label.unbind("<Leave>")
+        self.bin_image_label.unbind("<Button-1>")
 
         self.add_file_image_label.unbind("<Enter>")
         self.add_file_image_label.unbind("<Leave>")
@@ -210,8 +221,31 @@ class ControlCycleFrame(ctk.CTkFrame):
             self.play_pause_image_label.configure(image=self.play_image)
         self.is_playing = not self.is_playing
     
+    def load_cycle_event(self, event):
+        self.fname = filedialog.askopenfilename(title="Selecciona un archivo de ciclo", filetypes=[("Archivos CSV", "*.csv")])
+        if not self.fname == "":
+            self.info_label.configure(text="Nombre del ciclo: " + os.path.basename(self.fname))
+            with open(self.fname, mode='r', newline='') as csv_file:
+                reader = csv.reader(csv_file)
+                for row in reader:
+                    print(','.join(row)) 
+        else:
+            print("No se eligio ningun archivo")
+    
+    def delete_cycle_event(self, event):
+        self.info_label.configure(text="Nombre del ciclo:")
+    
     def send_button_event(self):
-        print("Enviar")
+        interval = int(self.entry_interval.get())
+        print(interval)
+        interval_unit = self.radio_var.get()
+        if interval_unit == 0:
+            print("Segundos")
+        elif interval_unit == 1:
+            print("Minutos")
+
+    def only_numbers(self, text):
+        return text.isdigit() or text == ""
    
 class LogFrame(ctk.CTkFrame):
 
@@ -306,11 +340,13 @@ class LogFrame(ctk.CTkFrame):
             self.od_list.insert(0, float(match.group(3)))
             self.temp_list.insert(0, float(match.group(4)))
             
-            self.append_log([int(match.group(1)),
-                             float(match.group(2)),
-                             float(match.group(3)),
-                             float(match.group(4)),
-                             int(match.group(5))])
+            # self.append_log([int(match.group(1)),
+            #                  float(match.group(2)),
+            #                  float(match.group(3)),
+            #                  float(match.group(4)),
+            #                  int(match.group(5))])
+
+            self.append_log(data)
 
             self.frame_line = ctk.CTkFrame(self.scrollable_frame)
             self.frame_line.pack(fill="x")
@@ -351,8 +387,8 @@ class LogFrame(ctk.CTkFrame):
     def append_log(self, line):
         fname = "Log/test.csv"
         with open(fname, mode='a', newline='') as csv_file:
-            w_csv = csv.writer(csv_file)
-            w_csv.writerow(line)  
+            #w_csv = csv.writer(csv_file)
+            csv_file.write(line+"\n")  
 
 class CycleFrame(ctk.CTkFrame):
     def __init__(self, master):
