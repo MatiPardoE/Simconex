@@ -146,11 +146,19 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.frame_info = ctk.CTkFrame(self)
         self.frame_info.grid(row=3, column=0, padx=20, pady=(10, 0), sticky="ew")
 
+        self.frame_info.grid_rowconfigure(0, weight=1)
+        self.frame_info.grid_columnconfigure(0, weight=1)
+        self.frame_info.grid_columnconfigure(1, weight=1)
+        self.frame_info.grid_columnconfigure(2, weight=1)
+
         self.info_label = ctk.CTkLabel(self.frame_info, text="Nombre del ciclo:", justify="right")
-        self.info_label.pack(side="left", padx=(60,0), pady=5)
+        self.info_label.grid(row=0, column=0, padx=(10,0), pady=5, sticky="ew")
+
+        self.entry_label = ctk.CTkEntry(self.frame_info, width=300, state="disabled")
+        self.entry_label.grid(row=0, column=1, padx=(0,10), pady=5, sticky="ew")
 
         self.main_button_interval = ctk.CTkButton(master=self.frame_info, text="Enviar", command=self.send_button_event, width=80, state="disabled")
-        self.main_button_interval.pack(side="right", padx=(0,60), pady=5)
+        self.main_button_interval.grid(row=0, column=2, padx=0, pady=5)
     
     def process_data(self, data):
         pattern = r"#(STA)([012])\!"
@@ -179,6 +187,7 @@ class ControlCycleFrame(ctk.CTkFrame):
 
         self.main_button_interval.configure(state = "normal")
         self.entry_interval.configure(state = "normal")
+        self.entry_label.configure(state = "normal")
         self.radio_button_seg.configure(state = "normal")
         self.radio_button_min.configure(state = "normal")
 
@@ -224,40 +233,76 @@ class ControlCycleFrame(ctk.CTkFrame):
     
     def load_cycle_event(self, event):
         self.fname = filedialog.askopenfilename(title="Selecciona un archivo de ciclo", filetypes=[("Archivos CSV", "*.csv")])
-        if not self.fname == "":
-            self.info_label.configure(text="Nombre del ciclo: " + os.path.basename(self.fname))
-            with open(self.fname, mode='r', newline='') as csv_file:
-                reader = csv.reader(csv_file)
-                for row in reader:
-                    print(','.join(row)) 
-        else:
+        if self.fname == "":
             print("No se eligio ningun archivo")
+            # self.info_label.configure(text="Nombre del ciclo: " + os.path.basename(self.fname))
+            # with open(self.fname, mode='r', newline='') as csv_file:
+            #     reader = csv.reader(csv_file)
+            #     for row in reader:
+            #         print(','.join(row)) 
+            
     
     def delete_cycle_event(self, event):
-        self.info_label.configure(text="Nombre del ciclo:")
         self.fname = ""
         self.entry_interval.delete(0, "end")
         self.entry_interval.insert(0,"")
+        self.entry_label.delete(0, "end")
+        self.entry_label.insert(0,"")
     
     def send_button_event(self):
         try:
-            interval = int(self.entry_interval.get())
-            msg = "¿Esta seguro de que desea comenzar el ciclo " + os.path.basename(self.fname) + " con intervalos de medicion de " + str(interval)
-            interval_unit = self.radio_var.get()
-            if interval_unit == 0:
-                msg = msg + " segundos?"
-            elif interval_unit == 1:
-                msg = msg + " minutos?"
-            
-            answer = messagebox.askquestion("Comenzar ciclo", msg)
-            if answer == "yes":
-                print("Comenzar ciclo")
-            else:
-                print("Descartado")
+            self.interval = int(self.entry_interval.get())
+            self.alias_cycle = self.entry_interval.get().strip()
+            if self.alias_cycle == "":
+                raise Exception("No se coloco un alias al ciclo")     
+            if self.fname == "":
+                raise Exception("No se eligio un archivo para el ciclo")            
 
         except:
             messagebox.showwarning("Advertencia", "Completar todos los campos")
-            return        
+            return      
+        
+        self.timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+        self.cycle_path = os.path.join(os.getcwd(), "Log", self.timestamp)    
+        os.makedirs(self.cycle_path, exist_ok=True)
+        #data_cycle_fname = os.path.join(destino_directorio, nuevo_nombre)
+
+
+        
+        # msg = "¿Esta seguro de que desea comenzar el ciclo " + os.path.basename(self.fname) + " con intervalos de medicion de " + str(interval)
+        # interval_unit = self.radio_var.get()
+        # if interval_unit == 0:
+        #     msg = msg + " segundos?"
+        # elif interval_unit == 1:
+        #     msg = msg + " minutos?"
+        
+        answer = messagebox.askquestion("Comenzar ciclo", "msg")
+        if answer == "yes":
+            self.transfer_cycle("20241026_1430") # TODO: esto tiene que ser dinamico (y la generacion del archivo header tambien)
+        else:
+            print("Descartado")
+        
+    def transfer_cycle(self, id):
+        try:
+            ui_serial.publisher.send_data(b"#TRANSFER0!\n")
+            ui_serial.publisher.send_data(b"#HEADER0!\n")
+            self.send_file_serial("Log/"+id+"/header_"+id+".csv") # TODO: tiene que ser dinamico
+            ui_serial.publisher.send_data(b"#HEADER1!\n")
+            ui_serial.publisher.send_data(b"#DATA0!\n")
+            self.send_file_serial("Log/"+id+"/data_"+id+".csv") # TODO: tiene que ser dinamico
+            ui_serial.publisher.send_data(b"#DATA1!\n")
+            ui_serial.publisher.send_data(b"#TRANSFER1!\n")
+        except Exception as e:
+            print(e)
+            messagebox.showerror("Error", "Se produjo un error durante la transferencia del ciclo!")
+            return    
+    
+    def send_file_serial(self, fname):
+        with open(fname, mode='r', newline='') as csv_file:
+                reader = csv.reader(csv_file)
+                for row in reader:
+                    row_bytes = [element.encode() for element in row]
+                    ui_serial.publisher.send_data(b','.join(row_bytes) + b'\n')
         
     def only_numbers(self, text):
         return text.isdigit() or text == ""
@@ -346,7 +391,7 @@ class LogFrame(ctk.CTkFrame):
         if re.match(pattern, data):
             self.create_log()
 
-        pattern = r"^(\d{10}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(\d{1}),(\d{1}),(\d{1}),(\d{1})$" # linea de log
+        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$" # linea de log
         match = re.match(pattern, data)
         if match: 
             self.id_list.insert(0, int(match.group(1)))

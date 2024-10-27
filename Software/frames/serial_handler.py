@@ -1,7 +1,7 @@
 import serial
 import threading
 import queue
-import re
+import time
 
 
 class SerialPublisher:
@@ -24,7 +24,7 @@ class SerialPublisher:
         i=0
         for callback in self.subscribers:
             i=i+1
-            print(f"notifico {i}")
+            #print(f"notifico {i}")
             callback(data)
 
     def subscribe(self, callback):
@@ -56,11 +56,13 @@ class SerialPublisher:
                 self.ser.timeout = 10000
                 self.ser.open()
 
-                print(f"{port.device}: INIT")
-                self.ser.write(b"INIT")
+                print(f"{port.device}: #INIT!")
+                self.ser.write("#INIT!\n".encode())
                 response = self.ser.readline().decode('utf-8').strip()
 
-                if response == "ESP":
+                print("response:", response)
+
+                if response == "#ESP!":
                     print(f"Connected to ESP on {port.device}")                   
                     self.start_read_thread()
                     break
@@ -86,7 +88,22 @@ class SerialPublisher:
         self.find_thread.start()
 
     def send_data(self, data):
+        print("Serial Publisher (send_data)", data)
+
         self.ser.write(data)
+
+        wait_start = time.time()
+        full_resp = b""
+
+        while time.time() - wait_start < 2:
+            if self.ser.in_waiting > 0:  # Chequear si hay datos en el buffer
+                resp = self.ser.read(self.ser.in_waiting)
+                full_resp += resp
+
+                if b"#OK!" in resp:
+                    return
+                
+        raise ValueError(f"Se paso el timeout")
 
 publisher = SerialPublisher()
 state_fbr = { "state": "disconnected" }

@@ -72,7 +72,7 @@ class LogFrame(ctk.CTkFrame):
         self.scrollable_frame.pack(pady=10, padx=10, fill="both", expand=True)   
   
     def update_log(self, data):
-        pattern = r"^(\d{10}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(\d{1}),(\d{1}),(\d{1}),(\d{1})$" # linea de log
+        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$" # linea de log
         match = re.match(pattern, data)
         if match: 
             self.light_list.insert(0, int(match.group(5)))
@@ -171,7 +171,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         if "#Z1!" in data:
             self.esp_disconnected()
 
-        pattern = r"^(\d{10}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(\d{1}),(\d{1}),(\d{1}),(\d{1})$" # linea de log
+        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$" # linea de log
         match = re.match(pattern, data)
         
         if match:

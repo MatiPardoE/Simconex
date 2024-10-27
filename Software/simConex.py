@@ -43,7 +43,7 @@ logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
 def view_data(data):
-    print(f"simConex.py: {data}")
+    print(f"------------ ESP response: {data} ------------")
     pattern = r"#(STA)([012])\!"
     match = re.match(pattern, data)
     if match:

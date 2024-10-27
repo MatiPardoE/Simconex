@@ -155,7 +155,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         if "#Z1!" in data:
             self.esp_disconnected()
 
-        pattern = r"^(\d{10}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(\d{1}),(\d{1}),(\d{1}),(\d{1})$" # linea de log
+        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$" # linea de log
         match = re.match(pattern, data)
         
         if match:
@@ -164,30 +164,30 @@ class InstantValuesFrame(ctk.CTkFrame):
             self.do_button.configure(text = "{0:.2f}".format(float(match.group(3))))
             self.temp_button.configure(text = "{0:.2f}".format(float(match.group(4))))            
             
-            if match.group(6) == '0':
-                    self.co2_button.configure(text="Apagado")
-                    self.co2_button.configure(fg_color="red")
-            elif match.group(6) == '1':
-                    self.co2_button.configure(text="Encendido")
-                    self.co2_button.configure(fg_color="green")
-            if match.group(7) == '0':
-                self.o2_button.configure(text="Apagado")
-                self.o2_button.configure(fg_color="red")
-            elif match.group(7) == '1':
-                self.o2_button.configure(text="Encendido")
-                self.o2_button.configure(fg_color="green")
-            if match.group(8) == '0':
-                self.air_button.configure(text="Apagado")
-                self.air_button.configure(fg_color="red")
-            elif match.group(8) == '1':
-                self.air_button.configure(text="Encendido")
-                self.air_button.configure(fg_color="green")
-            if match.group(9) == '0':
-                self.pump_button.configure(text="Apagado")
-                self.pump_button.configure(fg_color="red")
-            elif match.group(9) == '1':
-                self.pump_button.configure(text="Encendido")
-                self.pump_button.configure(fg_color="green")
+            # if match.group(6) == '0':
+            #         self.co2_button.configure(text="Apagado")
+            #         self.co2_button.configure(fg_color="red")
+            # elif match.group(6) == '1':
+            #         self.co2_button.configure(text="Encendido")
+            #         self.co2_button.configure(fg_color="green")
+            # if match.group(7) == '0':
+            #     self.o2_button.configure(text="Apagado")
+            #     self.o2_button.configure(fg_color="red")
+            # elif match.group(7) == '1':
+            #     self.o2_button.configure(text="Encendido")
+            #     self.o2_button.configure(fg_color="green")
+            # if match.group(8) == '0':
+            #     self.air_button.configure(text="Apagado")
+            #     self.air_button.configure(fg_color="red")
+            # elif match.group(8) == '1':
+            #     self.air_button.configure(text="Encendido")
+            #     self.air_button.configure(fg_color="green")
+            # if match.group(9) == '0':
+            #     self.pump_button.configure(text="Apagado")
+            #     self.pump_button.configure(fg_color="red")
+            # elif match.group(9) == '1':
+            #     self.pump_button.configure(text="Encendido")
+            #     self.pump_button.configure(fg_color="green")
 
     def esp_disconnected(self):
         self.light_button.configure(text = "--")
@@ -283,12 +283,13 @@ class MyPlot(ctk.CTkFrame):
         self.fig, self.ax = plt.subplots()
         self.line, = self.ax.plot([], [], 'r-')
 
+        self.id_data = []
         self.ph_data = []
         self.od_data = []
         self.temp_data = []
         self.light_data = []
         
-        self.ax.set_xlim(0, 100)
+        self.ax.set_xlim(0, 30)
         
         if var=="pH":
             self.ph_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
@@ -327,10 +328,11 @@ class MyPlot(ctk.CTkFrame):
         self.update_plot(var)
 
     def process_data(self, data):
-        pattern = r"^(\d{10}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(\d{1}),(\d{1}),(\d{1}),(\d{1})$" # linea de log
+        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$" # linea de log
         match = re.match(pattern, data)
         
         if match:
+            self.id_data.append(float(match.group(1)))
             self.light_data.append(int(match.group(5)))
             self.ph_data.append(float(match.group(2)))
             self.od_data.append(float(match.group(3)))
@@ -346,16 +348,17 @@ class MyPlot(ctk.CTkFrame):
     def update_plot(self, var):
         if var=="pH":
             self.ph_line.set_ydata(self.ph_data)
-            self.ph_line.set_xdata(np.arange(len(self.ph_data)))
+            self.ph_line.set_xdata(self.id_data)
         elif var=="OD":
             self.od_line.set_ydata(self.od_data)
-            self.od_line.set_xdata(np.arange(len(self.od_data)))
+            self.od_line.set_xdata(self.id_data)
         elif var=="Temperatura":
             self.temp_line.set_ydata(self.temp_data)
-            self.temp_line.set_xdata(np.arange(len(self.temp_data)))
+            self.temp_line.set_xdata(self.id_data)
         elif var=="Luz":
-            self.light_line.set_ydata(self.light_data)
-            self.light_line.set_xdata(np.arange(len(self.light_data)))        
+            self.light_line.set_ydata(self.light_data)  
+            self.light_line.set_xdata(self.id_data)
+        
         self.canvas.draw()
         self.master.after(1000, lambda: self.update_plot(var))
 
