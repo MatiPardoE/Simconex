@@ -57,9 +57,10 @@ class SerialPublisher:
                 self.ser.open()
 
                 print(f"{port.device}: #INIT!")
-                self.ser.write("#INIT!\n".encode())
-                response = self.ser.readline().decode('utf-8').strip()
-
+                self.ser.flushInput()
+                self.ser.write(b"#INIT!")
+                print("Esperando respuesta")
+                response = self.ser.readline().decode('utf-8', errors='ignore').strip()
                 print("response:", response)
 
                 if response == "#ESP!":

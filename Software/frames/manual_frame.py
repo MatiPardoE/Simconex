@@ -72,42 +72,43 @@ class LogFrame(ctk.CTkFrame):
         self.scrollable_frame.pack(pady=10, padx=10, fill="both", expand=True)   
   
     def update_log(self, data):
-        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$" # linea de log
-        match = re.match(pattern, data)
-        if match: 
-            self.light_list.insert(0, int(match.group(5)))
-            self.ph_list.insert(0, float(match.group(2)))
-            self.od_list.insert(0, float(match.group(3)))
-            self.temp_list.insert(0, float(match.group(4)))
-        
-            self.frame_line = ctk.CTkFrame(self.scrollable_frame)
-            self.frame_line.pack(fill="x")
-
-            self.in_frame = ctk.CTkFrame(self.frame_line)
-            self.in_frame.pack(fill="x")
+        if ui_serial.state_fbr.get("state") == "running":
+            pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$" # linea de log
+            match = re.match(pattern, data)
+            if match: 
+                self.light_list.insert(0, int(match.group(5)))
+                self.ph_list.insert(0, float(match.group(2)))
+                self.od_list.insert(0, float(match.group(3)))
+                self.temp_list.insert(0, float(match.group(4)))
             
-            self.label_time = ctk.CTkLabel(self.in_frame, text="12:30", corner_radius=0, width=150)
-            self.label_time.pack(side='left')
+                self.frame_line = ctk.CTkFrame(self.scrollable_frame)
+                self.frame_line.pack(fill="x")
 
-            self.label_date = ctk.CTkLabel(self.in_frame, text="11/10/2024", corner_radius=0, width=200)
-            self.label_date.pack(side='left')
+                self.in_frame = ctk.CTkFrame(self.frame_line)
+                self.in_frame.pack(fill="x")
+                
+                self.label_time = ctk.CTkLabel(self.in_frame, text="12:30", corner_radius=0, width=150)
+                self.label_time.pack(side='left')
 
-            self.label_od = ctk.CTkLabel(self.in_frame, text=match.group(3), corner_radius=0, width=150)
-            self.label_od.pack(side='left')
+                self.label_date = ctk.CTkLabel(self.in_frame, text="11/10/2024", corner_radius=0, width=200)
+                self.label_date.pack(side='left')
 
-            self.label_ph = ctk.CTkLabel(self.in_frame, text=match.group(2), corner_radius=0, width=150)
-            self.label_ph.pack(side='left')
+                self.label_od = ctk.CTkLabel(self.in_frame, text=match.group(3), corner_radius=0, width=150)
+                self.label_od.pack(side='left')
 
-            self.label_light = ctk.CTkLabel(self.in_frame, text=match.group(5), corner_radius=0, width=150)
-            self.label_light.pack(side='left')
+                self.label_ph = ctk.CTkLabel(self.in_frame, text=match.group(2), corner_radius=0, width=150)
+                self.label_ph.pack(side='left')
 
-            self.label_temp = ctk.CTkLabel(self.in_frame, text=match.group(4), corner_radius=0, width=200)
-            self.label_temp.pack(side='left')
+                self.label_light = ctk.CTkLabel(self.in_frame, text=match.group(5), corner_radius=0, width=150)
+                self.label_light.pack(side='left')
 
-            self.label_cycle = ctk.CTkLabel(self.in_frame, text="Ciclo1", corner_radius=0, width=150)
-            self.label_cycle.pack(side='left')
+                self.label_temp = ctk.CTkLabel(self.in_frame, text=match.group(4), corner_radius=0, width=200)
+                self.label_temp.pack(side='left')
 
-            self.scrollable_frame._parent_canvas.yview_moveto(1.0)
+                self.label_cycle = ctk.CTkLabel(self.in_frame, text="Ciclo1", corner_radius=0, width=150)
+                self.label_cycle.pack(side='left')
+
+                self.scrollable_frame._parent_canvas.yview_moveto(1.0)
 
 class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
