@@ -87,6 +87,7 @@ class HandshakeStatus(Enum):
     NOT_YET = 0
     TIMEOUT = -1
     ERROR = -2
+    DATA_FAIL = -3
     
     
 class ControlCycleFrame(ctk.CTkFrame):
@@ -315,9 +316,23 @@ class ControlCycleFrame(ctk.CTkFrame):
     def send_file_serial(self, fname):
         with open(fname, mode='r', newline='') as csv_file:
                 reader = csv.reader(csv_file)
-                for row in reader:
+                row = next(reader, None)  
+                limit = 5
+                ii = 0
+                while row:
                     row_bytes = [element.encode() for element in row]
-                    ui_serial.publisher.send_data(b','.join(row_bytes) + b'\n')
+                    attemps = 0
+                    while attemps < limit:
+                        try:
+                            self.send_data_and_wait_hs(b','.join(row_bytes) + b'\n') # ui_serial.publisher.send_data(b','.join(row_bytes) + b'\n')
+                            break 
+                        except ValueError as e:
+                            attemps += 1
+                            print(f"Line {ii} [" + b','.join(row_bytes) + f"] failed ({attemps})")
+                            if attemps >= limit:
+                                print("Too many errors, exiting transfer...")
+                                raise ValueError("Comm lost between ESP and UI")
+                    row = next(reader, None) 
     
     def wait_handshake(self,timeout = 5):
         start_time = time.time()
@@ -326,6 +341,8 @@ class ControlCycleFrame(ctk.CTkFrame):
                 print("Handshake OK")
                 self.handshake_status = HandshakeStatus.NOT_YET
                 break
+            if self.handshake_status == HandshakeStatus.DATA_FAIL:
+                raise ValueError("Data lost between ESP and UI")
             if time.time() - start_time > timeout:
                 self.handshake_status = HandshakeStatus.TIMEOUT
                 raise TimeoutError("Timeout waiting for handshake from ESP")
@@ -333,6 +350,8 @@ class ControlCycleFrame(ctk.CTkFrame):
     def wait_for_ok(self, data):
         if data.strip() == "#OK!":
             self.handshake_status = HandshakeStatus.OK
+        elif data.strip() == "#FAIL!":
+            self.handshake_status = HandshakeStatus.DATA_FAIL
         else:
             print("Received unexpected data in HS:", data.strip())
             self.handshake_status = HandshakeStatus.ERROR
