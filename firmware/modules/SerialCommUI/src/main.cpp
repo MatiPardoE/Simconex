@@ -12,7 +12,7 @@ void loop() {
     String incomingString = Serial.readString();
     
     // Si los datos leídos son "INIT"
-    if (incomingString.equals("INIT")) {
+    if (incomingString.equals("#INIT!")) {
       // Enviar "ESP" de vuelta
       Serial.println("ESP");
     }

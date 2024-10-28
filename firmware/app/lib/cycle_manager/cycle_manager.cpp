@@ -51,13 +51,6 @@ cycle_manager::cycle_manager(uint8_t SPI_CLK, uint8_t SPI_MISO, uint8_t SPI_MOSI
 bool cycle_manager::begin(uint8_t SD_CS_PIN)
 {
     String header = "";
-
-#if __HARDCODE_DATA__ == true
-    Log.infoln("Using hardcoded data");
-    header = String(hardcodedHEADER);
-
-#else
-    Log.infoln("Using SD data");
     if (!SD.begin(SD_CS_PIN))
     {
         Log.errorln("SD Initialization failed!");
@@ -68,9 +61,12 @@ bool cycle_manager::begin(uint8_t SD_CS_PIN)
     {
         Log.infoln("SD Initialization done.");
     }
-#endif
 
-    analyzeHeader();       // Parse the data TODO Handle the return value
+    if(analyzeHeader()== HEADER_ERROR)       // Parse the data TODO Handle the return value
+    {
+        Log.errorln("Failed to parse header data");
+        return false;
+    }
     evaluateAlarmStatus(); // Evaluate the alarm status
     Log.infoln("Cycle Manager initialized successfully, header data OK");
     return true;
@@ -249,10 +245,6 @@ cycle_manager::CycleBundle cycle_manager::run()
  */
 bool cycle_manager::readNextInterval()
 {
-#ifdef __HARDCODE_DATA__
-    Log.infoln("Using hardcoded data, cant check next interval. Cause it uses function from File library");
-    return false;
-#else
     int result = readAndWriteCurrentIntervalFromCSV();
     switch (result)
     {
@@ -273,7 +265,6 @@ bool cycle_manager::readNextInterval()
     default:
         return false;
     }
-#endif
     return false;
 }
 
