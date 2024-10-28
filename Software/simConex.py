@@ -56,6 +56,16 @@ def view_data(data):
             ui_serial.state_fbr = { "state": "finished" }
         print(ui_serial.state_fbr.get("state"))
     
+    pattern = r"#(SYN)([01])\!"
+    match = re.match(pattern, data)
+    if match:
+        value = int(match.group(2))
+        if value == 0:
+            ui_serial.state_fbr = { "state": "syncing" }
+        elif value == 1:
+            ui_serial.state_fbr = { "state": "running" }
+        print(ui_serial.state_fbr.get("state"))
+    
 
 class App(ctk.CTk):
     def __init__(self):
