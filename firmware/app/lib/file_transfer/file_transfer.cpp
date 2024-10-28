@@ -15,13 +15,13 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
     if (SD.exists(destPathHeader))
     {
         SD.remove(destPathHeader);
-        //Log.infoln("Removed existing header file");
+        // Log.infoln("Removed existing header file");
     }
 
     if (SD.exists(destPathData))
     {
         SD.remove(destPathData);
-        //Log.infoln("Removed existing header file");
+        // Log.infoln("Removed existing header file");
     }
 
     while (true)
@@ -84,13 +84,13 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
                 else if (dataOpen)
                 {
                     destFileData.println(command);
-                    //Logica que le envio a la UI cada intervalo que escribo
-                    // int start = 0;
-                    // int end = command.indexOf(',');
-                    // uint32_t interval_id = command.substring(start, end).toInt();
-                    // Serial.print("#ID:");
-                    // Serial.print(interval_id);
-                    // Serial.println("!");
+                    // Logica que le envio a la UI cada intervalo que escribo
+                    //  int start = 0;
+                    //  int end = command.indexOf(',');
+                    //  uint32_t interval_id = command.substring(start, end).toInt();
+                    //  Serial.print("#ID:");
+                    //  Serial.print(interval_id);
+                    //  Serial.println("!");
                 }
             }
         }
