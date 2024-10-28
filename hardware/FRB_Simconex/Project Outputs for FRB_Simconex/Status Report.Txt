@@ -1,0 +1,12 @@
+Output: NC Drill Files
+Type  : NC Drill
+From  : Project [FRB_Simconex.PrjPcb]
+   Generated File[FRB_Simconex.TXT]
+   Generated File[FRB_Simconex.LDP]
+   Generated File[FRB_Simconex.DRR]
+
+
+Files Generated   : 3
+Documents Printed : 0
+
+Finished Output Generation At 22:40:55 On 13/8/2024
