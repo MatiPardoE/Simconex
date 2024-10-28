@@ -12,8 +12,8 @@ from frames.manual_frame import ManualFrame
 from frames.calibration_frame import CalibrationFrame
 from frames.alerts_frame import AlertsFrame
 from frames.cycle_frame import CycleFrame
-
-ser = serial.Serial()
+import frames.serial_handler as ui_serial
+import re
 
 # Crear un logger
 logger = logging.getLogger(__name__)
@@ -41,6 +41,21 @@ console_handler.setFormatter(formatter)
 # Agregar los manejadores al logger
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
+
+def view_data(data):
+    print(f"------------ ESP response: {data} ------------")
+    pattern = r"#(STA)([012])\!"
+    match = re.match(pattern, data)
+    if match:
+        value = int(match.group(2))
+        if value == 0:
+            ui_serial.state_fbr = { "state": "connected" }
+        elif value == 1:
+            ui_serial.state_fbr = { "state": "running" }
+        elif value == 2:
+            ui_serial.state_fbr = { "state": "finished" }
+        print(ui_serial.state_fbr.get("state"))
+    
 
 class App(ctk.CTk):
     def __init__(self):
@@ -179,41 +194,22 @@ class App(ctk.CTk):
         new_scaling_float = int(new_scaling.replace("%", "")) / 100
         ctk.set_widget_scaling(new_scaling_float)
 
-    def connection_button_event(self):
-        def find_esp():
-            ports = list(serial.tools.list_ports.comports())
-            for port in ports:
-                logger.info(f"Trying {port.device}...")
-                try:
-                    #ser = serial.Serial(port.device, 115200, timeout=1)
-                    ser.baudrate = 115200
-                    ser.port = port.device
-                    ser.timeout = 5
-                    ser.open()
-
-                    logger.info(f"{port.device}: INIT")
-                    ser.write(b"INIT")
-                    response = ser.readline().decode('utf-8').strip()
-                    if response == "ESP":
-                        logger.info(f"Connected to ESP on {port.device}")
-                        self.connection_label.configure(image=self.link_image)  
-                        self.connection_button.configure(text="Desconectar")
-                        ser.close()
-                        break
-                    else:
-                        logger.info(f"Failed {port.device}")
-                    ser.close()
-                except (OSError, serial.SerialException) as e:
-                    logger.error(f"Failed to connect to {port.device}: {e}")
-
+    def connection_button_event(self): 
         if self.connection_button.cget("text") == "Conectar":        
-            threading.Thread(target=find_esp).start()
+            ui_serial.publisher.start_find_thread()
+            ui_serial.publisher.find_thread.join()
+            if ui_serial.publisher.ser.is_open:
+                self.connection_label.configure(image=self.link_image)  
+                self.connection_button.configure(text="Desconectar")
         else: 
-            ser.close()
+            ui_serial.publisher.send_data(b"#Z1!")
             self.connection_label.configure(image=self.unlink_image)  
             self.connection_button.configure(text="Conectar")
-            logger.info(f"Desconectado")
+            print(f"Desconectado")
+            ui_serial.publisher.stop_read_thread()
 
 if __name__ == "__main__":
+    ui_serial.publisher.subscribe(view_data)
+
     app = App()
     app.mainloop()
