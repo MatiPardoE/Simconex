@@ -300,7 +300,7 @@ class ControlCycleFrame(ctk.CTkFrame):
             self.send_file_serial("input_csv/"+id+"/header_"+id+".csv") # TODO: tiene que ser dinamico
             self.send_data_and_wait_hs(b"#HEADER1!\n")
             self.send_data_and_wait_hs(b"#DATA0!\n")
-            self.send_file_serial("input_csv/"+id+"/data_"+id+".csv") # TODO: tiene que ser dinamico
+            self.send_file_serial_hs("input_csv/"+id+"/data_"+id+"_short.csv") # TODO: tiene que ser dinamico
             self.send_data_and_wait_hs(b"#DATA1!\n")
             self.send_data_and_wait_hs(b"#TRANSFER1!\n")
             ui_serial.publisher.unsubscribe(self.wait_for_ok)
@@ -312,8 +312,15 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.handshake_status = HandshakeStatus.NOT_YET
         ui_serial.publisher.send_data(data)
         self.wait_handshake(timeout)
-        
+    
     def send_file_serial(self, fname):
+        with open(fname, mode='r', newline='') as csv_file:
+                reader = csv.reader(csv_file)
+                for row in reader:
+                    row_bytes = [element.encode() for element in row]
+                    ui_serial.publisher.send_data(b','.join(row_bytes) + b'\n')
+        
+    def send_file_serial_hs(self, fname):
         with open(fname, mode='r', newline='') as csv_file:
                 reader = csv.reader(csv_file)
                 row = next(reader, None)  

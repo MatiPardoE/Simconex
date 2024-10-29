@@ -83,7 +83,16 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
                 }
                 else if (dataOpen)
                 {
-                    destFileData.println(command);
+                    if(command.length() == 30)
+                    {
+                        destFileData.println(command);
+                        Serial.println("#OK!");
+                    }
+                    else 
+                    {
+                        Serial.println("#FAIL!");
+                    }
+                    
                     // Logica que le envio a la UI cada intervalo que escribo
                     //  int start = 0;
                     //  int end = command.indexOf(',');
