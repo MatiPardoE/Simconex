@@ -11,6 +11,9 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
     File destFileData;
     bool headerOpen = false;
     bool dataOpen = false;
+    uint8_t message_block = 0;
+    uint8_t message_block_ok = 0;
+    uint16_t timeout_transfer_block = 250;
 
     if (SD.exists(destPathHeader))
     {
@@ -83,23 +86,30 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
                 }
                 else if (dataOpen)
                 {
-                    if(command.length() == 30)
+                    if (command.length() == 30)
                     {
                         destFileData.println(command);
-                        Serial.println("#OK!");
+                        message_block_ok++;
                     }
-                    else 
+                    else
                     {
-                        Serial.println("#FAIL!");
+                        Log.errorln("Mensaje de transferencia con error");
                     }
-                    
-                    // Logica que le envio a la UI cada intervalo que escribo
-                    //  int start = 0;
-                    //  int end = command.indexOf(',');
-                    //  uint32_t interval_id = command.substring(start, end).toInt();
-                    //  Serial.print("#ID:");
-                    //  Serial.print(interval_id);
-                    //  Serial.println("!");
+                    message_block++;
+                    if (message_block == BLOCK_SIZE_ESP_UI)
+                    {
+                        if (message_block_ok == message_block)
+                        {
+                            Serial.println("#OK!");
+                            message_block = 0;
+                            message_block_ok = 0;
+                        }
+                        else
+                        {
+                            Serial.println("#FAIL!");
+                            // TODO Logica de recupero de bloque, capaz es necesaria capaz no (depende de la frecuencias de error)
+                        }
+                    }
                 }
             }
         }

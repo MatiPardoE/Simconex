@@ -300,7 +300,7 @@ class ControlCycleFrame(ctk.CTkFrame):
             self.send_file_serial("input_csv/"+id+"/header_"+id+".csv") # TODO: tiene que ser dinamico
             self.send_data_and_wait_hs(b"#HEADER1!\n")
             self.send_data_and_wait_hs(b"#DATA0!\n")
-            self.send_file_serial_hs("input_csv/"+id+"/data_"+id+"_short.csv") # TODO: tiene que ser dinamico
+            self.send_file_serial_hs("input_csv/"+id+"/data_"+id+".csv") # TODO: tiene que ser dinamico
             self.send_data_and_wait_hs(b"#DATA1!\n")
             self.send_data_and_wait_hs(b"#TRANSFER1!\n")
             ui_serial.publisher.unsubscribe(self.wait_for_ok)
@@ -320,26 +320,45 @@ class ControlCycleFrame(ctk.CTkFrame):
                     row_bytes = [element.encode() for element in row]
                     ui_serial.publisher.send_data(b','.join(row_bytes) + b'\n')
         
-    def send_file_serial_hs(self, fname):
+    def send_file_serial_hs(self, fname, block_size=20):
         with open(fname, mode='r', newline='') as csv_file:
-                reader = csv.reader(csv_file)
-                row = next(reader, None)  
-                limit = 5
-                ii = 0
-                while row:
-                    row_bytes = [element.encode() for element in row]
+            reader = csv.reader(csv_file)
+            limit = 5
+            buffer = []
+            ii = 0
+
+            for row in reader:
+                row_bytes = [element.encode() for element in row]
+                buffer.append(b','.join(row_bytes))
+
+                if len(buffer) >= block_size:
                     attemps = 0
                     while attemps < limit:
                         try:
-                            self.send_data_and_wait_hs(b','.join(row_bytes) + b'\n') # ui_serial.publisher.send_data(b','.join(row_bytes) + b'\n')
-                            break 
+                            self.send_data_and_wait_hs(b'\n'.join(buffer) + b'\n')
+                            buffer = []
+                            break
                         except ValueError as e:
                             attemps += 1
-                            print(f"Line {ii} [" + b','.join(row_bytes) + f"] failed ({attemps})")
+                            print(f"Block starting at line {ii} failed ({attemps})")
                             if attemps >= limit:
                                 print("Too many errors, exiting transfer...")
                                 raise ValueError("Comm lost between ESP and UI")
-                    row = next(reader, None) 
+                    ii += block_size
+
+            # Send any remaining lines in the buffer
+            if buffer:
+                attemps = 0
+                while attemps < limit:
+                    try:
+                        ui_serial.publisher.send_data(b'\n'.join(buffer) + b'\n') # Aca no espero HS porque es el ultimo bloque y el ESP no lo sabe
+                        break
+                    except ValueError as e:
+                        attemps += 1
+                        print(f"Final block failed ({attemps})")
+                        if attemps >= limit:
+                            print("Too many errors, exiting transfer...")
+                            raise ValueError("Comm lost between ESP and UI")
     
     def wait_handshake(self,timeout = 5):
         start_time = time.time()
