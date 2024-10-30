@@ -36,7 +36,7 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
 
         if (_serial.available())
         {
-            String command = _serial.readStringUntil('\n');
+            String command = _serial.readStringUntil('\n');   // TODO leer 31 caracteres y chequear /n
             startTime = millis(); // reset the timeout
             if (command == "#HEADER0!")
             {
