@@ -362,7 +362,7 @@ class MyPlot(ctk.CTkFrame):
             
             self.canvas.draw()
         self.master.after(1000, lambda: self.update_plot(var))
-        print("update_plot")
+        #print("update_plot")
 
 
 class PlotFrame(ctk.CTkFrame):

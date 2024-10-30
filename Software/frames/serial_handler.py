@@ -30,18 +30,40 @@ class SerialPublisher:
     def subscribe(self, callback):
         self.subscribers.append(callback)
         print(f"serial_handler.py: Se suscribio alguien! Cantidad de suscriptores: {len(self.subscribers)}")
+        
+    def unsubscribe(self, callback):
+        if callback in self.subscribers:
+            self.subscribers.remove(callback)
+            print(f"serial_handler.py: Alguien se desuscribió. Cantidad de suscriptores: {len(self.subscribers)}")
     
     def read_port(self):
-            while True:
-                try:
-                    if self.ser.in_waiting > 0:
-                        data = self.ser.readline().decode('utf-8').strip()
-                        if data:
-                            self.save_to_queue(data)  
-                except:
-                    if not self.ser.is_open:
-                        self.notify_subscribers("#Z1!")
-                        break                     
+        buffer = ""
+        last_received_time = time.time()
+        print("Starting read_port")
+
+        while True:
+            try:
+                if self.ser.in_waiting > 0:
+                    char = self.ser.read(1).decode('utf-8')
+                    buffer += char
+                    last_received_time = time.time()
+
+                    if char == '\n':
+                        print(f"----------------- ESP Response: {buffer.strip()} -----------------")
+                        self.save_to_queue(buffer.strip())
+                        buffer = ""
+                else:
+                    if time.time() - last_received_time > 5:    # Si el fin de la cadena no llega en 5 segundos, se limpia el buffer
+                        if buffer:
+                            print(f"Timeout reached. Flushing buffer: {buffer.strip()}")
+                            buffer = ""
+                        last_received_time = time.time()
+            except Exception as e:
+                print(f"Exception occurred: {e}")
+                if not self.ser.is_open:
+                    print("Serial port is closed. Notifying subscribers and breaking loop.")
+                    self.notify_subscribers("#Z1!")
+                    break        
 
     def start_read_port(self):       
         self.read_thread.start()
@@ -49,31 +71,59 @@ class SerialPublisher:
     def find_esp(self):
         ports = list(serial.tools.list_ports.comports())
         for port in ports:
-            print(f"Trying {port.device}...")
+            print(f"\nTrying {port.device}...")
             try:
                 self.ser.baudrate = 115200
                 self.ser.port = port.device
-                self.ser.timeout = 10000
+                self.ser.timeout = 2  # Reduced timeout for better responsiveness
                 self.ser.open()
-
-                print(f"{port.device}: #INIT!")
-                self.ser.flushInput()
-                self.ser.write(b"#INIT!")
-                print("Esperando respuesta")
-                response = self.ser.readline().decode('utf-8', errors='ignore').strip()
-                print("response:", response)
-
-                if response == "#ESP!":
-                    print(f"Connected to ESP on {port.device}")                   
-                    self.start_read_thread()
-                    break
-                else:
-                    print(f"Failed {port.device}")
+                
+                # Wait for initial bootup messages
+                print(f"Reading initial logs from {port.device}...")
+                initial_wait = 1.0  # Wait 1 second for bootup messages
+                time.sleep(initial_wait)
+                
+                # Read and print all available initial messages
+                while self.ser.in_waiting > 0:
+                    try:
+                        buffer = self.ser.read(self.ser.in_waiting).decode('utf-8')
+                        if buffer.strip():  # Only print non-empty messages
+                            print(f"Initial logs: {buffer.strip()}")
+                        time.sleep(0.1)  # Small delay to allow more data to arrive
+                    except UnicodeDecodeError:
+                        print("Warning: Received non-UTF8 data, skipping...")
+                        self.ser.flush()
+                        break
+                
+                # Now send the INIT command and wait for response
+                print(f"\n{port.device}: Sending #INIT!")
+                self.ser.write("#INIT!\n".encode())
+                
+                # Wait for response with timeout
+                start_time = time.time()
+                response = ""
+                timeout = 5  # 5 seconds timeout for response
+                
+                while time.time() - start_time < timeout:
+                    if self.ser.in_waiting > 0:
+                        response = self.ser.readline().decode('utf-8').strip()
+                        print("Response:", response)
+                        if response == "#ESP!":
+                            print(f"Successfully connected to ESP on {port.device}")
+                            self.start_read_thread()
+                            return True
+                        time.sleep(0.1)
+                
+                print(f"No valid response from {port.device}")
                 self.ser.close()
+                
             except (OSError, serial.SerialException) as e:
                 print(f"Failed to connect to {port.device}: {e}")
-
-        print("Termina find_esp")
+                if self.ser.is_open:
+                    self.ser.close()
+                continue
+        
+        print("No ESP32 device found")
     
     def start_read_thread(self):
         self.read_thread = threading.Thread(target=self.read_port)
@@ -92,19 +142,6 @@ class SerialPublisher:
         print("Serial Publisher (send_data)", data)
 
         self.ser.write(data)
-
-        wait_start = time.time()
-        full_resp = b""
-
-        while time.time() - wait_start < 2:
-            if self.ser.in_waiting > 0:  # Chequear si hay datos en el buffer
-                resp = self.ser.read(self.ser.in_waiting)
-                full_resp += resp
-
-                if b"#OK!" in resp:
-                    return
-                
-        raise ValueError(f"Se paso el timeout")
 
 publisher = SerialPublisher()
 state_fbr = { "state": "disconnected" }

@@ -9,6 +9,7 @@ import frames.serial_handler as ui_serial
 import re
 from customtkinter import filedialog    
 from tkinter import messagebox
+import pandas as pd
 
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -232,14 +233,34 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.is_playing = not self.is_playing
     
     def load_cycle_event(self, event):
-        self.fname = filedialog.askopenfilename(title="Selecciona un archivo de ciclo", filetypes=[("Archivos CSV", "*.csv")])
+        self.fname = filedialog.askopenfilename(title="Selecciona un archivo de ciclo", filetypes=[("Plantilla de ciclo", "*.xlsx")])
         if self.fname == "":
             print("No se eligio ningun archivo")
-            # self.info_label.configure(text="Nombre del ciclo: " + os.path.basename(self.fname))
-            # with open(self.fname, mode='r', newline='') as csv_file:
-            #     reader = csv.reader(csv_file)
-            #     for row in reader:
-            #         print(','.join(row)) 
+        else:
+            self.timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+            self.cycle_path = os.path.join(os.getcwd(), "Log", self.timestamp)   
+            os.makedirs(self.cycle_path, exist_ok=True) 
+            self.excel_to_csv(self.fname, os.path.join(self.cycle_path, "data_"+self.timestamp+".csv"))
+    
+    def excel_to_csv(self, fname_excel, fname_csv):
+        df = pd.read_excel(fname_excel, skiprows=1, header=None)
+        formatted_lines = []
+        self.total_data_lines = 0
+
+        for index, row in df.iterrows():
+            field1 = f"{int(row[0]):010d}"
+            field2 = f"{float(row[1]):05.2f}"
+            field3 = f"{float(row[2]):06.2f}"
+            field4 = f"{float(row[3]):05.2f}"
+            field5 = f"{int(row[4]):02d}"
+
+            line = f"{field1},{field2},{field3},{field4},{field5}"
+            formatted_lines.append(line)
+
+        with open(fname_csv, 'w', newline='') as f:
+            for line in formatted_lines:
+                f.write(line + '\n')
+                self.total_data_lines += 1
             
     
     def delete_cycle_event(self, event):
@@ -252,44 +273,56 @@ class ControlCycleFrame(ctk.CTkFrame):
     def send_button_event(self):
         try:
             self.interval = int(self.entry_interval.get())
-            self.alias_cycle = self.entry_interval.get().strip()
+            self.alias_cycle = self.entry_label.get().strip()
             if self.alias_cycle == "":
                 raise Exception("No se coloco un alias al ciclo")     
             if self.fname == "":
                 raise Exception("No se eligio un archivo para el ciclo")            
-
-        except:
+        except Exception as e:
+            print(e)
             messagebox.showwarning("Advertencia", "Completar todos los campos")
             return      
         
-        self.timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-        self.cycle_path = os.path.join(os.getcwd(), "Log", self.timestamp)    
-        os.makedirs(self.cycle_path, exist_ok=True)
-        #data_cycle_fname = os.path.join(destino_directorio, nuevo_nombre)
-
-
+        msg = "¿Esta seguro de que desea comenzar el ciclo " + os.path.basename(self.alias_cycle) + " con intervalos de medicion de " + str(self.interval)
+        self.interval_unit = self.radio_var.get()
+        if self.interval_unit == 0:
+            msg = msg + " segundos?"
+        elif self.interval_unit == 1:
+            msg = msg + " minutos?"
         
-        # msg = "¿Esta seguro de que desea comenzar el ciclo " + os.path.basename(self.fname) + " con intervalos de medicion de " + str(interval)
-        # interval_unit = self.radio_var.get()
-        # if interval_unit == 0:
-        #     msg = msg + " segundos?"
-        # elif interval_unit == 1:
-        #     msg = msg + " minutos?"
-        
-        answer = messagebox.askquestion("Comenzar ciclo", "msg")
+        answer = messagebox.askquestion("Comenzar ciclo", msg)
         if answer == "yes":
-            self.transfer_cycle("20241026_1430") # TODO: esto tiene que ser dinamico (y la generacion del archivo header tambien)
+            self.generate_header_csv(os.path.join(self.cycle_path, "header_"+self.timestamp+".csv"))
+            self.transfer_cycle(self.timestamp) 
         else:
             print("Descartado")
+
+    def generate_header_csv(self, fname):
+
+        if self.interval_unit == 1:
+            self.interval = self.interval*60
+
+        data = [
+            ["cycle_name", self.alias_cycle],
+            ["cycle_id", self.timestamp],
+            ["state", "new_cycle"],
+            ["interval_time", self.interval],
+            ["interval_total", self.total_data_lines],
+            ["interval_current", "0"]
+        ]
+
+        with open(fname, mode="w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerows(data)
         
     def transfer_cycle(self, id):
         try:
             ui_serial.publisher.send_data(b"#TRANSFER0!\n")
             ui_serial.publisher.send_data(b"#HEADER0!\n")
-            self.send_file_serial("Log/"+id+"/header_"+id+".csv") # TODO: tiene que ser dinamico
+            self.send_file_serial("Log/"+id+"/header_"+id+".csv") 
             ui_serial.publisher.send_data(b"#HEADER1!\n")
             ui_serial.publisher.send_data(b"#DATA0!\n")
-            self.send_file_serial("Log/"+id+"/data_"+id+".csv") # TODO: tiene que ser dinamico
+            self.send_file_serial("Log/"+id+"/data_"+id+".csv") 
             ui_serial.publisher.send_data(b"#DATA1!\n")
             ui_serial.publisher.send_data(b"#TRANSFER1!\n")
         except Exception as e:
