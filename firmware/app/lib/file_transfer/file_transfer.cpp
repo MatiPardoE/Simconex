@@ -36,7 +36,7 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
 
         if (_serial.available())
         {
-            String command = _serial.readStringUntil('\n');   // TODO leer 31 caracteres y chequear /n
+            String command = _serial.readStringUntil('\n');   // TODO leer 31 caracteres y chequear /n (solamente) / intentar encontrar el #DATA1 si no aumentamos a 31 caracteres el comando
             startTime = millis(); // reset the timeout
             if (command == "#HEADER0!")
             {
@@ -88,7 +88,7 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
                 {
                     if (command.length() == 30)
                     {
-                        destFileData.println(command);
+                        destFileData.println(command);  //TODO Usar un buffer.apendd y despues escribo en archivo y OKEY (Para poder eliminar rapido el buffer is hay error)
                         message_block_ok++;
                     }
                     else
