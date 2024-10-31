@@ -5,6 +5,8 @@
 #include <SD.h>
 #include <ArduinoLog.h>
 
+#define BLOCK_SIZE_ESP_UI 20
+
 class FileTransfer
 {
 public:

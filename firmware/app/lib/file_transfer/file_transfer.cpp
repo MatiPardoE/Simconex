@@ -11,17 +11,20 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
     File destFileData;
     bool headerOpen = false;
     bool dataOpen = false;
+    uint8_t message_block = 0;
+    uint8_t message_block_ok = 0;
+    uint16_t timeout_transfer_block = 250;
 
     if (SD.exists(destPathHeader))
     {
         SD.remove(destPathHeader);
-        //Log.infoln("Removed existing header file");
+        // Log.infoln("Removed existing header file");
     }
 
     if (SD.exists(destPathData))
     {
         SD.remove(destPathData);
-        //Log.infoln("Removed existing header file");
+        // Log.infoln("Removed existing header file");
     }
 
     while (true)
@@ -33,7 +36,7 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
 
         if (_serial.available())
         {
-            String command = _serial.readStringUntil('\n');
+            String command = _serial.readStringUntil('\n');   // TODO leer 31 caracteres y chequear /n (solamente) / intentar encontrar el #DATA1 si no aumentamos a 31 caracteres el comando
             startTime = millis(); // reset the timeout
             if (command == "#HEADER0!")
             {
@@ -83,14 +86,30 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
                 }
                 else if (dataOpen)
                 {
-                    destFileData.println(command);
-                    //Logica que le envio a la UI cada intervalo que escribo
-                    // int start = 0;
-                    // int end = command.indexOf(',');
-                    // uint32_t interval_id = command.substring(start, end).toInt();
-                    // Serial.print("#ID:");
-                    // Serial.print(interval_id);
-                    // Serial.println("!");
+                    if (command.length() == 30)
+                    {
+                        destFileData.println(command);  //TODO Usar un buffer.apendd y despues escribo en archivo y OKEY (Para poder eliminar rapido el buffer is hay error)
+                        message_block_ok++;
+                    }
+                    else
+                    {
+                        Log.errorln("Mensaje de transferencia con error");
+                    }
+                    message_block++;
+                    if (message_block == BLOCK_SIZE_ESP_UI)
+                    {
+                        if (message_block_ok == message_block)
+                        {
+                            Serial.println("#OK!");
+                            message_block = 0;
+                            message_block_ok = 0;
+                        }
+                        else
+                        {
+                            Serial.println("#FAIL!");
+                            // TODO Logica de recupero de bloque, capaz es necesaria capaz no (depende de la frecuencias de error)
+                        }
+                    }
                 }
             }
         }

@@ -1,3 +1,4 @@
+from enum import Enum
 import customtkinter as ctk
 import tkinter
 from PIL import Image
@@ -10,12 +11,12 @@ import re
 from customtkinter import filedialog    
 from tkinter import messagebox
 import pandas as pd
+import time
 
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
         ui_serial.publisher.subscribe(self.process_data)
-
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(4, weight=1)
 
@@ -81,6 +82,15 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_done_text.grid_forget()
         self.label_left_text.grid_forget()
 
+
+class HandshakeStatus(Enum):
+    OK = 1
+    NOT_YET = 0
+    TIMEOUT = -1
+    ERROR = -2
+    DATA_FAIL = -3
+    
+    
 class ControlCycleFrame(ctk.CTkFrame):
     
     def __init__(self, master):
@@ -317,18 +327,24 @@ class ControlCycleFrame(ctk.CTkFrame):
         
     def transfer_cycle(self, id):
         try:
-            ui_serial.publisher.send_data(b"#TRANSFER0!\n")
-            ui_serial.publisher.send_data(b"#HEADER0!\n")
-            self.send_file_serial("Log/"+id+"/header_"+id+".csv") 
-            ui_serial.publisher.send_data(b"#HEADER1!\n")
-            ui_serial.publisher.send_data(b"#DATA0!\n")
-            self.send_file_serial("Log/"+id+"/data_"+id+".csv") 
-            ui_serial.publisher.send_data(b"#DATA1!\n")
-            ui_serial.publisher.send_data(b"#TRANSFER1!\n")
+            ui_serial.publisher.subscribe(self.wait_for_ok)
+            self.send_data_and_wait_hs(b"#TRANSFER0!\n")
+            self.send_data_and_wait_hs(b"#HEADER0!\n")
+            self.send_file_serial("input_csv/"+id+"/header_"+id+".csv") # TODO: tiene que ser dinamico
+            self.send_data_and_wait_hs(b"#HEADER1!\n")
+            self.send_data_and_wait_hs(b"#DATA0!\n")
+            self.send_file_serial_hs("input_csv/"+id+"/data_"+id+".csv") # TODO: tiene que ser dinamico
+            self.send_data_and_wait_hs(b"#DATA1!\n")
+            self.send_data_and_wait_hs(b"#TRANSFER1!\n")
+            ui_serial.publisher.unsubscribe(self.wait_for_ok)
         except Exception as e:
             print(e)
             messagebox.showerror("Error", "Se produjo un error durante la transferencia del ciclo!")
             return    
+    def send_data_and_wait_hs(self, data, timeout = 3):
+        self.handshake_status = HandshakeStatus.NOT_YET
+        ui_serial.publisher.send_data(data)
+        self.wait_handshake(timeout)
     
     def send_file_serial(self, fname):
         with open(fname, mode='r', newline='') as csv_file:
@@ -337,6 +353,68 @@ class ControlCycleFrame(ctk.CTkFrame):
                     row_bytes = [element.encode() for element in row]
                     ui_serial.publisher.send_data(b','.join(row_bytes) + b'\n')
         
+    def send_file_serial_hs(self, fname, block_size=20):
+        with open(fname, mode='r', newline='') as csv_file:
+            reader = csv.reader(csv_file)
+            limit = 5
+            buffer = []
+            ii = 0
+
+            for row in reader:
+                row_bytes = [element.encode() for element in row]
+                buffer.append(b','.join(row_bytes))
+
+                if len(buffer) >= block_size:
+                    attemps = 0
+                    while attemps < limit:
+                        try:
+                            self.send_data_and_wait_hs(b'\n'.join(buffer) + b'\n')
+                            buffer = []
+                            break
+                        except ValueError as e:
+                            attemps += 1
+                            print(f"Block starting at line {ii} failed ({attemps})")
+                            if attemps >= limit:
+                                print("Too many errors, exiting transfer...")
+                                raise ValueError("Comm lost between ESP and UI")
+                    ii += block_size
+
+            # Send any remaining lines in the buffer
+            if buffer:
+                attemps = 0
+                while attemps < limit:
+                    try:
+                        ui_serial.publisher.send_data(b'\n'.join(buffer) + b'\n') # Aca no espero HS porque es el ultimo bloque y el ESP no lo sabe
+                        break
+                    except ValueError as e:
+                        attemps += 1
+                        print(f"Final block failed ({attemps})")
+                        if attemps >= limit:
+                            print("Too many errors, exiting transfer...")
+                            raise ValueError("Comm lost between ESP and UI")
+    
+    def wait_handshake(self,timeout = 5):
+        start_time = time.time()
+        while True:
+            if self.handshake_status == HandshakeStatus.OK:
+                print("Handshake OK")
+                self.handshake_status = HandshakeStatus.NOT_YET
+                break
+            if self.handshake_status == HandshakeStatus.DATA_FAIL:
+                raise ValueError("Data lost between ESP and UI")
+            if time.time() - start_time > timeout:
+                self.handshake_status = HandshakeStatus.TIMEOUT
+                raise TimeoutError("Timeout waiting for handshake from ESP")
+        
+    def wait_for_ok(self, data):
+        if data.strip() == "#OK!":
+            self.handshake_status = HandshakeStatus.OK
+        elif data.strip() == "#FAIL!":
+            self.handshake_status = HandshakeStatus.DATA_FAIL
+        else:
+            print("Received unexpected data in HS:", data.strip())
+            self.handshake_status = HandshakeStatus.ERROR
+    
     def only_numbers(self, text):
         return text.isdigit() or text == ""
    
