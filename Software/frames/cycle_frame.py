@@ -353,7 +353,15 @@ class ControlCycleFrame(ctk.CTkFrame):
                     row_bytes = [element.encode() for element in row]
                     ui_serial.publisher.send_data(b','.join(row_bytes) + b'\n')
         
-    def send_file_serial_hs(self, fname, block_size=20):
+    def send_file_serial_hs(self, fname, block_size=160):
+        # Calculate the number of blocks
+        with open(fname, mode='r', newline='') as csv_file:
+            reader = csv.reader(csv_file)
+            total_lines = sum(1 for _ in reader)
+            total_blocks = (total_lines + block_size - 1) // block_size  # Ceiling division
+            print(f"Total blocks to send: {total_blocks}")
+
+        start_time = time.time()  # Start timing the transfer
         with open(fname, mode='r', newline='') as csv_file:
             reader = csv.reader(csv_file)
             limit = 5
@@ -368,12 +376,16 @@ class ControlCycleFrame(ctk.CTkFrame):
                     attemps = 0
                     while attemps < limit:
                         try:
+                            block_start_time = time.time()
                             self.send_data_and_wait_hs(b'\n'.join(buffer) + b'\n')
+                            block_end_time = time.time()
+                            print(f"Sent OK: Block: {(ii/block_size)+1}/{total_blocks-1} in {block_end_time - block_start_time:.2f} seconds")
                             buffer = []
                             break
                         except ValueError as e:
                             attemps += 1
                             print(f"Block starting at line {ii} failed ({attemps})")
+                            time.sleep(0.3)
                             if attemps >= limit:
                                 print("Too many errors, exiting transfer...")
                                 raise ValueError("Comm lost between ESP and UI")
@@ -392,6 +404,9 @@ class ControlCycleFrame(ctk.CTkFrame):
                         if attemps >= limit:
                             print("Too many errors, exiting transfer...")
                             raise ValueError("Comm lost between ESP and UI")
+        
+        end_time = time.time()  # End timing the transfer
+        print(f"Transfer completed in {end_time - start_time:.2f} seconds")
     
     def wait_handshake(self,timeout = 5):
         start_time = time.time()
