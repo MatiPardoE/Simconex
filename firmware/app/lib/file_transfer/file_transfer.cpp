@@ -5,39 +5,92 @@ FileTransfer::FileTransfer(HardwareSerial &serial, int chipSelectPin)
 
 FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHeader, const char *destPathData, unsigned long timeout)
 {
-    // TODO: Implementar creacion de directorio si no existe y ademas borrar el archivo header y data si ya existe.
-    unsigned long startTime = millis(); // i will restart the timeout if there is comm
-    File destFileHeader;
-    File destFileData;
-    bool headerOpen = false;
-    bool dataOpen = false;
+    int retryCount = 0;
+    dataBuffer.reserve(BLOCK_SIZE);
+    startTime = millis();
 
     if (SD.exists(destPathHeader))
     {
         SD.remove(destPathHeader);
-        //Log.infoln("Removed existing header file");
+        // Log.infoln("Removed existing header file");
     }
 
     if (SD.exists(destPathData))
     {
         SD.remove(destPathData);
-        //Log.infoln("Removed existing header file");
+        // Log.infoln("Removed existing header file");
     }
 
     while (true)
     {
-        if (millis() - startTime > timeout)
+        if (millis() - startTime > TIMEOUT)
         {
             return FILE_TRANSFER_TIMEOUT;
         }
 
         if (_serial.available())
         {
-            String command = _serial.readStringUntil('\n');
-            startTime = millis(); // reset the timeout
+            String command;
+
+            startTime = millis(); // reset timeout
+
+            if (dataOpen)
+            {
+                command = _serial.readStringUntil('\n');
+                if (command == "#DATA1!")
+                {
+                    // End of data transfer - write remaining buffer
+                    if (!writeBufferToFile())
+                    {
+                        return FILE_TRANSFER_ERROR;
+                    }
+                    _serial.println("#OK!");
+                    destFileData.close();
+                    dataOpen = false;
+                }
+                else
+                {
+                    if (validateLine(command))
+                    {
+                        dataBuffer.push_back(command);
+                        message_block++;
+                    }
+                    else
+                    {
+                        dataBuffer.clear();
+                        message_block = 0;
+                        if (retryCount == MAX_RETRIES)
+                        {
+                            _serial.println("#FAIL!");
+                            return FILE_TRANSFER_ERROR;
+                        }
+                        retryCount++;
+                        delay(300); // Agrego este delay para que siga tirando todo los datos basura y despues limpio el puerto y mando fail
+                        flush_serial();
+                        _serial.println("#FAIL!");
+                    }
+                    if (message_block == BLOCK_SIZE)
+                    {
+                        if (!writeBufferToFile())
+                        {
+                            // Este caso es si hay error de escritura en SD
+                            _serial.println("#ERROR!");
+                            return FILE_TRANSFER_ERROR;
+                        }
+                        _serial.println("#OK!");
+                        message_block = 0;
+                    }
+                }
+            }
+            else
+            {
+                command = _serial.readStringUntil('\n');
+            }
+
+            // Handle commands
             if (command == "#HEADER0!")
             {
-                Serial.println("#OK!"); // TODO Create function to send commands to UI
+                _serial.println("#OK!");
                 destFileHeader = SD.open(destPathHeader, FILE_WRITE);
                 if (!destFileHeader)
                 {
@@ -48,7 +101,7 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
             }
             else if (command == "#HEADER1!" && headerOpen)
             {
-                Serial.println("#OK!");
+                _serial.println("#OK!");
                 destFileHeader.close();
                 headerOpen = false;
             }
@@ -63,49 +116,63 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
                 }
                 dataOpen = true;
             }
-            else if (command == "#DATA1!" && dataOpen)
-            {
-                Serial.println("#OK!");
-                destFileData.close();
-                dataOpen = false;
-            }
             else if (command == "#TRANSFER1!")
             {
-                Serial.println("#OK!");
-                Log.infoln("Transfer done");
+                _serial.println("#OK!");
                 return FILE_TRANSFER_DONE;
             }
-            else
+            else if (headerOpen)
             {
-                if (headerOpen)
-                {
-                    destFileHeader.println(command);
-                }
-                else if (dataOpen)
-                {
-                    destFileData.println(command);
-                    //Logica que le envio a la UI cada intervalo que escribo
-                    // int start = 0;
-                    // int end = command.indexOf(',');
-                    // uint32_t interval_id = command.substring(start, end).toInt();
-                    // Serial.print("#ID:");
-                    // Serial.print(interval_id);
-                    // Serial.println("!");
-                }
+                destFileHeader.println(command);
             }
         }
     }
 }
 
-void FileTransfer::writeFile(const char *filename, const char *data)
+bool FileTransfer::writeBufferToFile()
 {
-    File file = SD.open(filename, FILE_WRITE);
-    if (!file)
+    if (dataBuffer.empty())
+        return true;
+
+    for (const String &line : dataBuffer)
     {
-        _serial.println("Failed to open file for writing");
-        return;
+        if (!destFileData.println(line))
+        {
+            return false;
+        }
+    }
+    dataBuffer.clear();
+    return true;
+}
+
+bool FileTransfer::validateLine(const String &line)
+{
+    // Check if line ends with newline and has correct length
+    if (line.length() != LINE_LENGTH)
+    {
+        Log.errorln("Error in lenght: %s ", line.c_str());
+        return false;
     }
 
-    file.print(data);
-    file.close();
+    // Validate format: 8 digits, comma, 5 chars, comma, 6 chars, comma, 5 chars, comma, 2-3 chars
+    // Example: 00000000,07.00,080.00,20.00,20
+
+    if (!isDigit(line[0]))
+    {
+        Log.errorln("Error en primer caracter: %s ", line.c_str());
+        return false; // First char must be digit
+    }
+
+    // Basic structure check esto esta mal solo chequea en 
+    if (line[8] != ',' || line[14] != ',' || line[21] != ',' || line[27] != ','){
+        Log.errorln("Error en estructura: %s ", line.c_str());
+        return false;
+    }
+    return true;
+}
+
+void FileTransfer::flush_serial()
+{
+    while (_serial.available())
+        _serial.read();
 }

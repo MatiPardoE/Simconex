@@ -16,7 +16,7 @@ FileTransfer fileTransfer(Serial, SD_CS_PIN);
 
 void setup()
 {
-    commUI.begin(115200); // Solo define el puerto y velocidad de comunicación
+    commUI.begin(230400); // Solo define el puerto y velocidad de comunicación
     Log.begin(LOG_LEVEL_VERBOSE, &Serial, true);
     Log.notice("Starting...\n");
     delay(350);
