@@ -248,7 +248,7 @@ class ControlCycleFrame(ctk.CTkFrame):
             print("No se eligio ningun archivo")
         else:
             self.timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-            self.cycle_path = os.path.join(os.getcwd(), "Log", self.timestamp)   
+            self.cycle_path = os.path.join(os.getcwd(), "input_csv", self.timestamp)   
             os.makedirs(self.cycle_path, exist_ok=True) 
             self.excel_to_csv(self.fname, os.path.join(self.cycle_path, "data_"+self.timestamp+".csv"))
     
@@ -258,7 +258,7 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.total_data_lines = 0
 
         for index, row in df.iterrows():
-            field1 = f"{int(row[0]):010d}"
+            field1 = f"{int(row[0]):08d}"
             field2 = f"{float(row[1]):05.2f}"
             field3 = f"{float(row[2]):06.2f}"
             field4 = f"{float(row[3]):05.2f}"
