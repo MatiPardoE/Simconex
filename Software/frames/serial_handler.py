@@ -140,7 +140,7 @@ class SerialPublisher:
         self.find_thread.start()
 
     def send_data(self, data):
-        #print("Serial Publisher (send_data)", data)
+        print("Serial Publisher (send_data)", data)
         self.ser.write(data)
 
 publisher = SerialPublisher()
