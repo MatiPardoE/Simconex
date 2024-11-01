@@ -49,7 +49,8 @@ class SerialPublisher:
                     last_received_time = time.time()
 
                     if char == '\n':
-                        print(f"----------------- ESP Response: {buffer.strip()} -----------------")
+                        if not (buffer.strip() == "#OK!"):
+                            print(f"----------------- ESP Response: {buffer.strip()} -----------------")
                         self.save_to_queue(buffer.strip())
                         buffer = ""
                 else:
@@ -73,7 +74,7 @@ class SerialPublisher:
         for port in ports:
             print(f"\nTrying {port.device}...")
             try:
-                self.ser.baudrate = 115200
+                self.ser.baudrate = 230400
                 self.ser.port = port.device
                 self.ser.timeout = 2  # Reduced timeout for better responsiveness
                 self.ser.open()
@@ -139,8 +140,7 @@ class SerialPublisher:
         self.find_thread.start()
 
     def send_data(self, data):
-        print("Serial Publisher (send_data)", data)
-
+        #print("Serial Publisher (send_data)", data)
         self.ser.write(data)
 
 publisher = SerialPublisher()
