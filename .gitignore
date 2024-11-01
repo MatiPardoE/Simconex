@@ -3,3 +3,6 @@
 .vscode/
 .pio/
 log/app.log
+Software/frames/__pycache__/home_frame.cpython-312.pyc
+Software/frames/__pycache__/manual_frame.cpython-312.pyc
+Software/frames/__pycache__/sync_frame.cpython-312.pyc
