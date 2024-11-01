@@ -4,8 +4,7 @@
 #include <Arduino.h>
 #include <SD.h>
 #include <ArduinoLog.h>
-
-#define BLOCK_SIZE_ESP_UI 20
+#include <vector>
 
 class FileTransfer
 {
@@ -24,6 +23,23 @@ private:
     HardwareSerial &_serial;
     int _chipSelectPin;
     void writeFile(const char *filename, const char *data);
+    void clearBuffer();
+    void flush_serial();
+    bool writeBufferToFile();
+    bool validateLine(const String &line);
+
+    File destFileData;
+    File destFileHeader;
+    std::vector<String> dataBuffer;
+    unsigned long startTime;
+    bool headerOpen = false;
+    bool dataOpen = false;
+    int message_block = 0;
+
+    static const int BLOCK_SIZE = 160;          // Number of lines to buffer
+    static const int LINE_LENGTH = 30;         // Expected length of each line
+    static const unsigned long TIMEOUT = 5000; // 5 seconds timeout
+    static const int MAX_RETRIES = 5;
 };
 
 #endif // FILE_TRANSFER_H
