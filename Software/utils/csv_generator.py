@@ -16,4 +16,4 @@ def generate_csv(filename, rows):
             writer.writerow(row)
 
 # Generar un archivo CSV con 10 filas de ejemplo
-generate_csv("utils/data_20241101_1830.csv", 22500)
+generate_csv("data.csv", 500)

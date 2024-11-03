@@ -41,34 +41,32 @@ class SerialPublisher:
             print(f"serial_handler.py: Alguien se desuscribió. Cantidad de suscriptores: {len(self.subscribers)}")
     
     def read_port(self):
-        buffer = ""
+        buffer = bytearray()
         last_received_time = time.time()
         print("Starting read_port")
 
         while True:
             try:
                 if self.ser.in_waiting > 0:
-                    char = self.ser.read(1).decode('utf-8')
-                    buffer += char
+                    new_data = self.ser.read(self.ser.in_waiting)
+                    buffer.extend(new_data)
                     last_received_time = time.time()
 
-                    if char == '\n':
-                        end_time = time.time()  # End timing the transfer
-                        print(f"Tiempo en que llega una linea completa {end_time - self.start_time:.2f} seconds")
-                        #if buffer.strip().startswith("I:"):
-                        #    print(buffer.strip())
-                        #else:
-                            #if not (buffer.strip() == "#OK!"):
-                        
-                        print(f"----------------- ESP Response: {buffer.strip()} -----------------")
-                        self.save_to_queue(buffer.strip())
-                        buffer = ""
-                        self.start_time = time.time()
+                    while b'\n' in buffer:
+                        line, buffer = buffer.split(b'\n', 1)
+                        try:
+                            decoded_line = line.decode('utf-8').strip()
+                            if decoded_line:  # Only process non-empty lines
+                                print(f"----------------- ESP Response: {decoded_line} -----------------")
+                                self.save_to_queue(decoded_line)
+                        except UnicodeDecodeError as e:
+                            print(f"Decode error: {e}")
+                            continue
                 else:
                     if time.time() - last_received_time > 5:    # Si el fin de la cadena no llega en 5 segundos, se limpia el buffer
                         if buffer:
                             print(f"Timeout reached. Flushing buffer: {buffer.strip()}")
-                            buffer = ""
+                            buffer.clear()
                         last_received_time = time.time()
             except Exception as e:
                 print(f"Exception occurred: {e}")
