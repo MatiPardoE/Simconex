@@ -9,6 +9,7 @@ class SerialPublisher:
         self.data_queue = queue.Queue()
         self.subscribers = [] 
         self.ser = serial.Serial()
+        self.start_time = 0
 
         self.read_thread = threading.Thread(target=self.read_port)
         self.read_thread.daemon = True
@@ -17,8 +18,11 @@ class SerialPublisher:
         self.find_thread.daemon = True
 
     def save_to_queue(self, data):
-        self.data_queue.put(data)
+        #self.data_queue.put(data)
+        start_time = time.time()
         self.notify_subscribers(data)
+        end_time = time.time()
+        print(f"Tiempo que tarda notify_subscribers {end_time - start_time:.2f} seconds")
 
     def notify_subscribers(self, data):
         i=0
@@ -49,13 +53,17 @@ class SerialPublisher:
                     last_received_time = time.time()
 
                     if char == '\n':
+                        end_time = time.time()  # End timing the transfer
+                        print(f"Tiempo en que llega una linea completa {end_time - self.start_time:.2f} seconds")
                         #if buffer.strip().startswith("I:"):
                         #    print(buffer.strip())
                         #else:
                             #if not (buffer.strip() == "#OK!"):
+                        
                         print(f"----------------- ESP Response: {buffer.strip()} -----------------")
                         self.save_to_queue(buffer.strip())
                         buffer = ""
+                        self.start_time = time.time()
                 else:
                     if time.time() - last_received_time > 5:    # Si el fin de la cadena no llega en 5 segundos, se limpia el buffer
                         if buffer:

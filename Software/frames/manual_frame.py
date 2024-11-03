@@ -191,7 +191,7 @@ class SetPointsFrame(ctk.CTkFrame):
 
     def __init__(self, master):
         super().__init__(master) 
-        ui_serial.publisher.subscribe(self.process_data_set_points)
+        #ui_serial.publisher.subscribe(self.process_data_set_points)
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -410,7 +410,7 @@ class SetPointsFrame(ctk.CTkFrame):
 class ManualRecordFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
-        ui_serial.publisher.subscribe(self.process_data_manual_record)
+        #ui_serial.publisher.subscribe(self.process_data_manual_record)
 
         image_path = os.path.join(os.getcwd(), "images")
 

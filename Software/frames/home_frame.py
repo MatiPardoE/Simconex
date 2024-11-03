@@ -224,7 +224,7 @@ class InstantValuesFrame(ctk.CTkFrame):
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)         
-        ui_serial.publisher.subscribe(self.process_data_actual_cycle)
+        #ui_serial.publisher.subscribe(self.process_data_actual_cycle)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(4, weight=1)
@@ -297,7 +297,7 @@ class ActualCycleFrame(ctk.CTkFrame):
 class MyPlot(ctk.CTkFrame):
     def __init__(self, master, var):
         super().__init__(master)
-        ui_serial.publisher.subscribe(self.process_data_my_plot)
+        #ui_serial.publisher.subscribe(self.process_data_my_plot)
 
         id_list_i, ph_list_i, od_list_i, temp_list_i, light_list_i = read_datalog("Log/test_1.csv")
 
@@ -389,7 +389,7 @@ class MyPlot(ctk.CTkFrame):
 class PlotFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
-        ui_serial.publisher.subscribe(self.process_data_plot_frame)
+        #ui_serial.publisher.subscribe(self.process_data_plot_frame)
 
         datalog_path = os.path.join(os.getcwd(), "test_data")
 

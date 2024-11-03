@@ -55,6 +55,8 @@ private:
     File destFileHeader;
     std::vector<String> dataBuffer;
     unsigned long startTime;
+    unsigned long startTxTime;
+    unsigned long totalTxTime;
     bool headerOpen = false;
     bool dataOpen = false;
     int message_block = 0;

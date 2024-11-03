@@ -16,7 +16,7 @@ import time
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
-        ui_serial.publisher.subscribe(self.process_data_cycle_frame)
+        #ui_serial.publisher.subscribe(self.process_data_cycle_frame)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(4, weight=1)
 
@@ -95,7 +95,7 @@ class ControlCycleFrame(ctk.CTkFrame):
     
     def __init__(self, master):
         super().__init__(master) 
-        ui_serial.publisher.subscribe(self.process_data_control_cycle)
+        #ui_serial.publisher.subscribe(self.process_data_control_cycle)
 
         image_path = os.path.join(os.getcwd(), "images")
         self.validate = self.register(self.only_numbers)

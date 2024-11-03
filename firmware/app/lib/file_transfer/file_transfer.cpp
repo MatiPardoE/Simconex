@@ -48,9 +48,11 @@ FileTransfer::TransferStatus FileTransfer::transferCycle(const char *destPathHea
                 response = _serial.readStringUntil('\n');
                 if (response == "#OK!") {
                     delay(500);
+                    startTxTime = millis();
                     if(!sendDataOutput(pathDataOut)) {
                         return FILE_TRANSFER_ERROR;
                     }
+                    
                     //_serial.println("#DATAOUT1!");
                     syncCycleStatus = WAIT_SYNC_1;
                     //.infoln("Voy a esperar el OK\n");
@@ -71,6 +73,11 @@ FileTransfer::TransferStatus FileTransfer::transferCycle(const char *destPathHea
                     //Log.infoln("Me llego el SYNC1\n");
                     _serial.println("#OK!");
                     startTime = millis(); // reset timeout
+
+                    Serial.print("Transmission total time: ");
+                    Serial.print(totalTxTime);
+                    Serial.println(" milliseconds");
+
                     return FILE_TRANSFER_DONE;
                 }
                 break;
@@ -227,6 +234,7 @@ bool FileTransfer::sendDataOutput(const char* filename) {
             blockContent = "";
         }
     }
+    
 
     if (lineCount > 0) {
         //Log.infoln("Termine el bloque antes de 160");
@@ -246,14 +254,15 @@ bool FileTransfer::sendBlock(String blockContent, bool wait) {
     while (retryCount < MAX_RETRIES) {
         //Log.infoln("Intento numero %d de %d", retryCount, MAX_RETRIES);
         Serial.print(blockContent);
+        
         if(!wait){
             Serial.println("#DATAOUT1!");
         }
-
+        totalTxTime = millis() - startTxTime;
         unsigned long startTime = millis();
         bool responseReceived = false;
         
-        while (millis() - startTime < 15000) { 
+        while (millis() - startTime < 25000) { 
             if (Serial.available() > 0) {
                 String response = Serial.readStringUntil('\n');
                 //Log.infoln("Llego algo al puerto serie: %s", response.c_str());
