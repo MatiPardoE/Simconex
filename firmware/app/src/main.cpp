@@ -55,7 +55,7 @@ void loop()
     case CommUI::SYNC_CYCLE_START:
         Serial.println("#OK!");
         Serial.println("#ID0!");
-        fileTransfer.transferCycle("/input_test/header.csv", "/input_output/cycle_out.csv", 10000);
+        fileTransfer.transferCycle("/input_test/header.csv", "/output_test/cycle_out.csv", 10000);
         break;
     default:
         Log.warning("Unknown command\n");

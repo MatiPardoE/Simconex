@@ -18,7 +18,7 @@ class LogFrame(ctk.CTkFrame):
         self.temp_list = []
         self.light_list = []
 
-        ui_serial.publisher.subscribe(self.update_log_frame)
+        #ui_serial.publisher.subscribe(self.update_log_frame)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -114,7 +114,7 @@ class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
 
-        ui_serial.publisher.subscribe(self.process_data_instant_values)
+        #ui_serial.publisher.subscribe(self.process_data_instant_values)
         image_path = os.path.join(os.getcwd(), "images")
 
         self.grid_rowconfigure(0, weight=1)

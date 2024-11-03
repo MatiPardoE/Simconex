@@ -47,26 +47,33 @@ FileTransfer::TransferStatus FileTransfer::transferCycle(const char *destPathHea
             case SEND_DATAOUT:
                 response = _serial.readStringUntil('\n');
                 if (response == "#OK!") {
+                    delay(500);
                     if(!sendDataOutput(pathDataOut)) {
                         return FILE_TRANSFER_ERROR;
                     }
-                    _serial.println("#DATAOUT1!");
-                    syncCycleStatus = WAIT_OK_DATAOUT_1;
+                    //_serial.println("#DATAOUT1!");
+                    syncCycleStatus = WAIT_SYNC_1;
+                    //.infoln("Voy a esperar el OK\n");
                     startTime = millis(); // reset timeout
                 }
                 break;
             case WAIT_OK_DATAOUT_1:
                 response = _serial.readStringUntil('\n');
                 if (response == "#OK!") {
-                    response = _serial.readStringUntil('\n');
-                    if (response == "#SYNC1!") { // termino el proceso de sincronizacion
-                        _serial.println("#OK!");
-                        startTime = millis(); // reset timeout
-                        return FILE_TRANSFER_DONE;
-                    }
+                    //Log.infoln("Me llego el OK\n");
+                    syncCycleStatus = WAIT_SYNC_1;
+                    startTime = millis(); // reset timeout
                 }
                 break;
-            
+            case WAIT_SYNC_1:
+                response = _serial.readStringUntil('\n');
+                if (response == "#SYNC1!") { // termino el proceso de sincronizacion
+                    //Log.infoln("Me llego el SYNC1\n");
+                    _serial.println("#OK!");
+                    startTime = millis(); // reset timeout
+                    return FILE_TRANSFER_DONE;
+                }
+                break;
         }   
     }
 }
@@ -212,7 +219,7 @@ bool FileTransfer::sendDataOutput(const char* filename) {
 
         if (lineCount == BLOCK_SIZE) {
             lineCount = 0;
-            if (!sendBlockAndWaitForResponse(blockContent)) {
+            if (!sendBlock(blockContent, true)) {
                 ret = false;
                 break;
             }
@@ -222,7 +229,8 @@ bool FileTransfer::sendDataOutput(const char* filename) {
     }
 
     if (lineCount > 0) {
-        if (!sendBlockAndWaitForResponse(blockContent)) {
+        //Log.infoln("Termine el bloque antes de 160");
+        if (!sendBlock(blockContent, false)) {
             ret = false;
         }
     }
@@ -231,20 +239,24 @@ bool FileTransfer::sendDataOutput(const char* filename) {
     return ret;
 }
 
-bool FileTransfer::sendBlockAndWaitForResponse(String blockContent) {
+bool FileTransfer::sendBlock(String blockContent, bool wait) {
     int retryCount = 0;
     bool success = false;
 
     while (retryCount < MAX_RETRIES) {
-        Serial.println(blockContent);
+        //Log.infoln("Intento numero %d de %d", retryCount, MAX_RETRIES);
+        Serial.print(blockContent);
+        if(!wait){
+            Serial.println("#DATAOUT1!");
+        }
 
         unsigned long startTime = millis();
         bool responseReceived = false;
         
-        while (millis() - startTime < TIMEOUT) { 
+        while (millis() - startTime < 15000) { 
             if (Serial.available() > 0) {
                 String response = Serial.readStringUntil('\n');
-                response.trim();
+                //Log.infoln("Llego algo al puerto serie: %s", response.c_str());
 
                 if (response == "#OK!") {
                     success = true;

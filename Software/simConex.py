@@ -133,7 +133,7 @@ class App(ctk.CTk):
         self.connection_button = ctk.CTkButton(self.navigation_frame, text="Conectar", command=self.connection_button_event)
         self.connection_button.grid(row=8, column=0, padx=20, pady=(10, 0))
 
-        self.sync_button = ctk.CTkButton(self.navigation_frame, text="Sincronizar", command=self.sync_button_event)
+        self.sync_button = ctk.CTkButton(self.navigation_frame, text="Sincronizar", command=self.sync_button_event, state="disabled")
         self.sync_button.grid(row=9, column=0, padx=20, pady=(10, 0))
 
         # Scaling Menu SideBar
@@ -216,7 +216,8 @@ class App(ctk.CTk):
             ui_serial.publisher.find_thread.join()
             if ui_serial.publisher.ser.is_open:
                 self.connection_label.configure(image=self.link_image)  
-                self.connection_button.configure(text="Desconectar")              
+                self.connection_button.configure(text="Desconectar")     
+                self.sync_button.configure(state="normal")         
         else: 
             ui_serial.publisher.send_data(b"#Z1!")
             self.connection_label.configure(image=self.unlink_image)  

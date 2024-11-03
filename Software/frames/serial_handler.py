@@ -24,7 +24,7 @@ class SerialPublisher:
         i=0
         for callback in self.subscribers:
             i=i+1
-            print(f"Notifico al callback:", callback.__name__)
+            #print(f"Notifico al callback:", callback.__name__)
             callback(data)
 
     def subscribe(self, callback):
@@ -49,7 +49,10 @@ class SerialPublisher:
                     last_received_time = time.time()
 
                     if char == '\n':
-                        #if not (buffer.strip() == "#OK!"):
+                        #if buffer.strip().startswith("I:"):
+                        #    print(buffer.strip())
+                        #else:
+                            #if not (buffer.strip() == "#OK!"):
                         print(f"----------------- ESP Response: {buffer.strip()} -----------------")
                         self.save_to_queue(buffer.strip())
                         buffer = ""

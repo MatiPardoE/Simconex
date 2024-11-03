@@ -29,7 +29,8 @@ public:
         SEND_DATAOUT,
         WAIT_OK_DATAOUT,
         SEND_DATAOUT_1,
-        WAIT_OK_DATAOUT_1
+        WAIT_OK_DATAOUT_1,
+        WAIT_SYNC_1
     };
 
     FileTransfer(HardwareSerial &serial, int chipSelectPin);
@@ -48,7 +49,7 @@ private:
     bool validateLine(const String &line);
     String getCycleID(const char* filename);
     bool sendDataOutput(const char* filename);
-    bool sendBlockAndWaitForResponse(String blockContent);
+    bool sendBlock(String blockContent, bool wait);
 
     File destFileData;
     File destFileHeader;

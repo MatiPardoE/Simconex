@@ -73,7 +73,7 @@ class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
 
-        ui_serial.publisher.subscribe(self.process_data_instant_values)
+        #ui_serial.publisher.subscribe(self.process_data_instant_values)
 
         image_path = os.path.join(os.getcwd(), "images")
 
@@ -167,6 +167,8 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.temp_button.grid(row=8, column=0, padx=10, pady=(0,10), sticky="ns")
     
     def process_data_instant_values(self, data):
+        print("Entro a process_data_instant_values")
+
         if "#Z1!" in data:
             self.esp_disconnected()
 
@@ -203,6 +205,7 @@ class InstantValuesFrame(ctk.CTkFrame):
                 # elif match.group(9) == '1':
                 #     self.pump_button.configure(text="Encendido")
                 #     self.pump_button.configure(fg_color="green")
+        print("Salgo de process_data_instant_values")
 
     def esp_disconnected(self):
         self.light_button.configure(text = "--")

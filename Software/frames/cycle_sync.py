@@ -38,7 +38,9 @@ class CycleSync:
         print("Syncronization of running cycle started!")
 
         try:
-            ui_serial.publisher.subscribe(self.wait_for_ok)
+            start_time = time.time()  # Start timing the transfer
+            
+            ui_serial.publisher.subscribe(self.wait_for_response)
             self.send_data_and_wait_hs(b"#SYNC0!\n")
             self.wait_message(HandshakeStatus.ID0, timeout)
             ui_serial.publisher.send_data(b"#OK!\n")
@@ -48,7 +50,7 @@ class CycleSync:
             ui_serial.publisher.send_data(b"#OK!\n")
             self.wait_message(HandshakeStatus.DATAOUT0, timeout)
             ui_serial.publisher.send_data(b"#OK!\n")
-            ui_serial.publisher.unsubscribe(self.wait_for_ok)
+            ui_serial.publisher.unsubscribe(self.wait_for_response)
 
             ui_serial.publisher.subscribe(self.wait_for_dataout)
             self.receive_data(timeout=5)
@@ -57,6 +59,9 @@ class CycleSync:
             ui_serial.publisher.subscribe(self.wait_for_response)
             self.send_data_and_wait_hs(b"#SYNC1!\n")
             ui_serial.publisher.unsubscribe(self.wait_for_response)
+
+            end_time = time.time()  # End timing the transfer
+            print(f"Transfer completed in {end_time - start_time:.2f} seconds")
         
         except Exception as e:
             print("Syncronization of running cycle failed!")
@@ -82,10 +87,9 @@ class CycleSync:
                 self.handshake_status = HandshakeStatus.NOT_YET
                 break
             if self.handshake_status == HandshakeStatus.MSG_VALID:
-                print("Valid block of data received")
+                print("Valid line of data received")
                 start_time = time.time()
                 self.handshake_status = HandshakeStatus.NOT_YET
-                break
             if self.handshake_status == HandshakeStatus.DATA_FAIL:
                 raise ValueError("Data lost between ESP and UI")
             if time.time() - start_time > timeout:
@@ -93,6 +97,7 @@ class CycleSync:
                 raise TimeoutError("Timeout waiting for handshake from ESP")
 
     def wait_for_dataout(self, data):
+        print("wait_for_dataout data:", data)
         # creo que puedo detectar linea por linea porque esta funcion se llama despues de recibir un \n
         pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$"
         if data == "#DATAOUT1!":
@@ -101,10 +106,13 @@ class CycleSync:
             ui_serial.ph_list = self.ph_list
             ui_serial.od_list = self.od_list
             ui_serial.temp_list = self.temp_list
+            print("Valid block of data received")
+            ui_serial.publisher.send_data(b"#OK!\n")
             self.handshake_status = HandshakeStatus.DATAOUT1
             return
         match = re.match(pattern, data)
         if match: 
+            print("Trama valida:", data)
             self.line_count += 1
             self.id_list_tmp.insert(0, int(match.group(1)))
             self.light_list_tmp.insert(0, int(match.group(5)))
@@ -113,6 +121,7 @@ class CycleSync:
             self.temp_list_tmp.insert(0, float(match.group(4)))
             self.handshake_status = HandshakeStatus.MSG_VALID
             if self.line_count == 160:
+                print("Valid block of data received")
                 self.line_count = 0
 
                 self.id_list += self.id_list_tmp
@@ -126,10 +135,10 @@ class CycleSync:
                 self.od_list_tmp = []
                 self.temp_list_tmp = []
                 self.light_list_tmp = []
-                ui_serial.publisher.send_data("#OK!")
+                ui_serial.publisher.send_data(b"#OK!\n")
         else: 
             self.line_count = 0                   
-
+            print("Mensaje desconocido:", data)
             time.sleep(0.3) # Agrego este delay para que siga tirando todo los datos basura mando fail   
             self.id_list_tmp = []
             self.ph_list_tmp = []
@@ -137,11 +146,11 @@ class CycleSync:
             self.temp_list_tmp = []
             self.light_list_tmp = []
 
-            ui_serial.publisher.send_data("#FAIL!")
+            ui_serial.publisher.send_data("#FAIL!\n")
 
     def wait_for_response(self, data):
         pattern = r'\b\d{8}_\d{4}\b'
-        print("wait_for_response received:", data)
+        print("wait for response data:", data)
 
         if data.strip() == "#OK!":
             self.handshake_status = HandshakeStatus.OK
@@ -181,7 +190,7 @@ class CycleSync:
                 self.handshake_status = HandshakeStatus.TIMEOUT
                 raise TimeoutError("Timeout waiting for handshake from ESP")
     
-    def wait_message(self, status, timeout = 5):
+    def wait_message(self, status, timeout = 5): # Implementar esto en todos los handshakes porque es mas generico
         start_time = time.time()
         while True:
             if self.handshake_status == status:
