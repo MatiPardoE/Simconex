@@ -7,12 +7,12 @@ import serial.tools.list_ports
 import threading
 import logging
 from frames.home_frame import HomeFrame
-from frames.sync_frame import SecondFrame
 from frames.manual_frame import ManualFrame
 from frames.calibration_frame import CalibrationFrame
 from frames.alerts_frame import AlertsFrame
 from frames.cycle_frame import CycleFrame
 import frames.serial_handler as ui_serial
+from frames.cycle_sync import CycleSync
 import re
 
 # Crear un logger
@@ -42,7 +42,7 @@ console_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
-def view_data(data):
+def view_data_symconex(data):
     pattern = r"#(STA)([012])\!"
     match = re.match(pattern, data)
     if match:
@@ -133,13 +133,16 @@ class App(ctk.CTk):
         self.connection_button = ctk.CTkButton(self.navigation_frame, text="Conectar", command=self.connection_button_event)
         self.connection_button.grid(row=8, column=0, padx=20, pady=(10, 0))
 
+        self.sync_button = ctk.CTkButton(self.navigation_frame, text="Sincronizar", command=self.sync_button_event)
+        self.sync_button.grid(row=9, column=0, padx=20, pady=(10, 0))
+
         # Scaling Menu SideBar
         self.scaling_label = ctk.CTkLabel(self.navigation_frame, text="Zoom:", anchor="w")
-        self.scaling_label.grid(row=9, column=0, padx=20, pady=(10, 0))
+        self.scaling_label.grid(row=10, column=0, padx=20, pady=(10, 0))
         self.scaling_optionemenu = ctk.CTkOptionMenu(self.navigation_frame, values=["80%", "90%", "100%", "110%", "120%"],
                                                      command=self.change_scaling_event)
         self.scaling_optionemenu.set("100%")  # set default value
-        self.scaling_optionemenu.grid(row=10, column=0, padx=20, pady=(10, 20), sticky="s")
+        self.scaling_optionemenu.grid(row=11, column=0, padx=20, pady=(10, 20), sticky="s")
 
         # create frames
         self.home_frame = HomeFrame(self)
@@ -203,13 +206,17 @@ class App(ctk.CTk):
         new_scaling_float = int(new_scaling.replace("%", "")) / 100
         ctk.set_widget_scaling(new_scaling_float)
 
+    def sync_button_event(self): 
+        cycle_sync = CycleSync()
+        cycle_sync.sync_running_cycle()
+
     def connection_button_event(self): 
         if self.connection_button.cget("text") == "Conectar":        
             ui_serial.publisher.start_find_thread()
             ui_serial.publisher.find_thread.join()
             if ui_serial.publisher.ser.is_open:
                 self.connection_label.configure(image=self.link_image)  
-                self.connection_button.configure(text="Desconectar")
+                self.connection_button.configure(text="Desconectar")              
         else: 
             ui_serial.publisher.send_data(b"#Z1!")
             self.connection_label.configure(image=self.unlink_image)  
@@ -218,7 +225,7 @@ class App(ctk.CTk):
             ui_serial.publisher.stop_read_thread()
 
 if __name__ == "__main__":
-    ui_serial.publisher.subscribe(view_data)
+    ui_serial.publisher.subscribe(view_data_symconex)
 
     app = App()
     app.mainloop()

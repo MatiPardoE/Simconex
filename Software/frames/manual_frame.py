@@ -18,7 +18,7 @@ class LogFrame(ctk.CTkFrame):
         self.temp_list = []
         self.light_list = []
 
-        ui_serial.publisher.subscribe(self.update_log)
+        ui_serial.publisher.subscribe(self.update_log_frame)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -71,7 +71,7 @@ class LogFrame(ctk.CTkFrame):
         self.scrollable_frame = ctk.CTkScrollableFrame(self.frame_log, width=1500)
         self.scrollable_frame.pack(pady=10, padx=10, fill="both", expand=True)   
   
-    def update_log(self, data):
+    def update_log_frame(self, data):
         if ui_serial.state_fbr.get("state") == "running":
             pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$" # linea de log
             match = re.match(pattern, data)
@@ -114,7 +114,7 @@ class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
 
-        ui_serial.publisher.subscribe(self.process_data)
+        ui_serial.publisher.subscribe(self.process_data_instant_values)
         image_path = os.path.join(os.getcwd(), "images")
 
         self.grid_rowconfigure(0, weight=1)
@@ -168,7 +168,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.temp_button = ctk.CTkButton(self.right_frame, text="--", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.temp_button.grid(row=8, column=0, padx=10, pady=(0, 10), sticky="ns")
 
-    def process_data(self, data):
+    def process_data_instant_values(self, data):
         if "#Z1!" in data:
             self.esp_disconnected()
 
@@ -191,7 +191,7 @@ class SetPointsFrame(ctk.CTkFrame):
 
     def __init__(self, master):
         super().__init__(master) 
-        ui_serial.publisher.subscribe(self.process_data)
+        ui_serial.publisher.subscribe(self.process_data_set_points)
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -279,7 +279,7 @@ class SetPointsFrame(ctk.CTkFrame):
         self.send_button = ctk.CTkButton(self.right_frame, text="Enviar", command=self.send_button_event, width=100, state="disabled")
         self.send_button.grid(row=9, column=0, padx=10, pady=(20, 10), sticky="ns")
 
-    def process_data(self, data):
+    def process_data_set_points(self, data):
         pattern = r"#(STA)([012])\!"
         if re.match(pattern, data):
             self.esp_connected()
@@ -410,7 +410,7 @@ class SetPointsFrame(ctk.CTkFrame):
 class ManualRecordFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
-        ui_serial.publisher.subscribe(self.process_data)
+        ui_serial.publisher.subscribe(self.process_data_manual_record)
 
         image_path = os.path.join(os.getcwd(), "images")
 
@@ -469,7 +469,7 @@ class ManualRecordFrame(ctk.CTkFrame):
         self.main_button_interval = ctk.CTkButton(master=self.frame_commands, text="Enviar", command=self.send_button_event, width=80, state="disabled")
         self.main_button_interval.grid(row=0, column=4, padx=5, pady=5, sticky="ew")
 
-    def process_data(self, data):
+    def process_data_manual_record(self, data):
         pattern = r"#(STA)([012])\!"
         if re.match(pattern, data):
             self.esp_connected()

@@ -15,9 +15,27 @@ public:
         FILE_TRANSFER_TIMEOUT,
         FILE_TRANSFER_ERROR
     };
+
+    enum SyncCycleStatus
+    {
+        SEND_ID_0,
+        WAIT_OK_ID_0,
+        SEND_TIMESTAMP,
+        WAIT_OK_TIMESTAMP,
+        SEND_ID_1,
+        WAIT_OK_ID_1,
+        SEND_DATAOUT_0,
+        WAIT_OK_DATAOUT_0,
+        SEND_DATAOUT,
+        WAIT_OK_DATAOUT,
+        SEND_DATAOUT_1,
+        WAIT_OK_DATAOUT_1
+    };
+
     FileTransfer(HardwareSerial &serial, int chipSelectPin);
     bool checkCommand();
     TransferStatus transferFiles(const char *destPathHeader, const char *destPathData, unsigned long timeout);
+    TransferStatus transferCycle(const char *destPathHeader, const char *pathDataOut, unsigned long timeout);
 
 private:
     HardwareSerial &_serial;
@@ -26,7 +44,11 @@ private:
     void clearBuffer();
     void flush_serial();
     bool writeBufferToFile();
+    bool loadBufferFromFile();
     bool validateLine(const String &line);
+    String getCycleID(const char* filename);
+    bool sendDataOutput(const char* filename);
+    bool sendBlockAndWaitForResponse(String blockContent);
 
     File destFileData;
     File destFileHeader;

@@ -13,6 +13,21 @@ from datetime import datetime
 import random
 import frames.serial_handler as ui_serial
 import re
+from enum import Enum
+import time
+
+class HandshakeStatus(Enum):
+    MSG_VALID = 7
+    TIMESTAMP = 6
+    DATAOUT1 = 5
+    DATAOUT0 = 4
+    ID1 = 3
+    ID0 = 2
+    OK = 1
+    NOT_YET = 0
+    TIMEOUT = -1
+    ERROR = -2
+    DATA_FAIL = -3
 
 def read_datalog(fname):
     id_list = []
@@ -58,7 +73,7 @@ class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
 
-        ui_serial.publisher.subscribe(self.process_data)
+        ui_serial.publisher.subscribe(self.process_data_instant_values)
 
         image_path = os.path.join(os.getcwd(), "images")
 
@@ -151,7 +166,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.temp_button = ctk.CTkButton(self.right_frame, text="--°C", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.temp_button.grid(row=8, column=0, padx=10, pady=(0,10), sticky="ns")
     
-    def process_data(self, data):
+    def process_data_instant_values(self, data):
         if "#Z1!" in data:
             self.esp_disconnected()
 
@@ -206,7 +221,7 @@ class InstantValuesFrame(ctk.CTkFrame):
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)         
-        ui_serial.publisher.subscribe(self.process_data)
+        ui_serial.publisher.subscribe(self.process_data_actual_cycle)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(4, weight=1)
@@ -247,13 +262,16 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
         self.label_left_text.grid_forget()
 
-    def process_data(self, data):        
+    def process_data_actual_cycle(self, data):     
         pattern = r"#(STA)([012])\!"
-        if re.match(pattern, data):
-            self.esp_connected()
+        match = re.match(pattern, data)
+        if match:
+            self.esp_connected()        
         
         if "#Z1!" in data:
-            self.esp_disconnected()    
+            self.esp_disconnected()  
+
+
     
     def esp_connected(self):
         self.label_actual_days.grid(row=1, column=0, padx=20, pady=(10, 10), sticky="w")
@@ -276,7 +294,7 @@ class ActualCycleFrame(ctk.CTkFrame):
 class MyPlot(ctk.CTkFrame):
     def __init__(self, master, var):
         super().__init__(master)
-        ui_serial.publisher.subscribe(self.process_data)
+        ui_serial.publisher.subscribe(self.process_data_my_plot)
 
         id_list_i, ph_list_i, od_list_i, temp_list_i, light_list_i = read_datalog("Log/test_1.csv")
 
@@ -327,7 +345,7 @@ class MyPlot(ctk.CTkFrame):
 
         self.update_plot(var)
 
-    def process_data(self, data):       
+    def process_data_my_plot(self, data):       
         pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$" # linea de log
         match = re.match(pattern, data)
         
@@ -368,7 +386,7 @@ class MyPlot(ctk.CTkFrame):
 class PlotFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
-        ui_serial.publisher.subscribe(self.process_data)
+        ui_serial.publisher.subscribe(self.process_data_plot_frame)
 
         datalog_path = os.path.join(os.getcwd(), "test_data")
 
@@ -393,7 +411,7 @@ class PlotFrame(ctk.CTkFrame):
         self.plot_od = MyPlot(self.tabview.tab("OD"), "OD")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
         self.plot_temp = MyPlot(self.tabview.tab("Temperatura"), "Temperatura")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
         
-    def process_data(self, data):
+    def process_data_plot_frame(self, data):
         pattern = r"#(STA)([012])\!"
         match = re.match(pattern, data)
         if match:

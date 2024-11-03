@@ -16,7 +16,7 @@ import time
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
-        ui_serial.publisher.subscribe(self.process_data)
+        ui_serial.publisher.subscribe(self.process_data_cycle_frame)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(4, weight=1)
 
@@ -56,7 +56,7 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
         self.label_left_text.grid_forget()
 
-    def process_data(self, data):
+    def process_data_cycle_frame(self, data):
         pattern = r"#(STA)([012])\!"
         if re.match(pattern, data):
             self.esp_connected()
@@ -95,7 +95,7 @@ class ControlCycleFrame(ctk.CTkFrame):
     
     def __init__(self, master):
         super().__init__(master) 
-        ui_serial.publisher.subscribe(self.process_data)
+        ui_serial.publisher.subscribe(self.process_data_control_cycle)
 
         image_path = os.path.join(os.getcwd(), "images")
         self.validate = self.register(self.only_numbers)
@@ -171,7 +171,7 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.main_button_interval = ctk.CTkButton(master=self.frame_info, text="Enviar", command=self.send_button_event, width=80, state="disabled")
         self.main_button_interval.grid(row=0, column=2, padx=0, pady=5)
     
-    def process_data(self, data):
+    def process_data_control_cycle(self, data):
         pattern = r"#(STA)([012])\!"
         if re.match(pattern, data):
             self.esp_connected()
