@@ -2,7 +2,13 @@ import serial
 import threading
 import queue
 import time
+from enum import Enum
+import re
 
+class MsgType(Enum):
+    ESP_DISCONNECTED = 0
+    ESP_CONNECTED = 1
+    NEW_MEASUREMENT = 2
 
 class SerialPublisher:
     def __init__(self):
@@ -18,17 +24,26 @@ class SerialPublisher:
         self.find_thread.daemon = True
 
     def save_to_queue(self, data):
-        #self.data_queue.put(data)
-        start_time = time.time()
         self.notify_subscribers(data)
-        end_time = time.time()
-        print(f"Tiempo que tarda notify_subscribers {end_time - start_time:.2f} seconds")
 
     def notify_subscribers(self, data):
-        i=0
-        for callback in self.subscribers:
-            i=i+1
-            #print(f"Notifico al callback:", callback.__name__)
+        pattern = r"#(STA)([012])\!"
+        match = re.match(pattern, data)
+        if match:
+            for callback in self.subscribers: callback(MsgType.ESP_CONNECTED)
+            value = int(match.group(2))
+            if value == 0:
+                state_fbr["state"] = "running"
+            elif value == 1:
+                state_fbr["state"] = "syncing"
+            elif value == 2:
+                state_fbr["state"] = "finished"
+            print("** FBR Simconex cycle state: " + state_fbr["state"] + " **")
+
+        if "#Z1!" in data:
+            for callback in self.subscribers: callback(MsgType.ESP_DISCONNECTED)
+        
+        for callback in self.subscribers:          
             callback(data)
 
     def subscribe(self, callback):
@@ -120,6 +135,7 @@ class SerialPublisher:
                         print("Response:", response)
                         if response == "#ESP!":
                             print(f"Successfully connected to ESP on {port.device}")
+                            
                             self.start_read_thread()
                             return True
                         time.sleep(0.1)
@@ -156,8 +172,10 @@ publisher = SerialPublisher()
 state_fbr = { "state": "disconnected" }
 cycle_id = ""
 
-id_list = []
-ph_list = []
-od_list = []
-temp_list = []
-light_list = []
+data_lists = {
+    "id": [],
+    "ph": [],
+    "od": [],
+    "temperature": [],
+    "light": []
+}

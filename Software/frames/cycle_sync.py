@@ -38,9 +38,7 @@ class CycleSync:
     def sync_running_cycle(self, timeout=3):
         print("Syncronization of running cycle started!")
 
-        try:
-            
-
+        try:         
             ui_serial.publisher.subscribe(self.wait_for_response)
             self.send_data_and_wait_hs(b"#SYNC0!\n")
             self.wait_message(HandshakeStatus.ID0, timeout)
@@ -64,7 +62,9 @@ class CycleSync:
 
             ui_serial.publisher.subscribe(self.wait_for_response)
             self.send_data_and_wait_hs(b"#SYNC1!\n")
-            ui_serial.publisher.unsubscribe(self.wait_for_response)            
+            ui_serial.publisher.unsubscribe(self.wait_for_response) 
+
+            ui_serial.state_fbr["state"] = "running"           
         
         except Exception as e:
             print("Syncronization of running cycle failed!")
@@ -100,12 +100,6 @@ class CycleSync:
                 raise TimeoutError("Timeout waiting for handshake from ESP")
 
     def wait_for_dataout(self, data):
-        
-        self.end_validate_time = time.time()  # End timing the transfer
-        print(f"Tiempo entre linea y linea {self.end_validate_time - self.start_validate_time:.2f} seconds")
-
-        self.start_validate_time = time.time()
-        # creo que puedo detectar linea por linea porque esta funcion se llama despues de recibir un \n
         pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$"
         if data == "#DATAOUT1!":
             ui_serial.id_list = self.id_list
@@ -116,12 +110,9 @@ class CycleSync:
             print("Valid block of data received")
             ui_serial.publisher.send_data(b"#OK!\n")
             self.handshake_status = HandshakeStatus.DATAOUT1
-            self.end_validate_time = time.time()  # End timing the transfer
-            print(f"Tiempo que tarde en analizar una linea {self.end_validate_time - self.start_validate_time:.2f} seconds")
             return
         match = re.match(pattern, data)
         if match: 
-            print("Trama valida:", data)
             self.line_count += 1
             self.id_list_tmp.insert(0, int(match.group(1)))
             self.light_list_tmp.insert(0, int(match.group(5)))
@@ -129,11 +120,6 @@ class CycleSync:
             self.od_list_tmp.insert(0, float(match.group(3)))
             self.temp_list_tmp.insert(0, float(match.group(4)))
             self.handshake_status = HandshakeStatus.MSG_VALID
-
-            self.end_validate_time = time.time()  # End timing the transfer
-            print(f"Tiempo que tarde en analizar una linea {self.end_validate_time - self.start_validate_time:.2f} seconds")
-
-            self.start_validate_time = time.time()
 
             if self.line_count == 160:
                 print("Valid block of data received")
@@ -154,7 +140,7 @@ class CycleSync:
         else: 
             self.line_count = 0                   
             print("Mensaje desconocido:", data)
-            time.sleep(0.3) # Agrego este delay para que siga tirando todo los datos basura mando fail   
+            time.sleep(0.3)   
             self.id_list_tmp = []
             self.ph_list_tmp = []
             self.od_list_tmp = []
@@ -163,22 +149,6 @@ class CycleSync:
 
             ui_serial.publisher.send_data("#FAIL!\n")
     
-    def validate_line(data):
-        try:
-            parts = data.strip().split(',')
-            if len(parts) != 5:
-                return False
-
-            int(parts[0])
-            int(parts[4])
-            float(parts[1])
-            float(parts[2])
-            float(parts[3])
-
-            return True
-        except ValueError:
-            return False
-
     def wait_for_response(self, data):
         pattern = r'\b\d{8}_\d{4}\b'
         print("wait for response data:", data)

@@ -6,6 +6,8 @@ import csv
 from datetime import datetime
 import frames.serial_handler as ui_serial
 import re
+from frames.serial_handler import MsgType 
+from frames.serial_handler import data_lists 
 
 class LogFrame(ctk.CTkFrame):
 
@@ -18,7 +20,7 @@ class LogFrame(ctk.CTkFrame):
         self.temp_list = []
         self.light_list = []
 
-        #ui_serial.publisher.subscribe(self.update_log_frame)
+        ui_serial.publisher.subscribe(self.update_log_frame)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -72,49 +74,41 @@ class LogFrame(ctk.CTkFrame):
         self.scrollable_frame.pack(pady=10, padx=10, fill="both", expand=True)   
   
     def update_log_frame(self, data):
-        if ui_serial.state_fbr.get("state") == "running":
-            pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$" # linea de log
-            match = re.match(pattern, data)
-            if match: 
-                self.light_list.insert(0, int(match.group(5)))
-                self.ph_list.insert(0, float(match.group(2)))
-                self.od_list.insert(0, float(match.group(3)))
-                self.temp_list.insert(0, float(match.group(4)))
+        if data == MsgType.NEW_MEASUREMENT:       
+            self.frame_line = ctk.CTkFrame(self.scrollable_frame)
+            self.frame_line.pack(fill="x")
+
+            self.in_frame = ctk.CTkFrame(self.frame_line)
+            self.in_frame.pack(fill="x")
             
-                self.frame_line = ctk.CTkFrame(self.scrollable_frame)
-                self.frame_line.pack(fill="x")
+            self.label_time = ctk.CTkLabel(self.in_frame, text="12:30", corner_radius=0, width=150)
+            self.label_time.pack(side='left')
 
-                self.in_frame = ctk.CTkFrame(self.frame_line)
-                self.in_frame.pack(fill="x")
-                
-                self.label_time = ctk.CTkLabel(self.in_frame, text="12:30", corner_radius=0, width=150)
-                self.label_time.pack(side='left')
+            self.label_date = ctk.CTkLabel(self.in_frame, text="11/10/2024", corner_radius=0, width=200)
+            self.label_date.pack(side='left')
 
-                self.label_date = ctk.CTkLabel(self.in_frame, text="11/10/2024", corner_radius=0, width=200)
-                self.label_date.pack(side='left')
+            self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['od'][-1]), corner_radius=0, width=150)
+            self.label_od.pack(side='left')
 
-                self.label_od = ctk.CTkLabel(self.in_frame, text=match.group(3), corner_radius=0, width=150)
-                self.label_od.pack(side='left')
+            self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['ph'][-1]), corner_radius=0, width=150)
+            self.label_ph.pack(side='left')
 
-                self.label_ph = ctk.CTkLabel(self.in_frame, text=match.group(2), corner_radius=0, width=150)
-                self.label_ph.pack(side='left')
+            self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light'][-1]}", corner_radius=0, width=150)
+            self.label_light.pack(side='left')
 
-                self.label_light = ctk.CTkLabel(self.in_frame, text=match.group(5), corner_radius=0, width=150)
-                self.label_light.pack(side='left')
+            self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][-1]), corner_radius=0, width=200)
+            self.label_temp.pack(side='left')
 
-                self.label_temp = ctk.CTkLabel(self.in_frame, text=match.group(4), corner_radius=0, width=200)
-                self.label_temp.pack(side='left')
+            self.label_cycle = ctk.CTkLabel(self.in_frame, text="Ciclo1", corner_radius=0, width=150)
+            self.label_cycle.pack(side='left')
 
-                self.label_cycle = ctk.CTkLabel(self.in_frame, text="Ciclo1", corner_radius=0, width=150)
-                self.label_cycle.pack(side='left')
-
-                self.scrollable_frame._parent_canvas.yview_moveto(1.0)
+            self.scrollable_frame._parent_canvas.yview_moveto(1.0)
 
 class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
 
-        #ui_serial.publisher.subscribe(self.process_data_instant_values)
+        ui_serial.publisher.subscribe(self.process_data_instant_values)
         image_path = os.path.join(os.getcwd(), "images")
 
         self.grid_rowconfigure(0, weight=1)
@@ -169,17 +163,14 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.temp_button.grid(row=8, column=0, padx=10, pady=(0, 10), sticky="ns")
 
     def process_data_instant_values(self, data):
-        if "#Z1!" in data:
-            self.esp_disconnected()
+        if data == MsgType.ESP_DISCONNECTED:
+            self.esp_disconnected() 
 
-        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$" # linea de log
-        match = re.match(pattern, data)
-        
-        if match:
-            self.light_button.configure(text = f"{int(match.group(5))}")
-            self.ph_button.configure(text = "{0:.2f}".format(float(match.group(2))))
-            self.do_button.configure(text = "{0:.2f}".format(float(match.group(3))))
-            self.temp_button.configure(text = "{0:.2f}".format(float(match.group(4))))            
+        if data == MsgType.NEW_MEASUREMENT:
+            self.light_button.configure(text = f"{data_lists['light'][-1]}")
+            self.ph_button.configure(text = "{0:.2f}".format(data_lists['ph'][-1]))
+            self.do_button.configure(text = "{0:.2f}".format(data_lists['od'][-1]))
+            self.temp_button.configure(text = "{0:.2f}".format(data_lists['temperature'][-1]))            
     
     def esp_disconnected(self):
         self.light_button.configure(text = "--")
@@ -191,7 +182,7 @@ class SetPointsFrame(ctk.CTkFrame):
 
     def __init__(self, master):
         super().__init__(master) 
-        #ui_serial.publisher.subscribe(self.process_data_set_points)
+        ui_serial.publisher.subscribe(self.process_data_set_points)
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -280,17 +271,14 @@ class SetPointsFrame(ctk.CTkFrame):
         self.send_button.grid(row=9, column=0, padx=10, pady=(20, 10), sticky="ns")
 
     def process_data_set_points(self, data):
-        pattern = r"#(STA)([012])\!"
-        if re.match(pattern, data):
-            self.esp_connected()
+        if data == MsgType.ESP_CONNECTED:
+            self.esp_connected()        
         
-        if "#Z1!" in data:
-            self.esp_disconnected()
+        if data == MsgType.ESP_DISCONNECTED:
+            self.esp_disconnected() 
 
-        pattern = r"#([LPTDCOWAZ])(\d+)\!"
-        matches = re.findall(pattern, data)
-        msg_list = [{'id': m[0], 'value': int(m[1])} for m in matches]
-        self.update_data(msg_list)
+        if data == MsgType.NEW_MEASUREMENT:
+            self.update_data()
 
     def esp_connected(self):
         self.entry_light.configure(state = "normal")
@@ -306,60 +294,9 @@ class SetPointsFrame(ctk.CTkFrame):
         self.entry_temp.configure(state = "disabled")
         self.send_button.configure(state = "disabled")        
 
-    def update_data(self, msg_list):
-        for msg in msg_list:
-            id_msg = msg['id']
-            value = msg['value']
-            
-            if id_msg == 'C':
-                if value == 0:
-                    self.co2_button.configure(text="Apagado")
-                    self.co2_button.configure(fg_color="red")
-                    self.co2_button.configure(state="normal")
-                elif value == 1:
-                    self.co2_button.configure(text="Encendido")
-                    self.co2_button.configure(fg_color="green")
-                    self.co2_button.configure(state="normal")
-            elif id_msg == 'O':
-                if value == 0:
-                    self.o2_button.configure(text="Apagado")
-                    self.o2_button.configure(fg_color="red")
-                    self.o2_button.configure(state="normal")
-                elif value == 1:
-                    self.o2_button.configure(text="Encendido")
-                    self.o2_button.configure(fg_color="green")
-                    self.o2_button.configure(state="normal")
-            elif id_msg == 'A':
-                if value == 0:
-                    self.air_button.configure(text="Apagado")
-                    self.air_button.configure(fg_color="red")
-                    self.air_button.configure(state="normal")
-                elif value == 1:
-                    self.air_button.configure(text="Encendido")
-                    self.air_button.configure(fg_color="green")
-                    self.air_button.configure(state="normal")
-            elif id_msg == 'W':
-                if value == 0:
-                    self.pump_button.configure(text="Apagado")
-                    self.pump_button.configure(fg_color="red")
-                    self.pump_button.configure(state="normal")
-                elif value == 1:
-                    self.pump_button.configure(text="Encendido")
-                    self.pump_button.configure(fg_color="green")
-                    self.pump_button.configure(state="normal")
-            elif id_msg == 'Z':
-                self.co2_button.configure(text="Desconectado")
-                self.co2_button.configure(fg_color="orange")
-                self.co2_button.configure(state="disabled")
-                self.o2_button.configure(text="Desconectado")
-                self.o2_button.configure(fg_color="orange")
-                self.o2_button.configure(state="disabled")
-                self.air_button.configure(text="Desconectado")
-                self.air_button.configure(fg_color="orange")
-                self.air_button.configure(state="disabled")
-                self.pump_button.configure(text="Desconectado")
-                self.pump_button.configure(fg_color="orange")
-                self.pump_button.configure(state="disabled")
+    def update_data(self):
+        print("TODO: implementar la actualizacion de los datos de las salidas")
+        #TODO
 
     def co2_button_event(self):
         if self.co2_button.cget("text") == "Encendido":
@@ -410,7 +347,7 @@ class SetPointsFrame(ctk.CTkFrame):
 class ManualRecordFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
-        #ui_serial.publisher.subscribe(self.process_data_manual_record)
+        ui_serial.publisher.subscribe(self.process_data_manual_record)
 
         image_path = os.path.join(os.getcwd(), "images")
 
@@ -470,12 +407,11 @@ class ManualRecordFrame(ctk.CTkFrame):
         self.main_button_interval.grid(row=0, column=4, padx=5, pady=5, sticky="ew")
 
     def process_data_manual_record(self, data):
-        pattern = r"#(STA)([012])\!"
-        if re.match(pattern, data):
-            self.esp_connected()
+        if data == MsgType.ESP_CONNECTED:
+            self.esp_connected()        
         
-        if "#Z1!" in data:
-            self.esp_disconnected()
+        if data == MsgType.ESP_DISCONNECTED:
+            self.esp_disconnected() 
 
     def esp_connected(self):
         self.play_pause_image_label.bind("<Enter>", self.on_hover)

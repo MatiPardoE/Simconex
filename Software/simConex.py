@@ -42,30 +42,6 @@ console_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
-def view_data_symconex(data):
-    pattern = r"#(STA)([012])\!"
-    match = re.match(pattern, data)
-    if match:
-        value = int(match.group(2))
-        if value == 0:
-            ui_serial.state_fbr = { "state": "connected" }
-        elif value == 1:
-            ui_serial.state_fbr = { "state": "running" }
-        elif value == 2:
-            ui_serial.state_fbr = { "state": "finished" }
-        print(ui_serial.state_fbr.get("state"))
-    
-    pattern = r"#(SYN)([01])\!"
-    match = re.match(pattern, data)
-    if match:
-        value = int(match.group(2))
-        if value == 0:
-            ui_serial.state_fbr = { "state": "syncing" }
-        elif value == 1:
-            ui_serial.state_fbr = { "state": "running" }
-        print(ui_serial.state_fbr.get("state"))
-    
-
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
@@ -226,7 +202,7 @@ class App(ctk.CTk):
             ui_serial.publisher.stop_read_thread()
 
 if __name__ == "__main__":
-    ui_serial.publisher.subscribe(view_data_symconex)
+    #ui_serial.publisher.subscribe(view_data_symconex)
 
     app = App()
     app.mainloop()

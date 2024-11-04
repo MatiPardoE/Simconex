@@ -12,11 +12,13 @@ from customtkinter import filedialog
 from tkinter import messagebox
 import pandas as pd
 import time
+from frames.serial_handler import MsgType 
+from frames.serial_handler import data_lists 
 
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
-        #ui_serial.publisher.subscribe(self.process_data_cycle_frame)
+        ui_serial.publisher.subscribe(self.process_data_cycle_frame)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(4, weight=1)
 
@@ -57,12 +59,11 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.grid_forget()
 
     def process_data_cycle_frame(self, data):
-        pattern = r"#(STA)([012])\!"
-        if re.match(pattern, data):
-            self.esp_connected()
+        if data == MsgType.ESP_CONNECTED:
+            self.esp_connected()        
         
-        if "#Z1!" in data:
-            self.esp_disconnected()
+        if data == MsgType.ESP_DISCONNECTED:
+            self.esp_disconnected() 
 
     def esp_connected(self):
         self.label_actual_days.grid(row=1, column=0, padx=20, pady=(10, 10), sticky="w")
@@ -95,7 +96,7 @@ class ControlCycleFrame(ctk.CTkFrame):
     
     def __init__(self, master):
         super().__init__(master) 
-        #ui_serial.publisher.subscribe(self.process_data_control_cycle)
+        ui_serial.publisher.subscribe(self.process_data_control_cycle)
 
         image_path = os.path.join(os.getcwd(), "images")
         self.validate = self.register(self.only_numbers)
@@ -172,12 +173,11 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.main_button_interval.grid(row=0, column=2, padx=0, pady=5)
     
     def process_data_control_cycle(self, data):
-        pattern = r"#(STA)([012])\!"
-        if re.match(pattern, data):
-            self.esp_connected()
+        if data == MsgType.ESP_CONNECTED:
+            self.esp_connected()        
         
-        if "#Z1!" in data:
-            self.esp_disconnected()
+        if data == MsgType.ESP_DISCONNECTED:
+            self.esp_disconnected() 
 
     def esp_connected(self):
         self.play_pause_image_label.bind("<Enter>", self.on_hover)
@@ -444,7 +444,7 @@ class LogFrame(ctk.CTkFrame):
         self.temp_list = []
         self.light_list = []
 
-        #ui_serial.publisher.subscribe(self.update_log)
+        ui_serial.publisher.subscribe(self.update_log)
         image_path = os.path.join(os.getcwd(), "images")
 
         self.grid_columnconfigure(0, weight=1)
@@ -512,71 +512,37 @@ class LogFrame(ctk.CTkFrame):
     def off_hover(self, event):
         self.label_export.configure(cursor="arrow") 
     
-    def update_log(self, data):
-        pattern = r"#(STA)([012])\!"
-        if re.match(pattern, data):
-            self.create_log()
-        
-        if ui_serial.state_fbr.get("state") == "running":
-            pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$" # linea de log
-            match = re.match(pattern, data)
-            if match: 
-                self.id_list.insert(0, int(match.group(1)))
-                self.light_list.insert(0, int(match.group(5)))
-                self.ph_list.insert(0, float(match.group(2)))
-                self.od_list.insert(0, float(match.group(3)))
-                self.temp_list.insert(0, float(match.group(4)))
-                
-                # self.append_log([int(match.group(1)),
-                #                  float(match.group(2)),
-                #                  float(match.group(3)),
-                #                  float(match.group(4)),
-                #                  int(match.group(5))])
+    def update_log(self, data):      
+        if data == MsgType.NEW_MEASUREMENT:
+            self.frame_line = ctk.CTkFrame(self.scrollable_frame)
+            self.frame_line.pack(fill="x")
 
-                self.append_log(data)
+            self.in_frame = ctk.CTkFrame(self.frame_line)
+            self.in_frame.pack(fill="x")
+            
+            self.label_time = ctk.CTkLabel(self.in_frame, text="12:30", corner_radius=0, width=150) # TODO: calcular la hora de la medicion en base a la hora de inicio + intervalo*medicion
+            self.label_time.pack(side='left')
 
-                self.frame_line = ctk.CTkFrame(self.scrollable_frame)
-                self.frame_line.pack(fill="x")
+            self.label_date = ctk.CTkLabel(self.in_frame, text="11/10/2024", corner_radius=0, width=200) # TODO: calcular la fecha de la medicion en base a la hora de inicio + intervalo*medicion
+            self.label_date.pack(side='left')
 
-                self.in_frame = ctk.CTkFrame(self.frame_line)
-                self.in_frame.pack(fill="x")
-                
-                self.label_time = ctk.CTkLabel(self.in_frame, text="12:30", corner_radius=0, width=150)
-                self.label_time.pack(side='left')
+            self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['od'][-1]), corner_radius=0, width=150)
+            self.label_od.pack(side='left')
 
-                self.label_date = ctk.CTkLabel(self.in_frame, text="11/10/2024", corner_radius=0, width=200)
-                self.label_date.pack(side='left')
+            self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['ph'][-1]), corner_radius=0, width=150)
+            self.label_ph.pack(side='left')
 
-                self.label_od = ctk.CTkLabel(self.in_frame, text=match.group(3), corner_radius=0, width=150)
-                self.label_od.pack(side='left')
+            self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light'][-1]}", corner_radius=0, width=150)
+            self.label_light.pack(side='left')
 
-                self.label_ph = ctk.CTkLabel(self.in_frame, text=match.group(2), corner_radius=0, width=150)
-                self.label_ph.pack(side='left')
+            self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][-1]), corner_radius=0, width=200)
+            self.label_temp.pack(side='left')
 
-                self.label_light = ctk.CTkLabel(self.in_frame, text=match.group(5), corner_radius=0, width=150)
-                self.label_light.pack(side='left')
+            self.label_cycle = ctk.CTkLabel(self.in_frame, text="Ciclo1", corner_radius=0, width=150) # TODO: aca poner el label del ciclo
+            self.label_cycle.pack(side='left')
 
-                self.label_temp = ctk.CTkLabel(self.in_frame, text=match.group(4), corner_radius=0, width=200)
-                self.label_temp.pack(side='left')
-
-                self.label_cycle = ctk.CTkLabel(self.in_frame, text="Ciclo1", corner_radius=0, width=150)
-                self.label_cycle.pack(side='left')
-
-                self.scrollable_frame._parent_canvas.yview_moveto(1.0)
+            self.scrollable_frame._parent_canvas.yview_moveto(1.0)
     
-    def create_log(self):
-        fname = "Log/test.csv"
-        header = ['ID', 'pH', 'OD', 'Temperatura', 'Luz']
-        with open(fname, mode='w', newline='') as csv_file:
-            w_csv = csv.writer(csv_file)
-            w_csv.writerow(header) 
-
-    def append_log(self, line):
-        fname = "Log/test.csv"
-        with open(fname, mode='a', newline='') as csv_file:
-            #w_csv = csv.writer(csv_file)
-            csv_file.write(line+"\n")  
-
 class CycleFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, corner_radius=0, fg_color="transparent")
