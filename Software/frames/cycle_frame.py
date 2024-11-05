@@ -14,6 +14,7 @@ import pandas as pd
 import time
 from frames.serial_handler import MsgType 
 from frames.serial_handler import data_lists 
+from frames.serial_handler import data_lists_expected 
 
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -25,7 +26,7 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_actual = ctk.CTkLabel(self, text="Ciclo Actual", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_actual.grid(row=0, column=0, padx=20, pady=(10, 0), sticky="w")
 
-        self.label_actual_days = ctk.CTkLabel(self, text="10 Dias", font=ctk.CTkFont(size=18))
+        self.label_actual_days = ctk.CTkLabel(self, text="", font=ctk.CTkFont(size=18))
         self.label_actual_days.grid(row=1, column=0, padx=20, pady=(10, 10), sticky="w")
         self.label_actual_days.grid_forget()
 
@@ -50,16 +51,16 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="nsew")
         self.label_left_colour.grid_forget()
 
-        self.label_done_text = ctk.CTkLabel(self.frame_actual, text="5 dias", font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_done_text = ctk.CTkLabel(self.frame_actual, text="", font=ctk.CTkFont(size=15, weight="bold"))
         self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="nsew")
         self.label_done_text.grid_forget()
 
-        self.label_left_text = ctk.CTkLabel(self.frame_actual, text="5 dias", font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_left_text = ctk.CTkLabel(self.frame_actual, text="", font=ctk.CTkFont(size=15, weight="bold"))
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
         self.label_left_text.grid_forget()
 
     def process_data_cycle_frame(self, data):
-        if data == MsgType.ESP_CONNECTED:
+        if data == MsgType.ESP_SYNCRONIZED:
             self.esp_connected()        
         
         if data == MsgType.ESP_DISCONNECTED:
@@ -73,6 +74,11 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="nsew")
         self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="nsew")
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
+
+        self.progressbar_actual.set(len(data_lists["id"])/len(data_lists_expected["id"]))
+        self.label_actual_days.configure(text=str(len(data_lists_expected["id"]))+" mediciones")
+        self.label_done_text.configure(text=str(len(data_lists["id"]))+" mediciones")
+        self.label_left_text.configure(text=str(len(data_lists_expected["id"])-len(data_lists["id"]))+ " mediciones")
     
     def esp_disconnected(self):
         self.label_actual_days.grid_forget()

@@ -189,8 +189,8 @@ class App(ctk.CTk):
 
     def sync_button_event(self): 
         ui_serial.publisher.force_sync() # TODO: una vez que se corrija la sincronizacion, eliminar esta linea
-        # cycle_sync = CycleSync()
-        # cycle_sync.sync_running_cycle()
+        #cycle_sync = CycleSync()
+        #cycle_sync.sync_running_cycle()
 
     def connection_button_event(self): 
         if self.connection_button.cget("text") == "Conectar":        
@@ -223,6 +223,18 @@ def backend(data):
                     data_lists_expected['od'].append(float(row[2]))
                     data_lists_expected['temperature'].append(float(row[3]))
                     data_lists_expected['light'].append(int(row[4]))
+
+        # TODO: esto es temporal, cuando la sync funcione bien tiene que irse
+        fname = os.path.join(os.getcwd(), "Log", ui_serial.cycle_id, "cycle_out_"+ui_serial.cycle_id+".csv")
+        with open(fname, "r") as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                if len(row) == 5:
+                    data_lists['id'].append(int(row[0]))
+                    data_lists['ph'].append(float(row[1]))
+                    data_lists['od'].append(float(row[2]))
+                    data_lists['temperature'].append(float(row[3]))
+                    data_lists['light'].append(int(row[4]))
 
 if __name__ == "__main__":
     ui_serial.publisher.subscribe(backend)
