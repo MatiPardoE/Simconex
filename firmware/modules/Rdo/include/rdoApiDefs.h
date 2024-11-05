@@ -33,10 +33,10 @@
 #define RDO_BAUD_RATE       19200
 
 //
-#define _TIMEOUT_RDO_INIT_      1000
-//#define _TIMEOUT_RDO_REQUEST_   5000
-//#define _TIMEOUT_RDO_REQUEST_   30000
-#define _TIMEOUT_RDO_REQUEST_   6000
+#define _TIMEOUT_RDO_INIT_          1000
+//#define _TIMEOUT_RDO_REQUEST_     5000
+//#define _TIMEOUT_RDO_REQUEST_     30000
+#define _TIMEOUT_RDO_REQUEST_       10000
 
 #define RDO_SLAVE_ID            0x01
 
@@ -162,7 +162,7 @@ typedef enum {
     _AVAILABLE_UNITS_DO_SIZE_     = 1,
 
     // Temperature Parameters
-    _MEASURED_VALUE_TEMP_SIZE_    = 2,
+    _MEASURED_VALUE_TEMP_SIZE_    = 8,
     _PARAMETER_ID_TEMP_SIZE_      = 1,
     _UNIT_ID_TEMP_SIZE_           = 1,
     _DATA_QUALITY_ID_TEMP_SIZE_   = 1,

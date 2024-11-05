@@ -46,7 +46,7 @@
 void clearRDO (void){
 
   //rdo.status = SENSOR_ID;
-  rdo.status = GET_DO;
+  rdo.status = GET_TEMP;
 
   rdo.requests  = 0;
   rdo.replies   = 0;
@@ -176,8 +176,8 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
     rdo.temperature.measuredValue = *reinterpret_cast<float*>(data);
 #endif
     rdo.replies++;
-    //rdo.status = GET_TEMP;
-    rdo.status = GET_DO;
+    rdo.status = GET_TEMP;
+    //Srdo.status = GET_DO;
     break;
 
   case GET_TEMP:
@@ -189,7 +189,7 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
     rdo.doConcentration.measuredValue = *reinterpret_cast<float*>(data);
 #endif
     rdo.replies++;
-    rdo.status = GET_DO;
+    rdo.status = GET_TEMP;
     break;
 
   default:
