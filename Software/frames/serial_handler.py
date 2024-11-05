@@ -161,6 +161,7 @@ class SerialPublisher:
         self.read_thread.start()
 
     def stop_read_thread(self):
+        for callback in self.subscribers: callback(MsgType.ESP_DISCONNECTED)
         self.ser.close()
 
     def start_find_thread(self):
@@ -172,11 +173,23 @@ class SerialPublisher:
         print("Serial Publisher (send_data)", data)
         self.ser.write(data)
 
+    def force_sync(self):
+        for callback in self.subscribers: callback(MsgType.ESP_SYNCRONIZED)
+
 publisher = SerialPublisher()
 state_fbr = { "state": "disconnected" }
-cycle_id = ""
+cycle_id = "20241102_1647"
+#cycle_id = "" 
 
 data_lists = {
+    "id": [],
+    "ph": [],
+    "od": [],
+    "temperature": [],
+    "light": []
+}
+
+data_lists_expected = {
     "id": [],
     "ph": [],
     "od": [],

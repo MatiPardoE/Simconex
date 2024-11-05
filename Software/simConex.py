@@ -13,7 +13,10 @@ from frames.alerts_frame import AlertsFrame
 from frames.cycle_frame import CycleFrame
 import frames.serial_handler as ui_serial
 from frames.cycle_sync import CycleSync
-import re
+from frames.serial_handler import MsgType 
+import csv
+from frames.serial_handler import data_lists 
+from frames.serial_handler import data_lists_expected 
 
 # Crear un logger
 logger = logging.getLogger(__name__)
@@ -45,6 +48,7 @@ logger.addHandler(console_handler)
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
+        ui_serial.publisher.subscribe(self.update_btn)
 
         self.title("FBR SIMCONEX")
         #self.geometry("700x450")
@@ -67,6 +71,7 @@ class App(ctk.CTk):
         self.alerts_image = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "alert.png")), size=(20, 20))
         self.unlink_image = ctk.CTkImage(Image.open(os.path.join(image_path, "unlink.png")), size=(24, 24))
         self.link_image = ctk.CTkImage(Image.open(os.path.join(image_path, "link.png")), size=(24, 24))
+        self.unsync_image = ctk.CTkImage(Image.open(os.path.join(image_path, "unsync.png")), size=(24, 24))
 
         # create navigation frame
         self.navigation_frame = ctk.CTkFrame(self, corner_radius=0)
@@ -183,26 +188,44 @@ class App(ctk.CTk):
         ctk.set_widget_scaling(new_scaling_float)
 
     def sync_button_event(self): 
-        cycle_sync = CycleSync()
-        cycle_sync.sync_running_cycle()
+        ui_serial.publisher.force_sync() # TODO: una vez que se corrija la sincronizacion, eliminar esta linea
+        # cycle_sync = CycleSync()
+        # cycle_sync.sync_running_cycle()
 
     def connection_button_event(self): 
         if self.connection_button.cget("text") == "Conectar":        
             ui_serial.publisher.start_find_thread()
             ui_serial.publisher.find_thread.join()
             if ui_serial.publisher.ser.is_open:
-                self.connection_label.configure(image=self.link_image)  
+                self.connection_label.configure(image=self.unsync_image)  
                 self.connection_button.configure(text="Desconectar")     
                 self.sync_button.configure(state="normal")         
         else: 
-            ui_serial.publisher.send_data(b"#Z1!")
             self.connection_label.configure(image=self.unlink_image)  
             self.connection_button.configure(text="Conectar")
-            print(f"Desconectado")
-            ui_serial.publisher.stop_read_thread()
+            self.sync_button.configure(state="disabled")     
+            ui_serial.publisher.send_data(b"#Z1!")
+            ui_serial.publisher.stop_read_thread() 
+
+    def update_btn(self, data):        
+        if data == MsgType.ESP_SYNCRONIZED:
+            self.connection_label.configure(image=self.link_image)  
+
+def backend(data):
+    if data == MsgType.ESP_SYNCRONIZED:
+        fname = os.path.join(os.getcwd(), "Log", ui_serial.cycle_id, "data_"+ui_serial.cycle_id+".csv")
+        with open(fname, "r") as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                if len(row) == 5:
+                    data_lists_expected['id'].append(int(row[0]))
+                    data_lists_expected['ph'].append(float(row[1]))
+                    data_lists_expected['od'].append(float(row[2]))
+                    data_lists_expected['temperature'].append(float(row[3]))
+                    data_lists_expected['light'].append(int(row[4]))
 
 if __name__ == "__main__":
-    #ui_serial.publisher.subscribe(view_data_symconex)
+    ui_serial.publisher.subscribe(backend)
 
     app = App()
     app.mainloop()

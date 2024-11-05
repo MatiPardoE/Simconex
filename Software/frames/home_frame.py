@@ -14,6 +14,7 @@ import random
 import frames.serial_handler as ui_serial
 from frames.serial_handler import MsgType 
 from frames.serial_handler import data_lists 
+from frames.serial_handler import data_lists_expected 
 import re
 from enum import Enum
 import time
@@ -294,6 +295,8 @@ class ActualCycleFrame(ctk.CTkFrame):
 class MyPlot(ctk.CTkFrame):
     def __init__(self, master, var):
         super().__init__(master)
+        ui_serial.publisher.subscribe(self.update_plot)
+        self.var = var
         id_list_i, ph_list_i, od_list_i, temp_list_i, light_list_i = read_datalog("Log/test_1.csv") # TODO: volar esto a la mierda y poner que se lean los datos de donde corresponde
 
         self.fig, self.ax = plt.subplots()
@@ -305,29 +308,29 @@ class MyPlot(ctk.CTkFrame):
         self.temp_data = []
         self.light_data = []
         
-        self.ax.set_xlim(0, 30)
+        # self.ax.set_xlim(0, 30)
         
-        if var=="pH":
-            self.ph_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
-            self.ax.set_ylim(0, 14)
-            self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in ph_list_i], label="Valores esperados")
-        elif var=="OD":
-            self.od_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
-            self.ax.set_ylabel("[%]")
-            self.ax.set_ylim(0, 100)
-            self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in od_list_i], label="Valores esperados")
-        elif var=="Temperatura":
-            self.temp_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
-            self.ax.set_ylabel("[°C]")
-            self.ax.set_ylim(10, 30)
-            self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in temp_list_i], label="Valores esperados")
-        elif var=="Luz":
-            self.light_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
-            self.ax.set_ylabel("[%]")
-            self.ax.set_ylim(0, 100)
-            self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in light_list_i], label="Valores esperados")
+        # if var=="ph":
+        #     #self.ph_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
+        #     self.ax.set_ylim(0, 14)
+        #     #self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in ph_list_i], label="Valores esperados")
+        # elif var=="od":
+        #     #self.od_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
+        #     #self.ax.set_ylabel("[%]")
+        #     self.ax.set_ylim(0, 100)
+        #     #self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in od_list_i], label="Valores esperados")
+        # elif var=="temperature":
+        #     #self.temp_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
+        #     #self.ax.set_ylabel("[°C]")
+        #     self.ax.set_ylim(10, 30)
+        #     #self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in temp_list_i], label="Valores esperados")
+        # elif var=="light":
+        #     #self.light_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
+        #     #self.ax.set_ylabel("[%]")
+        #     self.ax.set_ylim(0, 100)
+        #     #self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in light_list_i], label="Valores esperados")
         
-        self.ax.legend()  
+        # self.ax.legend()  
         # locator = mdates.AutoDateLocator(minticks=7, maxticks=10)
         # formatter = mdates.ConciseDateFormatter(locator)
         # ax.xaxis.set_major_locator(locator)
@@ -341,25 +344,30 @@ class MyPlot(ctk.CTkFrame):
         toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
         self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
 
-        self.update_plot(var)
+        #self.update_plot(var)
 
-    def update_plot(self, var): # TODO: esto tiene que appendear un dato solo al plot por cada medicion que llega nada mas 
-        if ui_serial.state_fbr["state"] == "running":
-            if var=="pH":
-                self.ph_line.set_ydata(self.ph_data)
-                self.ph_line.set_xdata(self.id_data)
-            elif var=="OD":
-                self.od_line.set_ydata(self.od_data)
-                self.od_line.set_xdata(self.id_data)
-            elif var=="Temperatura":
-                self.temp_line.set_ydata(self.temp_data)
-                self.temp_line.set_xdata(self.id_data)
-            elif var=="Luz":
-                self.light_line.set_ydata(self.light_data)  
-                self.light_line.set_xdata(self.id_data)
+    def update_plot(self, data): # TODO: esto tiene que appendear un dato solo al plot por cada medicion que llega nada mas 
+        
+        if data == MsgType.ESP_SYNCRONIZED:
+            self.ax.plot(data_lists_expected['id'], data_lists_expected[self.var], label="Valores esperados")
+            self.ax.plot(data_lists['id'], data_lists[self.var], label="Valores medidos")
+
+        # if data == MsgType.NEW_MEASUREMENT:
+        #     if var=="pH":
+        #         self.ph_line.set_ydata(self.ph_data)
+        #         self.ph_line.set_xdata(self.id_data)
+        #     elif var=="OD":
+        #         self.od_line.set_ydata(self.od_data)
+        #         self.od_line.set_xdata(self.id_data)
+        #     elif var=="Temperatura":
+        #         self.temp_line.set_ydata(self.temp_data)
+        #         self.temp_line.set_xdata(self.id_data)
+        #     elif var=="Luz":
+        #         self.light_line.set_ydata(self.light_data)  
+        #         self.light_line.set_xdata(self.id_data)
             
             self.canvas.draw()
-        self.master.after(30*1000, lambda: self.update_plot(var))
+        # self.master.after(30*1000, lambda: self.update_plot(var))
 
 
 class PlotFrame(ctk.CTkFrame):
@@ -385,10 +393,10 @@ class PlotFrame(ctk.CTkFrame):
         self.tabview.tab("OD").grid_columnconfigure(0, weight=1)
         self.tabview.tab("Temperatura").grid_columnconfigure(0, weight=1)
 
-        self.plot_light = MyPlot(self.tabview.tab("Luz"), "Luz")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
-        self.plot_ph = MyPlot(self.tabview.tab("pH"), "pH")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
-        self.plot_od = MyPlot(self.tabview.tab("OD"), "OD")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
-        self.plot_temp = MyPlot(self.tabview.tab("Temperatura"), "Temperatura")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
+        self.plot_light = MyPlot(self.tabview.tab("Luz"), "light")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
+        self.plot_ph = MyPlot(self.tabview.tab("pH"), "ph")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
+        self.plot_od = MyPlot(self.tabview.tab("OD"), "od")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
+        self.plot_temp = MyPlot(self.tabview.tab("Temperatura"), "temperature")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
         
     def process_data_plot_frame(self, data):
         if data == MsgType.ESP_CONNECTED:
