@@ -75,10 +75,27 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="nsew")
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
 
-        self.progressbar_actual.set(len(data_lists["id"])/len(data_lists_expected["id"]))
-        self.label_actual_days.configure(text=str(len(data_lists_expected["id"]))+" mediciones")
-        self.label_done_text.configure(text=str(len(data_lists["id"]))+" mediciones")
-        self.label_left_text.configure(text=str(len(data_lists_expected["id"])-len(data_lists["id"]))+ " mediciones")
+        total_time = len(data_lists_expected["id"]) * 60*60 # TODO: hardcodeado a 30 segundos
+        elapsed_time = len(data_lists["id"]) * 60*60
+        restant_time = total_time - elapsed_time
+
+        self.progressbar_actual.set(elapsed_time/total_time)
+        self.label_actual_days.configure(text=self.format_seconds(total_time))
+        self.label_done_text.configure(text=self.format_seconds(elapsed_time))
+        self.label_left_text.configure(text=self.format_seconds(restant_time))
+    
+    def format_seconds(self, seconds):
+        if seconds >= 86400:  
+            days = seconds // 86400
+            return f"{days} día(s)"
+        elif seconds >= 3600:  
+            hours = seconds // 3600
+            return f"{hours} hora(s)"
+        elif seconds >= 60:  
+            minutes = seconds // 60
+            return f"{minutes} minuto(s)"
+        else:
+            return f"{seconds} segundo(s)"
     
     def esp_disconnected(self):
         self.label_actual_days.grid_forget()
