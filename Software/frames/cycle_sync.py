@@ -1,7 +1,10 @@
 import time
 from enum import Enum
 import frames.serial_handler as ui_serial
+from frames.serial_handler import data_lists
 import re
+import csv
+import os
 
 class HandshakeStatus(Enum):
     MSG_VALID = 7
@@ -21,12 +24,14 @@ class CycleSync:
         self.handshake_status = HandshakeStatus.NOT_YET
         self.start_validate_time = 0
 
+        # Listas temporales acumuladoras de toda la comunicacion
         self.id_list = []
         self.ph_list = []
         self.od_list = []
         self.temp_list = []
         self.light_list = []
 
+        # Listas temporales acumuladoras de cada bloque
         self.id_list_tmp = []
         self.ph_list_tmp = []
         self.od_list_tmp = []
@@ -64,7 +69,8 @@ class CycleSync:
             self.send_data_and_wait_hs(b"#SYNC1!\n")
             ui_serial.publisher.unsubscribe(self.wait_for_response) 
 
-            ui_serial.state_fbr["state"] = "running"           
+            self.generate_cycleout_file()
+            ui_serial.publisher.notify_sync()           
         
         except Exception as e:
             print("Syncronization of running cycle failed!")
@@ -102,11 +108,11 @@ class CycleSync:
     def wait_for_dataout(self, data):
         pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$"
         if data == "#DATAOUT1!":
-            ui_serial.id_list = self.id_list
-            ui_serial.light_list = self.light_list
-            ui_serial.ph_list = self.ph_list
-            ui_serial.od_list = self.od_list
-            ui_serial.temp_list = self.temp_list
+            data_lists['id'] = self.id_list
+            data_lists['light'] = self.light_list
+            data_lists['ph'] = self.ph_list
+            data_lists['od'] = self.od_list
+            data_lists['temperature'] = self.temp_list
             print("Valid block of data received")
             ui_serial.publisher.send_data(b"#OK!\n")
             self.handshake_status = HandshakeStatus.DATAOUT1
@@ -144,14 +150,13 @@ class CycleSync:
             self.id_list_tmp = []
             self.ph_list_tmp = []
             self.od_list_tmp = []
-            self.temp_list_tmp = []
+            self.temp_list_tmp = []  
             self.light_list_tmp = []
 
             ui_serial.publisher.send_data("#FAIL!\n")
     
     def wait_for_response(self, data):
         pattern = r'\b\d{8}_\d{4}\b'
-        print("wait for response data:", data)
 
         if data.strip() == "#OK!":
             self.handshake_status = HandshakeStatus.OK
@@ -203,3 +208,22 @@ class CycleSync:
             if time.time() - start_time > timeout:
                 self.handshake_status = HandshakeStatus.TIMEOUT
                 raise TimeoutError("Timeout waiting for handshake from ESP")
+    
+    def generate_cycleout_file(self):
+        dir = os.path.join("..", "Log", ui_serial.cycle_id)
+        fname = "cycle_out_"+ui_serial.cycle_id+".csv"
+
+        print("os.getcwd():", os.getcwd())
+
+        # with open(os.path.join(dir, fname), "w", newline='') as csvfile:
+        #     writer = csv.writer(csvfile)
+            
+        #     for i in range(len(data_lists["id"])):
+        #         row = [
+        #             f"{data_lists['id'][i]:08d}",      
+        #             f"{data_lists['ph'][i]:05.2f}",       
+        #             f"{data_lists['od'][i]:06.2f}",     
+        #             f"{data_lists['temperature'][i]:05.2f}",  
+        #             f"{data_lists['light'][i]:02d}"       
+        #         ]
+        #         writer.writerow(row)

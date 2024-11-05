@@ -8,7 +8,8 @@ import re
 class MsgType(Enum):
     ESP_DISCONNECTED = 0
     ESP_CONNECTED = 1
-    NEW_MEASUREMENT = 2
+    ESP_SYNCRONIZED = 2
+    NEW_MEASUREMENT = 3
 
 class SerialPublisher:
     def __init__(self):
@@ -25,6 +26,9 @@ class SerialPublisher:
 
     def save_to_queue(self, data):
         self.notify_subscribers(data)
+    
+    def notify_sync(self):
+        for callback in self.subscribers: callback(MsgType.ESP_SYNCRONIZED)
 
     def notify_subscribers(self, data):
         pattern = r"#(STA)([012])\!"

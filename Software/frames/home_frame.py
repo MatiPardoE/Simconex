@@ -260,10 +260,12 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
         self.label_left_text.grid_forget()
 
-    def process_data_actual_cycle(self, data):  
-        # TODO: tengo que poder ver el estado del ciclo sabiendo cuanto avanzo hasta ahora   
-        if data == MsgType.ESP_CONNECTED:
-            self.esp_connected()        
+    def process_data_actual_cycle(self, data):    
+        if data == MsgType.ESP_SYNCRONIZED:
+            self.esp_connected()  
+
+        if data == MsgType.NEW_MEASUREMENT:
+            self.update_progressbar()
         
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
@@ -276,6 +278,9 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="nsew")
         self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="nsew")
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
+    
+    def update_progressbar(self): #TODO
+        print("TODO: update progress bar")
     
     def esp_disconnected(self):
         self.label_actual_days.grid_forget()
