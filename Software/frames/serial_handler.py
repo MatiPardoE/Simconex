@@ -178,8 +178,9 @@ class SerialPublisher:
 
 publisher = SerialPublisher()
 state_fbr = { "state": "disconnected" }
-cycle_id = "20241102_1647"
-#cycle_id = "" 
+cycle_id = "" 
+cycle_alias = "" 
+cycle_interval = 0
 
 data_lists = {
     "id": [],

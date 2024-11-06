@@ -263,10 +263,19 @@ class ActualCycleFrame(ctk.CTkFrame):
 
     def process_data_actual_cycle(self, data):    
         if data == MsgType.ESP_SYNCRONIZED:
+            total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
+            elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
+            restant_time = total_time - elapsed_time
+
             self.esp_connected()  
+            self.update_progressbar(total_time, elapsed_time, restant_time)  
 
         if data == MsgType.NEW_MEASUREMENT:
-            self.update_progressbar()
+            total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
+            elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
+            restant_time = total_time - elapsed_time
+            
+            self.update_progressbar(total_time, elapsed_time, restant_time)
         
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
@@ -279,15 +288,6 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="nsew")
         self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="nsew")
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
-
-        total_time = len(data_lists_expected["id"]) * 30 # TODO: hardcodeado a 30 segundos
-        elapsed_time = len(data_lists["id"]) * 30
-        restant_time = total_time - elapsed_time
-
-        self.progressbar_actual.set(elapsed_time/total_time)
-        self.label_actual_days.configure(text=self.format_seconds(total_time))
-        self.label_done_text.configure(text=self.format_seconds(elapsed_time))
-        self.label_left_text.configure(text=self.format_seconds(restant_time))
 
     def format_seconds(self, seconds):
         if seconds >= 86400:  
@@ -302,8 +302,11 @@ class ActualCycleFrame(ctk.CTkFrame):
         else:
             return f"{seconds} segundo(s)"
     
-    def update_progressbar(self): #TODO
-        print("TODO: update progress bar")
+    def update_progressbar(self, total_time, elapsed_time, restant_time):
+        self.progressbar_actual.set(elapsed_time/total_time)
+        self.label_actual_days.configure(text=self.format_seconds(total_time))
+        self.label_done_text.configure(text=self.format_seconds(elapsed_time))
+        self.label_left_text.configure(text=self.format_seconds(restant_time))
     
     def esp_disconnected(self):
         self.label_actual_days.grid_forget()

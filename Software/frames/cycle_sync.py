@@ -156,7 +156,7 @@ class CycleSync:
             ui_serial.publisher.send_data("#FAIL!\n")
     
     def wait_for_response(self, data):
-        pattern = r'\b\d{8}_\d{4}\b'
+        pattern = r'\b\d{8}_\d{4}\b'        
 
         if data.strip() == "#OK!":
             self.handshake_status = HandshakeStatus.OK
@@ -177,6 +177,8 @@ class CycleSync:
             else:
                 print("Received unexpected data in HS:", data.strip())
                 self.handshake_status = HandshakeStatus.ERROR
+        
+        print("") # NO SACAR ESTE PRINT QUE SE ROMPE LA COMUNICACION
 
     def send_data_and_wait_hs(self, data, timeout = 3):
         self.handshake_status = HandshakeStatus.NOT_YET
