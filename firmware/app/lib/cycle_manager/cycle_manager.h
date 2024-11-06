@@ -6,11 +6,20 @@
 #include <SD.h>
 #include <alarm.h>
 
-// #define __HARDCODE_DATA__ true
-
 class cycle_manager
 {
 public:
+    struct MeasuresAndOutputs
+    {
+        float ph;
+        float oxygen;
+        float temperature;
+        int light;
+        bool EV_oxygen;
+        bool EV_co2;
+        bool EV_nitrogen;
+        bool EV_pho;
+    };
     struct IntervalData
     {
         int interval_id;
@@ -25,7 +34,7 @@ public:
         START_CYCLE,
         PAUSE_CYCLE,
         RESUME_CYCLE,
-        STOP_CYCLE,
+        FINISH_CYCLE,
         NEW_INTERVAL,
     };
     struct CycleBundle
@@ -57,8 +66,8 @@ public:
     bool readNextInterval();
     bool readInterval();
     bool resetHeaderForDebug(u_int8_t SD_CS_PIN);
-    // Getter for intervalData
-    const IntervalData &getIntervalData() const;
+    bool analyzeHeaderandEvalAlarm();
+    bool writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs); //TODO? Implementar
 
 private:
     // Private variables
@@ -90,6 +99,8 @@ private:
     static void onAlarm(void *arg); // Make onAlarm static
     bool evaluateAlarmStatus();
     String cycleStatusToString(CycleStatus status);
+    bool finishCycle();
+    bool writeHeaderToSD();
 };
 
 #endif // CYCLE_MANAGER_H

@@ -62,23 +62,45 @@ bool cycle_manager::begin(uint8_t SD_CS_PIN)
         Log.infoln("SD Initialization done.");
     }
 
-    if(analyzeHeader()== HEADER_ERROR)       // Parse the data TODO Handle the return value
+    if (analyzeHeaderandEvalAlarm())
+    {
+        Log.infoln("Cycle Manager initialized successfully, header data OK, alarm status evaluated");
+        return true;
+    }
+    else
+    {
+        Log.errorln("Failed to initialize Cycle Manager");
+        return false;
+    }
+    return true;
+}
+
+bool cycle_manager::analyzeHeaderandEvalAlarm()
+{
+    if (analyzeHeader() == HEADER_ERROR) // Parse the data TODO Handle the return value
     {
         Log.errorln("Failed to parse header data");
         return false;
     }
-    evaluateAlarmStatus(); // Evaluate the alarm status
-    Log.infoln("Cycle Manager initialized successfully, header data OK");
+    if (evaluateAlarmStatus())
+    {
+        Log.infoln("Alarm status evaluated successfully");
+    }
+    else
+    {
+        Log.errorln("Failed to evaluate alarm status");
+        return false;
+    }
     return true;
 }
 
 // Helper method to parse CSV header data
-cycle_manager::analyzeHeaderState cycle_manager::analyzeHeader() // TODO: Cambiar esta funcion a updateVarsFromHeader y que haga la comm con la SD y todo
+cycle_manager::analyzeHeaderState cycle_manager::analyzeHeader()
 {
     File file = SD.open(headerPath);
     if (!file)
     {
-        Log.errorln("Failed to open header file");
+        Log.errorln("Failed to open header  or no header file found");
         cycleData.status = NO_CYCLE_IN_SD;
         return HEADER_ERROR;
     }
@@ -182,11 +204,23 @@ cycle_manager::CheckNextInterval cycle_manager::readAndWriteCurrentIntervalFromC
 
     // Increment interval_current and write back to the file
     cycleData.interval_current++;
+
+    if (writeHeaderToSD())
+    {
+        Log.errorln("Failed to open header file for writing");
+        return INTERVAL_ERROR;
+    }
+
+    return INTERVAL_AVAILABLE;
+}
+
+bool cycle_manager::writeHeaderToSD()
+{
     File file = SD.open(headerPath, FILE_WRITE);
     if (!file)
     {
         Log.errorln("Failed to open header file for writing");
-        return INTERVAL_ERROR;
+        return false;
     }
 
     // WARN: Un apagon aca nos mata todo porque nos crashea el archivo header.csv
@@ -204,13 +238,13 @@ cycle_manager::CheckNextInterval cycle_manager::readAndWriteCurrentIntervalFromC
     file.println(cycleData.interval_current);
     file.close();
 
-    return INTERVAL_AVAILABLE;
+    return true;
 }
 
 cycle_manager::CycleBundle cycle_manager::run()
 {
     CycleBundle bundle;
-    if (alarmFlag)
+    if (alarmFlag) // la alarma solo se va a activar si el ciclo esta corriendo
     {
         alarmFlag = false;
         if (readNextInterval())
@@ -221,7 +255,9 @@ cycle_manager::CycleBundle cycle_manager::run()
         }
         else
         {
-            bundle.command = CommandBundle::STOP_CYCLE;
+            // Termino el ciclo
+            finishCycle();
+            bundle.command = CommandBundle::FINISH_CYCLE;
         }
     }
     else
@@ -232,16 +268,18 @@ cycle_manager::CycleBundle cycle_manager::run()
 }
 
 /**
- * @brief Reads the next interval data.
+ * @brief Reads the next interval from a CSV file and updates the cycle status accordingly.
  *
- * This function attempts to read the next interval data from a CSV file. If the
- * __HARDCODE_DATA__ macro is defined, it will log a message indicating that hardcoded
- * data is being used and return false. Otherwise, it will read the current interval
- * from the CSV file and handle the result accordingly.
+ * This function attempts to read the next interval from a CSV file and updates the cycle status
+ * based on the result. It logs appropriate messages for different outcomes and returns a boolean
+ * indicating whether there are more intervals to process.
  *
- * @param intervalData A reference to an IntervalData object where the interval data
- *                     will be stored if available.
- * @return true if the next interval data is successfully read and available, false otherwise.
+ * @return true if there are more intervals to process, false otherwise.
+ *
+ * Possible outcomes:
+ * - NO_MORE_INTERVALS: No more intervals are available, the cycle is marked as completed.
+ * - INTERVAL_ERROR: An error occurred while reading the next interval.
+ * - INTERVAL_AVAILABLE: The next interval is available and processed.
  */
 bool cycle_manager::readNextInterval()
 {
@@ -366,6 +404,23 @@ bool cycle_manager::readInterval()
     }
 }
 
+bool cycle_manager::finishCycle()
+{
+    Log.infoln("Cycle finished.id: %s, %d intervals processed.", cycleData.interval_current, cycleData.cycle_id.c_str());
+    cycleData.status = CYCLE_COMPLETED;
+    if(!evaluateAlarmStatus())
+    {
+        Log.errorln("Failed to evaluate alarm status");
+        return false;
+    }
+    if(writeHeaderToSD())
+    {
+        Log.errorln("Failed to write header to SD");
+        return false;
+    }
+    return true;
+}
+
 void cycle_manager::logIntervalDataforDebug(const IntervalData &intervalData)
 {
     Log.noticeln("ID: %d pH: %F Oxygen: %F Temp: %F Light: %d",
@@ -390,7 +445,6 @@ bool cycle_manager::evaluateAlarmStatus()
         // Do nothing
         break;
     case CYCLE_NEW:
-        // Do nothing
         cycleAlarm.setAlarm(cycleData.interval_time, cycle_manager::onAlarm);
         break;
     case CYCLE_RUNNING:
@@ -437,11 +491,6 @@ String cycle_manager::cycleStatusToString(CycleStatus status)
         return "Unknown status";
     }
     return String();
-}
-
-const cycle_manager::IntervalData &cycle_manager::getIntervalData() const
-{
-    return intervalData;
 }
 
 bool cycle_manager::resetHeaderForDebug(uint8_t SD_CS_PIN)
