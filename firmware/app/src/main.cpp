@@ -3,6 +3,7 @@
 #include <cycle_manager.h>
 #include <commUI.h>
 #include <file_transfer.h>
+#include <sensorControl.h>
 
 #define SPI_MISO 34
 #define SPI_MOSI 33
@@ -13,6 +14,7 @@
 cycle_manager cm(SPI_CLK, SPI_MISO, SPI_MOSI, SPI_SS); // Pide los pines SPI de la SD
 CommUI commUI;
 FileTransfer fileTransfer(Serial, SD_CS_PIN);
+SensorControl sensorControl;
 
 void setup()
 {
@@ -33,8 +35,12 @@ void setup()
 void loop()
 {
     static CommUI::CommandFromUI commandUI;
+    static cycle_manager::CycleBundle cycleBundle;
+    static SensorControl::MeasuresAndOutputs new_measure_outputs;
 
+    // .run
     commandUI = commUI.run();
+    cycleBundle = cm.run();
 
     switch (commandUI)
     {
@@ -53,6 +59,24 @@ void loop()
         break;
     default:
         Log.warning("Unknown command\n");
+        break;
+    }
+
+    switch (cycleBundle.command)
+    {
+    case cycle_manager::CommandBundle::NO_COMMAND:
+        // Do nothing
+        break;
+    case cycle_manager::FINISH_CYCLE:
+        Log.noticeln("Cycle FINISIHED");
+        break;
+    case cycle_manager::NEW_INTERVAL:
+        Log.noticeln("New interval available");
+        new_measure_outputs = sensorControl.takeMeasuresAndOutputs();      //No deberia tardar mucho
+        cm.writeMeasuresToSD(new_measure_outputs); //No deberia tardar mucho
+        sensorControl.set_control_var(cycleBundle.intervalData);
+        break;
+    default:
         break;
     }
 }
