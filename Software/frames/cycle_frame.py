@@ -545,33 +545,37 @@ class LogFrame(ctk.CTkFrame):
         self.label_export.configure(cursor="arrow") 
     
     def update_log(self, data):      
-        if data == MsgType.NEW_MEASUREMENT:
-            self.frame_line = ctk.CTkFrame(self.scrollable_frame)
-            self.frame_line.pack(fill="x")
+        if data == MsgType.NEW_MEASUREMENT or data == MsgType.ESP_SYNCRONIZED:
+            num_measurements = len(data_lists['id'])
+            start_index = max(0, num_measurements - 50)
 
-            self.in_frame = ctk.CTkFrame(self.frame_line)
-            self.in_frame.pack(fill="x")
-            
-            self.label_time = ctk.CTkLabel(self.in_frame, text="12:30", corner_radius=0, width=150) # TODO: calcular la hora de la medicion en base a la hora de inicio + intervalo*medicion
-            self.label_time.pack(side='left')
+            for i in range(start_index, num_measurements):
+                self.frame_line = ctk.CTkFrame(self.scrollable_frame)
+                self.frame_line.pack(fill="x")
 
-            self.label_date = ctk.CTkLabel(self.in_frame, text="11/10/2024", corner_radius=0, width=200) # TODO: calcular la fecha de la medicion en base a la hora de inicio + intervalo*medicion
-            self.label_date.pack(side='left')
+                self.in_frame = ctk.CTkFrame(self.frame_line)
+                self.in_frame.pack(fill="x")
+                
+                self.label_time = ctk.CTkLabel(self.in_frame, text=f"{data_lists['id'][i]}", corner_radius=0, width=150) # TODO: calcular la hora de la medicion en base a la hora de inicio + intervalo*medicion
+                self.label_time.pack(side='left')
 
-            self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['od'][-1]), corner_radius=0, width=150)
-            self.label_od.pack(side='left')
+                self.label_date = ctk.CTkLabel(self.in_frame, text="11/10/2024", corner_radius=0, width=200) # TODO: calcular la fecha de la medicion en base a la hora de inicio + intervalo*medicion
+                self.label_date.pack(side='left')
 
-            self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['ph'][-1]), corner_radius=0, width=150)
-            self.label_ph.pack(side='left')
+                self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['od'][i]), corner_radius=0, width=150)
+                self.label_od.pack(side='left')
 
-            self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light'][-1]}", corner_radius=0, width=150)
-            self.label_light.pack(side='left')
+                self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['ph'][i]), corner_radius=0, width=150)
+                self.label_ph.pack(side='left')
 
-            self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][-1]), corner_radius=0, width=200)
-            self.label_temp.pack(side='left')
+                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light'][i]}", corner_radius=0, width=150)
+                self.label_light.pack(side='left')
 
-            self.label_cycle = ctk.CTkLabel(self.in_frame, text="Ciclo1", corner_radius=0, width=150) # TODO: aca poner el label del ciclo
-            self.label_cycle.pack(side='left')
+                self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][i]), corner_radius=0, width=200)
+                self.label_temp.pack(side='left')
+
+                self.label_cycle = ctk.CTkLabel(self.in_frame, text=ui_serial.cycle_alias, corner_radius=0, width=150) 
+                self.label_cycle.pack(side='left')
 
             self.scrollable_frame._parent_canvas.yview_moveto(1.0)
     
