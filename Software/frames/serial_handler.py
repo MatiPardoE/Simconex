@@ -187,7 +187,11 @@ data_lists = {
     "ph": [],
     "od": [],
     "temperature": [],
-    "light": []
+    "light": [],
+    "co2": [],
+    "o2": [],
+    "n2": [],
+    "air": []
 }
 
 data_lists_expected = {

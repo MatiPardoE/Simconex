@@ -111,15 +111,15 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.o2_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, state="disabled", width=100)
         self.o2_button.grid(row=4, column=0, padx=10, pady=0, sticky="ns")
 
-        self.label_air = ctk.CTkLabel(self.left_frame, text="Aire", font=ctk.CTkFont(weight="bold"))
-        self.label_air.grid(row=5, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.air_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, state="disabled", width=100)
-        self.air_button.grid(row=6, column=0, padx=10, pady=0, sticky="ns")
+        self.label_n2 = ctk.CTkLabel(self.left_frame, text="N2", font=ctk.CTkFont(weight="bold"))
+        self.label_n2.grid(row=5  , column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.n2_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, state="disabled", width=100)
+        self.n2_button.grid(row=6, column=0, padx=10, pady=(0,10), sticky="ns")
 
-        self.label_pump = ctk.CTkLabel(self.left_frame, text="Bomba", font=ctk.CTkFont(weight="bold"))
-        self.label_pump.grid(row=7  , column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.pump_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, state="disabled", width=100)
-        self.pump_button.grid(row=8, column=0, padx=10, pady=(0,10), sticky="ns")
+        self.label_air = ctk.CTkLabel(self.left_frame, text="Aire", font=ctk.CTkFont(weight="bold"))
+        self.label_air.grid(row=7, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.air_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, state="disabled", width=100)
+        self.air_button.grid(row=8, column=0, padx=10, pady=0, sticky="ns")
 
         self.center_frame = ctk.CTkFrame(self)
         self.center_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
@@ -172,36 +172,36 @@ class InstantValuesFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected()
 
-        if data == MsgType.NEW_MEASUREMENT:  
+        if data == MsgType.NEW_MEASUREMENT or data == MsgType.ESP_SYNCRONIZED:  
             self.light_button.configure(text = f"{data_lists['light'][-1]}")
             self.ph_button.configure(text = "{0:.2f}".format(data_lists['ph'][-1]))
             self.do_button.configure(text = "{0:.2f}".format(data_lists['od'][-1]))
-            self.temp_button.configure(text = "{0:.2f}".format(data_lists['temperature'][-1]))            
-                
-            # if match.group(6) == '0':
-            #         self.co2_button.configure(text="Apagado")
-            #         self.co2_button.configure(fg_color="red")
-            # elif match.group(6) == '1':
-            #         self.co2_button.configure(text="Encendido")
-            #         self.co2_button.configure(fg_color="green")
-            # if match.group(7) == '0':
-            #     self.o2_button.configure(text="Apagado")
-            #     self.o2_button.configure(fg_color="red")
-            # elif match.group(7) == '1':
-            #     self.o2_button.configure(text="Encendido")
-            #     self.o2_button.configure(fg_color="green")
-            # if match.group(8) == '0':
-            #     self.air_button.configure(text="Apagado")
-            #     self.air_button.configure(fg_color="red")
-            # elif match.group(8) == '1':
-            #     self.air_button.configure(text="Encendido")
-            #     self.air_button.configure(fg_color="green")
-            # if match.group(9) == '0':
-            #     self.pump_button.configure(text="Apagado")
-            #     self.pump_button.configure(fg_color="red")
-            # elif match.group(9) == '1':
-            #     self.pump_button.configure(text="Encendido")
-            #     self.pump_button.configure(fg_color="green")
+            self.temp_button.configure(text = "{0:.2f}".format(data_lists['temperature'][-1]))   
+
+            if data_lists['co2'][-1] == 0:
+                self.co2_button.configure(text="Apagado")
+                self.co2_button.configure(fg_color="red")
+            else:
+                self.co2_button.configure(text="Encendido")
+                self.co2_button.configure(fg_color="green")
+            if data_lists['o2'][-1] == 0:
+                self.o2_button.configure(text="Apagado")
+                self.o2_button.configure(fg_color="red")
+            else:
+                self.o2_button.configure(text="Encendido")
+                self.o2_button.configure(fg_color="green")
+            if data_lists['air'][-1] == 0:
+                self.air_button.configure(text="Apagado")
+                self.air_button.configure(fg_color="red")
+            else:
+                self.air_button.configure(text="Encendido")
+                self.air_button.configure(fg_color="green")
+            if data_lists['n2'][-1] == 0:
+                self.n2_button.configure(text="Apagado")
+                self.n2_button.configure(fg_color="red")
+            else:
+                self.n2_button.configure(text="Encendido")
+                self.n2_button.configure(fg_color="green")
 
     def esp_disconnected(self):
         self.light_button.configure(text = "--")
@@ -214,8 +214,8 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.o2_button.configure(fg_color="orange")
         self.air_button.configure(text="Desconectado")
         self.air_button.configure(fg_color="orange")
-        self.pump_button.configure(text="Desconectado")
-        self.pump_button.configure(fg_color="orange")
+        self.n2_button.configure(text="Desconectado")
+        self.n2_button.configure(fg_color="orange")
 
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -274,7 +274,7 @@ class ActualCycleFrame(ctk.CTkFrame):
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
             elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
             restant_time = total_time - elapsed_time
-            
+
             self.update_progressbar(total_time, elapsed_time, restant_time)
         
         if data == MsgType.ESP_DISCONNECTED:

@@ -30,6 +30,10 @@ class CycleSync:
         self.od_list = []
         self.temp_list = []
         self.light_list = []
+        self.co2_list = []
+        self.o2_list = []
+        self.n2_list = []
+        self.air_list = []
 
         # Listas temporales acumuladoras de cada bloque
         self.id_list_tmp = []
@@ -37,6 +41,10 @@ class CycleSync:
         self.od_list_tmp = []
         self.temp_list_tmp = []
         self.light_list_tmp = []
+        self.co2_list_tmp = []
+        self.o2_list_tmp = []
+        self.n2_list_tmp = []
+        self.air_list_tmp = []
 
         self.line_count = 0
 
@@ -106,19 +114,27 @@ class CycleSync:
                 raise TimeoutError("Timeout waiting for handshake from ESP")
 
     def wait_for_dataout(self, data):
-        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$"
+        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(0|1),(0|1),(0|1),(0|1)$"
         if data == "#DATAOUT1!":
             self.id_list += self.id_list_tmp
             self.light_list += self.light_list_tmp
             self.ph_list += self.ph_list_tmp
             self.od_list += self.od_list_tmp
             self.temp_list += self.temp_list_tmp
+            self.co2_list += self.co2_list_tmp
+            self.o2_list += self.o2_list_tmp
+            self.n2_list += self.n2_list_tmp
+            self.air_list += self.air_list_tmp
         
             data_lists['id'] = self.id_list
             data_lists['light'] = self.light_list
             data_lists['ph'] = self.ph_list
             data_lists['od'] = self.od_list
             data_lists['temperature'] = self.temp_list
+            data_lists['co2'] = self.co2_list
+            data_lists['o2'] = self.o2_list
+            data_lists['n2'] = self.n2_list
+            data_lists['air'] = self.air_list
             print("Valid block of data received")
             ui_serial.publisher.send_data(b"#OK!\n")
             self.handshake_status = HandshakeStatus.DATAOUT1
@@ -131,6 +147,10 @@ class CycleSync:
             self.ph_list_tmp.append(float(match.group(2)))
             self.od_list_tmp.append(float(match.group(3)))
             self.temp_list_tmp.append(float(match.group(4)))
+            self.co2_list_tmp.append(int(match.group(6)))
+            self.o2_list_tmp.append(int(match.group(7)))
+            self.n2_list_tmp.append(int(match.group(8)))
+            self.air_list_tmp.append(int(match.group(9)))
             self.handshake_status = HandshakeStatus.MSG_VALID
 
             if self.line_count == 160:
@@ -142,12 +162,20 @@ class CycleSync:
                 self.ph_list += self.ph_list_tmp
                 self.od_list += self.od_list_tmp
                 self.temp_list += self.temp_list_tmp
+                self.co2_list += self.co2_list_tmp
+                self.o2_list += self.o2_list_tmp
+                self.n2_list += self.n2_list_tmp
+                self.air_list += self.air_list_tmp
 
                 self.id_list_tmp = []
                 self.ph_list_tmp = []
                 self.od_list_tmp = []
                 self.temp_list_tmp = []
                 self.light_list_tmp = []
+                self.co2_list_tmp = []
+                self.o2_list_tmp = []
+                self.n2_list_tmp = []
+                self.air_list_tmp = []
                 ui_serial.publisher.send_data(b"#OK!\n")
         else: 
             self.line_count = 0                   
@@ -158,6 +186,10 @@ class CycleSync:
             self.od_list_tmp = []
             self.temp_list_tmp = []  
             self.light_list_tmp = []
+            self.co2_list_tmp = []
+            self.o2_list_tmp = []
+            self.n2_list_tmp = []
+            self.air_list_tmp = []
 
             ui_serial.publisher.send_data("#FAIL!\n")
     
@@ -228,6 +260,10 @@ class CycleSync:
                     f"{data_lists['ph'][i]:05.2f}",       
                     f"{data_lists['od'][i]:06.2f}",     
                     f"{data_lists['temperature'][i]:05.2f}",  
-                    f"{data_lists['light'][i]:02d}"       
+                    f"{data_lists['light'][i]:02d}",
+                    data_lists['co2'][i],
+                    data_lists['o2'][i],
+                    data_lists['n2'][i],
+                    data_lists['air'][i] 
                 ]
                 writer.writerow(row)
