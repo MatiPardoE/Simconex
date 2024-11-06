@@ -108,6 +108,12 @@ class CycleSync:
     def wait_for_dataout(self, data):
         pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$"
         if data == "#DATAOUT1!":
+            self.id_list += self.id_list_tmp
+            self.light_list += self.light_list_tmp
+            self.ph_list += self.ph_list_tmp
+            self.od_list += self.od_list_tmp
+            self.temp_list += self.temp_list_tmp
+        
             data_lists['id'] = self.id_list
             data_lists['light'] = self.light_list
             data_lists['ph'] = self.ph_list
@@ -120,11 +126,11 @@ class CycleSync:
         match = re.match(pattern, data)
         if match: 
             self.line_count += 1
-            self.id_list_tmp.insert(0, int(match.group(1)))
-            self.light_list_tmp.insert(0, int(match.group(5)))
-            self.ph_list_tmp.insert(0, float(match.group(2)))
-            self.od_list_tmp.insert(0, float(match.group(3)))
-            self.temp_list_tmp.insert(0, float(match.group(4)))
+            self.id_list_tmp.append(int(match.group(1)))
+            self.light_list_tmp.append(int(match.group(5)))
+            self.ph_list_tmp.append(float(match.group(2)))
+            self.od_list_tmp.append(float(match.group(3)))
+            self.temp_list_tmp.append(float(match.group(4)))
             self.handshake_status = HandshakeStatus.MSG_VALID
 
             if self.line_count == 160:
@@ -212,20 +218,16 @@ class CycleSync:
                 raise TimeoutError("Timeout waiting for handshake from ESP")
     
     def generate_cycleout_file(self):
-        dir = os.path.join("..", "Log", ui_serial.cycle_id)
-        fname = "cycle_out_"+ui_serial.cycle_id+".csv"
-
-        print("os.getcwd():", os.getcwd())
-
-        # with open(os.path.join(dir, fname), "w", newline='') as csvfile:
-        #     writer = csv.writer(csvfile)
+        fname = os.path.join(os.getcwd(), "Log", ui_serial.cycle_id, "cycle_out_"+ui_serial.cycle_id+".csv")
+        with open(fname, "w", newline='') as csvfile:
+            writer = csv.writer(csvfile)
             
-        #     for i in range(len(data_lists["id"])):
-        #         row = [
-        #             f"{data_lists['id'][i]:08d}",      
-        #             f"{data_lists['ph'][i]:05.2f}",       
-        #             f"{data_lists['od'][i]:06.2f}",     
-        #             f"{data_lists['temperature'][i]:05.2f}",  
-        #             f"{data_lists['light'][i]:02d}"       
-        #         ]
-        #         writer.writerow(row)
+            for i in range(len(data_lists["id"])):
+                row = [
+                    f"{data_lists['id'][i]:08d}",      
+                    f"{data_lists['ph'][i]:05.2f}",       
+                    f"{data_lists['od'][i]:06.2f}",     
+                    f"{data_lists['temperature'][i]:05.2f}",  
+                    f"{data_lists['light'][i]:02d}"       
+                ]
+                writer.writerow(row)
