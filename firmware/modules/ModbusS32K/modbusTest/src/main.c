@@ -2,6 +2,7 @@
 #include "S32K116.h"
 #include <MbedSW.h>
 #include <fw_all.h>
+#include "rdoApiDefs.h"
 
 #define _TX_		TX_PORT,TX_GPIO
 #define TX_GPIO		3
@@ -38,6 +39,8 @@ __RW msec16_t 		ticksSend 	= 0;
 ////////////////////
 //// 	UART	////
 ////////////////////
+
+
 
 
 /***********************************************************************************
@@ -77,22 +80,22 @@ uint16_t calcular_crc_modbus(uint8_t *data, uint16_t length) {
     return crc;
 }
 
-void sendRequest ( __RW circ_buff_t * buff ){
+void sendRequest ( __RW circ_buff_t * buff , uint8_t deviceID , uint8_t fc , uint8_t startAddr , uint8 qty ){
 
 	uint16_t crc;
-	pushCircBuff(buff, 0x01);
-	pushCircBuff(buff, 0x03);
-	pushCircBuff(buff, 0x00);
-	pushCircBuff(buff, 37);
-	pushCircBuff(buff, 0x00);
-	pushCircBuff(buff, 0x02);
-	crc = calcular_crc_modbus(&buff->buff[buff->inx_out], 6 ); //debiera ser la +- de in out
+	uint8_t len = sizeof(deviceID) + sizeof(fc) + sizeof(startAddr) + sizeof(qty);
+	pushCircBuff(buff, deviceID);
+	pushCircBuff(buff, fc);
+	pushCircBuff(buff, startAddr);
+	pushCircBuff(buff, startAddr);
+	pushCircBuff(buff, qty);
+	crc = calcular_crc_modbus(&buff->buff[buff->inx_out], len );
 	pushCircBuff(buff, crc & 0xFF);
 	pushCircBuff(buff, (uint8_t)((crc>>8) & 0xFF));
 
 #ifdef __S32K1XX__
-	_SET_GPIO(DERE_PORT,DERE_GPIO);
 	LPUARTx_TI(_UART_,1);
+	_SET_GPIO(DERE_PORT,DERE_GPIO);
 #endif
 
 }
@@ -129,9 +132,11 @@ int main(void) {
     	//hacer función que envíe el paquete y escribir el handler
     	if( (msec16_t)(tick_ms.ticks16b - ticksSend) > TICKS_SEND){
     		_SET_GPIO(DERE_PORT,DERE_GPIO);
-    		sendRequest( &txCbuff );
+    		sendRequest( &txCbuff , RDO_SLAVE_ID , HOLDING_REGISTER , _MEASURED_VALUE_TEMP_ , _MEASURED_VALUE_TEMP_SIZE_ );
     		ticksSend = tick_ms.ticks16b;
     	}
+
+    	//en caso de poder descargarlo hay que hacer un pop de los RX
 
     }
 
@@ -173,8 +178,8 @@ void LPUART0_RxTx_IRQHandler(void){
 		}
 		else{
 #ifdef __S32K1XX__
-			LPUARTx_TI(_UART_,0);
 			_CLEAR_GPIO(DERE_PORT,DERE_GPIO);
+			LPUARTx_TI(_UART_,0);
 #endif
 		}
 
