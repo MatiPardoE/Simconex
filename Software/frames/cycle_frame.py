@@ -606,7 +606,12 @@ class LogFrame(ctk.CTkFrame):
         )
         if file: 
             df = pd.read_csv(os.path.join(os.getcwd(), "Log", ui_serial.cycle_id, "cycle_out_"+ui_serial.cycle_id+".csv"), header=None)
-            df.columns = ["ID", "pH", "OD [%]", "Temperatura [°C]", "Luz [%]", "CO2", "O2", "N2", "Aire"]
+            header = ["ID", "pH", "OD [%]", "Temperatura [°C]", "Luz [%]", "CO2", "O2", "N2", "Aire"]
+            df.columns = header
+            date_time = df[header[0]].apply(self.calculate_datetime) # Aplica la función calculate_datetime a cada valor de la primera columna
+            df['Fecha'], df['Hora'] = zip(*date_time) # Añade las columnas de fecha y hora al DataFrame
+            df = df.drop(columns=[header[0]]) # Elimina la columna de intervalo
+            df = df[['Hora', 'Fecha'] + header[1:]]  # Reorganiza las columnas
             df.to_excel(file, index=False)
 
     
