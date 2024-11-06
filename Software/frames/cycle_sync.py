@@ -3,6 +3,7 @@ import time
 from enum import Enum
 import frames.serial_handler as ui_serial
 from frames.serial_handler import data_lists
+from PIL import Image, ImageTk
 import re
 import csv
 import os
@@ -82,13 +83,13 @@ class CycleSync:
             ui_serial.publisher.unsubscribe(self.wait_for_response) 
 
             self.generate_cycleout_file()
-            self.close_loading_window()
+            self.success_loading_window()
             ui_serial.publisher.notify_sync()           
         
         except Exception as e:
             print("Syncronization of running cycle failed!")
             print(e)
-            self.close_loading_window()
+            self.failed_loading_window()
             ui_serial.publisher.unsubscribe(self.wait_for_response)
             ui_serial.publisher.unsubscribe(self.wait_for_dataout)
 
@@ -277,10 +278,14 @@ class CycleSync:
     def show_loading_window(self):
         self.loading_window = ctk.CTkToplevel()
         self.loading_window.title("Cargando...")
-        self.loading_window.geometry("500x300")
+        self.loading_window.geometry("400x100")
 
-        label = ctk.CTkLabel(self.loading_window, text="Por favor espere, FBR Simconex se está sincronizando...")
-        label.pack(pady=20)
+        image_path = os.path.join(os.getcwd(), "images")
+
+        loading_image = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "loading.png")), size=(30, 30))
+
+        self.label = ctk.CTkLabel(self.loading_window, text="Por favor espere, FBR Simconex se está sincronizando...", image=loading_image, compound="left", padx=10)
+        self.label.pack(pady=20)
 
         self.loading_window.lift()  
         self.loading_window.attributes("-topmost", True) 
@@ -291,8 +296,16 @@ class CycleSync:
         self.loading_window.focus() 
         self.loading_window.mainloop()
     
-    def close_loading_window(self):
-        for window in ctk.CTkToplevel.winfo_children(self.loading_window):
-            window.destroy()
-        
-        self.loading_window.destroy()
+    def success_loading_window(self):
+        image_path = os.path.join(os.getcwd(), "images")
+        success_image = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "complete.png")), size=(30, 30))
+        self.loading_window.title("Sincronización exitosa")
+        self.label.configure(text="Sincronización finalizada con éxito!")
+        self.label.configure(image=success_image)
+    
+    def failed_loading_window(self):
+        image_path = os.path.join(os.getcwd(), "images")
+        fail_image = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "alert.png")), size=(30, 30))
+        self.loading_window.title("Error")
+        self.label.configure(text="Se produjo un problema y la sincronización falló!")
+        self.label.configure(image=fail_image)
