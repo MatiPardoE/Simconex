@@ -5,7 +5,7 @@ from PIL import Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 import frames.serial_handler as ui_serial
 import re
 from customtkinter import filedialog    
@@ -555,11 +555,13 @@ class LogFrame(ctk.CTkFrame):
 
                 self.in_frame = ctk.CTkFrame(self.frame_line)
                 self.in_frame.pack(fill="x")
+
+                date, hour = self.calculate_datetime(i)
                 
-                self.label_time = ctk.CTkLabel(self.in_frame, text=f"{data_lists['id'][i]}", corner_radius=0, width=150) # TODO: calcular la hora de la medicion en base a la hora de inicio + intervalo*medicion
+                self.label_time = ctk.CTkLabel(self.in_frame, text=hour, corner_radius=0, width=150) 
                 self.label_time.pack(side='left')
 
-                self.label_date = ctk.CTkLabel(self.in_frame, text="11/10/2024", corner_radius=0, width=200) # TODO: calcular la fecha de la medicion en base a la hora de inicio + intervalo*medicion
+                self.label_date = ctk.CTkLabel(self.in_frame, text=date, corner_radius=0, width=200) 
                 self.label_date.pack(side='left')
 
                 self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['od'][i]), corner_radius=0, width=150)
@@ -578,6 +580,16 @@ class LogFrame(ctk.CTkFrame):
                 self.label_cycle.pack(side='left')
 
             self.scrollable_frame._parent_canvas.yview_moveto(1.0)
+    
+    def calculate_datetime(self, intervals):
+        initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
+        seconds_elapsed = intervals * ui_serial.cycle_interval
+        current_time = initial_time + timedelta(seconds=seconds_elapsed)
+
+        current_date = current_time.strftime("%d/%m/%Y") 
+        current_hour = current_time.strftime("%H:%M") 
+
+        return current_date, current_hour
     
 class CycleFrame(ctk.CTkFrame):
     def __init__(self, master):
