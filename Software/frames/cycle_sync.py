@@ -1,3 +1,4 @@
+import customtkinter as ctk
 import time
 from enum import Enum
 import frames.serial_handler as ui_serial
@@ -5,6 +6,7 @@ from frames.serial_handler import data_lists
 import re
 import csv
 import os
+import threading
 
 class HandshakeStatus(Enum):
     MSG_VALID = 7
@@ -50,7 +52,9 @@ class CycleSync:
 
     def sync_running_cycle(self, timeout=3):
         print("Syncronization of running cycle started!")
-
+        self.show_loading_window()    
+       
+    def start_sync_cycle(self, timeout=5):
         try:         
             ui_serial.publisher.subscribe(self.wait_for_response)
             self.send_data_and_wait_hs(b"#SYNC0!\n")
@@ -78,11 +82,13 @@ class CycleSync:
             ui_serial.publisher.unsubscribe(self.wait_for_response) 
 
             self.generate_cycleout_file()
+            self.close_loading_window()
             ui_serial.publisher.notify_sync()           
         
         except Exception as e:
             print("Syncronization of running cycle failed!")
             print(e)
+            self.close_loading_window()
             ui_serial.publisher.unsubscribe(self.wait_for_response)
             ui_serial.publisher.unsubscribe(self.wait_for_dataout)
 
@@ -267,3 +273,26 @@ class CycleSync:
                     data_lists['air'][i] 
                 ]
                 writer.writerow(row)
+    
+    def show_loading_window(self):
+        self.loading_window = ctk.CTkToplevel()
+        self.loading_window.title("Cargando...")
+        self.loading_window.geometry("500x300")
+
+        label = ctk.CTkLabel(self.loading_window, text="Por favor espere, FBR Simconex se está sincronizando...")
+        label.pack(pady=20)
+
+        self.loading_window.lift()  
+        self.loading_window.attributes("-topmost", True) 
+        self.loading_window.after(100, lambda: self.loading_window.attributes("-topmost", False))  
+
+        threading.Thread(target=self.start_sync_cycle, daemon=True).start()
+
+        self.loading_window.focus() 
+        self.loading_window.mainloop()
+    
+    def close_loading_window(self):
+        for window in ctk.CTkToplevel.winfo_children(self.loading_window):
+            window.destroy()
+        
+        self.loading_window.destroy()
