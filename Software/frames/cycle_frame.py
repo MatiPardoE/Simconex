@@ -491,9 +491,6 @@ class LogFrame(ctk.CTkFrame):
         self.label_export = ctk.CTkLabel(self, text="", image=self.export_image)
         self.label_export.grid(row=0, column=1, padx=(10, 20), pady=(10, 0), sticky="e")
 
-        self.label_export.bind("<Enter>", self.on_hover)
-        self.label_export.bind("<Leave>", self.off_hover)
-
         self.frame_lines = ctk.CTkFrame(self, width=1500)
         self.frame_lines.grid(row=1, column=0, padx=10, pady=10, columnspan=2)
         self.frame_lines.grid_columnconfigure(0, weight=1)
@@ -581,6 +578,16 @@ class LogFrame(ctk.CTkFrame):
 
             self.scrollable_frame._parent_canvas.yview_moveto(1.0)
     
+        if data == MsgType.ESP_SYNCRONIZED:
+            self.label_export.bind("<Enter>", self.on_hover)
+            self.label_export.bind("<Leave>", self.off_hover)
+            self.label_export.bind("<Button-1>", self.export_event)
+
+        if data == MsgType.ESP_DISCONNECTED:
+            self.label_export.unbind("<Enter>")
+            self.label_export.unbind("<Leave>")
+            self.label_export.unbind("<Button-1>")
+    
     def calculate_datetime(self, intervals):
         initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
         seconds_elapsed = intervals * ui_serial.cycle_interval
@@ -590,6 +597,18 @@ class LogFrame(ctk.CTkFrame):
         current_hour = current_time.strftime("%H:%M") 
 
         return current_date, current_hour
+
+    def export_event(self, event):
+        file = filedialog.asksaveasfilename(
+            defaultextension=".xlsx", 
+            filetypes=[("Planilla de Excel", "*.xlsx")], 
+            title="Guardar datalog como"
+        )
+        if file: 
+            df = pd.read_csv(os.path.join(os.getcwd(), "Log", ui_serial.cycle_id, "cycle_out_"+ui_serial.cycle_id+".csv"), header=None)
+            df.columns = ["ID", "pH", "OD [%]", "Temperatura [°C]", "Luz [%]", "CO2", "O2", "N2", "Aire"]
+            df.to_excel(file, index=False)
+
     
 class CycleFrame(ctk.CTkFrame):
     def __init__(self, master):
