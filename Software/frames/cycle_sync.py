@@ -3,6 +3,7 @@ import time
 from enum import Enum
 import frames.serial_handler as ui_serial
 from frames.serial_handler import data_lists
+from frames.serial_handler import CycleStatus
 from PIL import Image, ImageTk
 import re
 import csv
@@ -10,6 +11,10 @@ import os
 import threading
 
 class HandshakeStatus(Enum):
+    STA = 11
+    STA2 = 10
+    STA1 = 0
+    STA0 = 8
     MSG_VALID = 7
     TIMESTAMP = 6
     DATAOUT1 = 5
@@ -58,7 +63,9 @@ class CycleSync:
     def start_sync_cycle(self, timeout=5):
         try:         
             ui_serial.publisher.subscribe(self.wait_for_response)
-            self.send_data_and_wait_hs(b"#SYNC0!\n")
+            ui_serial.publisher.send_data(b"#SYNC0!\n")
+            self.wait_message(HandshakeStatus.STA, timeout)
+            ui_serial.publisher.send_data(b"#OK!\n")
             self.wait_message(HandshakeStatus.ID0, timeout)
             ui_serial.publisher.send_data(b"#OK!\n")
             self.wait_message(HandshakeStatus.TIMESTAMP, timeout)
@@ -207,6 +214,15 @@ class CycleSync:
             self.handshake_status = HandshakeStatus.OK
         elif data.strip() == "#FAIL!":
             self.handshake_status = HandshakeStatus.DATA_FAIL
+        elif data.strip() == "#STA0!":
+            ui_serial.cycle_status = CycleStatus.NOT_CYCLE
+            self.handshake_status = HandshakeStatus.STA
+        elif data.strip() == "#STA1!":
+            ui_serial.cycle_status = CycleStatus.CYCLE_RUNNING
+            self.handshake_status = HandshakeStatus.STA
+        elif data.strip() == "#STA2!":
+            ui_serial.cycle_status = CycleStatus.CYCLE_FINISHED
+            self.handshake_status = HandshakeStatus.STA
         elif data.strip() == "#ID0!":
             self.handshake_status = HandshakeStatus.ID0
         elif data.strip() == "#ID1!":

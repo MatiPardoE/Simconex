@@ -11,6 +11,12 @@ class MsgType(Enum):
     ESP_SYNCRONIZED = 2
     NEW_MEASUREMENT = 3
 
+class CycleStatus(Enum):
+    NOT_CYCLE = 0
+    CYCLE_RUNNING = 1
+    CYCLE_FINISHED = 2
+    CYCLE_ERROR = 3
+
 class SerialPublisher:
     def __init__(self):
         self.data_queue = queue.Queue()
@@ -31,19 +37,6 @@ class SerialPublisher:
         for callback in self.subscribers: callback(MsgType.ESP_SYNCRONIZED)
 
     def notify_subscribers(self, data):
-        pattern = r"#(STA)([012])\!"
-        match = re.match(pattern, data)
-        if match:
-            for callback in self.subscribers: callback(MsgType.ESP_CONNECTED)
-            value = int(match.group(2))
-            if value == 0:
-                state_fbr["state"] = "running"
-            elif value == 1:
-                state_fbr["state"] = "syncing"
-            elif value == 2:
-                state_fbr["state"] = "finished"
-            print("** FBR Simconex cycle state: " + state_fbr["state"] + " **")
-
         if "#Z1!" in data:
             for callback in self.subscribers: callback(MsgType.ESP_DISCONNECTED)
         
@@ -177,10 +170,10 @@ class SerialPublisher:
         for callback in self.subscribers: callback(MsgType.ESP_SYNCRONIZED)
 
 publisher = SerialPublisher()
-state_fbr = { "state": "disconnected" }
 cycle_id = "" 
 cycle_alias = "" 
 cycle_interval = 0
+cycle_status = CycleStatus.NOT_CYCLE
 
 data_lists = {
     "id": [],

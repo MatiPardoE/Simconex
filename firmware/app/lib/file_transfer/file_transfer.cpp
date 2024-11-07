@@ -6,7 +6,7 @@ FileTransfer::FileTransfer(HardwareSerial &serial, int chipSelectPin)
 FileTransfer::TransferStatus FileTransfer::transferCycle(const char *destPathHeader, const char *pathDataOut, unsigned long timeout)
 {
     int retryCount = 0;
-    SyncCycleStatus syncCycleStatus = SEND_TIMESTAMP;
+    SyncCycleStatus syncCycleStatus = SEND_ID_0;
     dataBuffer.reserve(BLOCK_SIZE);
     startTime = millis();
 
@@ -19,6 +19,14 @@ FileTransfer::TransferStatus FileTransfer::transferCycle(const char *destPathHea
             return FILE_TRANSFER_TIMEOUT;
         }
         switch(syncCycleStatus) {
+            case SEND_ID_0:
+                response = _serial.readStringUntil('\n');
+                if (response == "#OK!") {
+                    _serial.println("#ID0!");
+                    syncCycleStatus = SEND_TIMESTAMP;
+                    startTime = millis(); // reset timeout
+                }
+                break;
             case SEND_TIMESTAMP:
                 response = _serial.readStringUntil('\n');
                 if (response == "#OK!") {
