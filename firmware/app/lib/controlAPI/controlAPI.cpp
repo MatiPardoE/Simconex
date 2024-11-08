@@ -1,17 +1,17 @@
-#include "sensorControl.h"
+#include "controlAPI.h"
 
-SensorControl::SensorControl()
+ControlAPI::ControlAPI()
 {
-    measuresAndOutputs = {0, 0, 0, 0, false, false, false, false};
+    measuresAndOutputs = {0, 0, 0, 0, false, false, false, false};     //ph, oxygen, temperature, light, EV-1, EV-2, EV-3, EV-4
     goalValues = {0, 0, 0, 0};
 }
 
-SensorControl::MeasuresAndOutputs SensorControl::takeMeasuresAndOutputs()
+cycle_manager::MeasuresAndOutputs ControlAPI::takeMeasuresAndOutputs()
 {
     return measuresAndOutputs;
 }
 
-bool SensorControl::set_control_var(cycle_manager::IntervalData intervalData)
+bool ControlAPI::set_control_var(cycle_manager::IntervalData intervalData)
 {
     // TODO: Impkemnet max and min for each variable.
     goalValues.light = intervalData.light;

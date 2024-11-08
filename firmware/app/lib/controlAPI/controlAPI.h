@@ -4,11 +4,11 @@
 #include <string>
 #include <cycle_manager.h>
 
-class SensorControl
+class ControlAPI
 {
 public:
     // Constructor
-    SensorControl();
+    ControlAPI();
 
     // Function to take measures
     // TODO: Implement the function to take measures

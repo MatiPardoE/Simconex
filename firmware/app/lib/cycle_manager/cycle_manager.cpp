@@ -94,6 +94,51 @@ bool cycle_manager::analyzeHeaderandEvalAlarm()
     return true;
 }
 
+bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uint32_t interval_id_measure)
+{
+    File file;
+    // Check if the directory exists, if not create it
+    if (!SD.exists("/output"))
+    {
+        if (!SD.mkdir("/output"))
+        {
+            Log.errorln("Failed to create directory /output");
+            return false;
+        }
+    }
+
+    // Open the file for writing
+    file = SD.open(dataOutPath, FILE_WRITE);
+    if (!file)
+    {
+        Log.errorln("Failed to open data output file for writing");
+        return false;
+    }
+
+    // Write the measures to the file
+    file.printf("%08d",interval_id_measure);
+    file.print(",");
+    file.printf("%02.2f", measuresAndOutputs.ph);
+    file.print(",");
+    file.printf("%03.2f", measuresAndOutputs.oxygen);
+    file.print(",");
+    file.printf("%02.2f", measuresAndOutputs.temperature);
+    file.print(",");
+    file.printf("%03d", measuresAndOutputs.light);
+    file.print(",");
+    file.print(measuresAndOutputs.EV_co2);
+    file.print(",");
+    file.print(measuresAndOutputs.EV_oxygen);
+    file.print(",");
+    file.print(measuresAndOutputs.EV_nitrogen);
+    file.print(",");
+    file.print(measuresAndOutputs.EV_air);
+    file.println();
+    file.close();
+
+    return true;
+}
+
 // Helper method to parse CSV header data
 cycle_manager::analyzeHeaderState cycle_manager::analyzeHeader()
 {
@@ -408,12 +453,12 @@ bool cycle_manager::finishCycle()
 {
     Log.infoln("Cycle finished.id: %s, %d intervals processed.", cycleData.interval_current, cycleData.cycle_id.c_str());
     cycleData.status = CYCLE_COMPLETED;
-    if(!evaluateAlarmStatus())
+    if (!evaluateAlarmStatus())
     {
         Log.errorln("Failed to evaluate alarm status");
         return false;
     }
-    if(writeHeaderToSD())
+    if (writeHeaderToSD())
     {
         Log.errorln("Failed to write header to SD");
         return false;

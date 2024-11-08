@@ -18,7 +18,7 @@ public:
         bool EV_oxygen;
         bool EV_co2;
         bool EV_nitrogen;
-        bool EV_pho;
+        bool EV_air;
     };
     struct IntervalData
     {
@@ -67,7 +67,7 @@ public:
     bool readInterval();
     bool resetHeaderForDebug(u_int8_t SD_CS_PIN);
     bool analyzeHeaderandEvalAlarm();
-    bool writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs); //TODO? Implementar
+    bool writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs,uint32_t interval_id_measure); //TODO? Implementar
 
 private:
     // Private variables
@@ -77,6 +77,7 @@ private:
     // Constants
     const String headerPath = "/input/header.csv";
     const String dataPath = "/input/data.csv";
+    const String dataOutPath = "output/cycle_out.csv";
     // Private Structs
     enum CheckNextInterval
     {
