@@ -22,7 +22,7 @@ CommUI::CommandFromUI CommUI::run() {
     if (Serial.available() > 0) {
         char incomingByte = Serial.read();
         if (incomingByte == '\n') {
-            //Log.notice("Received: %s\n", serialBuffer.c_str()); No puedo logear nada en el pairing
+            //Log.notice("Received: %s\n", serialBuffer.c_str()); // No puedo logear nada en el pairing
             CommandFromUI command = parseCommand(serialBuffer);
             serialBuffer = ""; // Clear the buffer
             return command;
@@ -39,6 +39,8 @@ CommUI::CommandFromUI CommUI::parseCommand(const String& input) {
         return TRANSFER_FILE_START;
     }else if (input == "#INIT!") {
         return INIT_COMM_UI;
+    }else if (input == "#SYNC0!") {
+        return SYNC_CYCLE_START;
     }
     // Add more commands as needed
     return UNKNOWN_COMMAND;

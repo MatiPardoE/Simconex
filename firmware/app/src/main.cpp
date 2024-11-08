@@ -47,9 +47,11 @@ void loop()
         // Do nothing
         break;
     case CommUI::INIT_COMM_UI:
-        Serial.println("#ESP!");
-        Serial.printf("#STA0!\n");
-        Serial.printf("00000000,07.00,080.00,20.00,20\n");
+        Serial.println("#ESP!"); // TODO: el estado del ciclo lo tengo que obtener desde el header
+        break;
+    case CommUI::SYNC_CYCLE_START:
+        Serial.println("#STA1!"); // STA0 = NOT_CYCLE - STA1 = CYCLE_RUNNING - STA0 = CYCLE_FINISHED
+        fileTransfer.transferCycle("/input_test/header.csv", "/output_test/cycle_out.csv", 10000);
         break;
     default:
         Log.warning("Unknown command\n");

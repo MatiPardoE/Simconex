@@ -10,7 +10,8 @@ public:
     {
         UNKNOWN_COMMAND,
         TRANSFER_FILE_START,
-        INIT_COMM_UI
+        INIT_COMM_UI,
+        SYNC_CYCLE_START
         // Add other commands as needed
     };
     CommUI();

@@ -2,13 +2,27 @@ import serial
 import threading
 import queue
 import time
+from enum import Enum
+import re
 
+class MsgType(Enum):
+    ESP_DISCONNECTED = 0
+    ESP_CONNECTED = 1
+    ESP_SYNCRONIZED = 2
+    NEW_MEASUREMENT = 3
+
+class CycleStatus(Enum):
+    NOT_CYCLE = 0
+    CYCLE_RUNNING = 1
+    CYCLE_FINISHED = 2
+    CYCLE_ERROR = 3
 
 class SerialPublisher:
     def __init__(self):
         self.data_queue = queue.Queue()
         self.subscribers = [] 
         self.ser = serial.Serial()
+        self.start_time = 0
 
         self.read_thread = threading.Thread(target=self.read_port)
         self.read_thread.daemon = True
@@ -17,14 +31,16 @@ class SerialPublisher:
         self.find_thread.daemon = True
 
     def save_to_queue(self, data):
-        self.data_queue.put(data)
         self.notify_subscribers(data)
+    
+    def notify_sync(self):
+        for callback in self.subscribers: callback(MsgType.ESP_SYNCRONIZED)
 
     def notify_subscribers(self, data):
-        i=0
-        for callback in self.subscribers:
-            i=i+1
-            #print(f"notifico {i}")
+        if "#Z1!" in data:
+            for callback in self.subscribers: callback(MsgType.ESP_DISCONNECTED)
+        
+        for callback in self.subscribers:          
             callback(data)
 
     def subscribe(self, callback):
@@ -37,27 +53,32 @@ class SerialPublisher:
             print(f"serial_handler.py: Alguien se desuscribió. Cantidad de suscriptores: {len(self.subscribers)}")
     
     def read_port(self):
-        buffer = ""
+        buffer = bytearray()
         last_received_time = time.time()
         print("Starting read_port")
 
         while True:
             try:
                 if self.ser.in_waiting > 0:
-                    char = self.ser.read(1).decode('utf-8')
-                    buffer += char
+                    new_data = self.ser.read(self.ser.in_waiting)
+                    buffer.extend(new_data)
                     last_received_time = time.time()
 
-                    if char == '\n':
-                        if not (buffer.strip() == "#OK!"):
-                            print(f"----------------- ESP Response: {buffer.strip()} -----------------")
-                        self.save_to_queue(buffer.strip())
-                        buffer = ""
+                    while b'\n' in buffer:
+                        line, buffer = buffer.split(b'\n', 1)
+                        try:
+                            decoded_line = line.decode('utf-8').strip()
+                            if decoded_line:  # Only process non-empty lines
+                                print(f"----------------- ESP Response: {decoded_line} -----------------")
+                                self.save_to_queue(decoded_line)
+                        except UnicodeDecodeError as e:
+                            print(f"Decode error: {e}")
+                            continue
                 else:
                     if time.time() - last_received_time > 5:    # Si el fin de la cadena no llega en 5 segundos, se limpia el buffer
                         if buffer:
                             print(f"Timeout reached. Flushing buffer: {buffer.strip()}")
-                            buffer = ""
+                            buffer.clear()
                         last_received_time = time.time()
             except Exception as e:
                 print(f"Exception occurred: {e}")
@@ -111,6 +132,7 @@ class SerialPublisher:
                         print("Response:", response)
                         if response == "#ESP!":
                             print(f"Successfully connected to ESP on {port.device}")
+                            
                             self.start_read_thread()
                             return True
                         time.sleep(0.1)
@@ -132,6 +154,7 @@ class SerialPublisher:
         self.read_thread.start()
 
     def stop_read_thread(self):
+        for callback in self.subscribers: callback(MsgType.ESP_DISCONNECTED)
         self.ser.close()
 
     def start_find_thread(self):
@@ -143,5 +166,31 @@ class SerialPublisher:
         print("Serial Publisher (send_data)", data)
         self.ser.write(data)
 
+    def force_sync(self):
+        for callback in self.subscribers: callback(MsgType.ESP_SYNCRONIZED)
+
 publisher = SerialPublisher()
-state_fbr = { "state": "disconnected" }
+cycle_id = "" 
+cycle_alias = "" 
+cycle_interval = 0
+cycle_status = CycleStatus.NOT_CYCLE
+
+data_lists = {
+    "id": [],
+    "ph": [],
+    "od": [],
+    "temperature": [],
+    "light": [],
+    "co2": [],
+    "o2": [],
+    "n2": [],
+    "air": []
+}
+
+data_lists_expected = {
+    "id": [],
+    "ph": [],
+    "od": [],
+    "temperature": [],
+    "light": []
+}

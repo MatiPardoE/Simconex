@@ -7,13 +7,17 @@ import serial.tools.list_ports
 import threading
 import logging
 from frames.home_frame import HomeFrame
-from frames.sync_frame import SecondFrame
 from frames.manual_frame import ManualFrame
 from frames.calibration_frame import CalibrationFrame
 from frames.alerts_frame import AlertsFrame
 from frames.cycle_frame import CycleFrame
 import frames.serial_handler as ui_serial
-import re
+from frames.cycle_sync import CycleSync
+from frames.serial_handler import MsgType 
+import csv
+from frames.serial_handler import data_lists 
+from frames.serial_handler import CycleStatus 
+from frames.serial_handler import data_lists_expected 
 
 # Crear un logger
 logger = logging.getLogger(__name__)
@@ -42,43 +46,22 @@ console_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 logger.addHandler(console_handler)
 
-def view_data(data):
-    pattern = r"#(STA)([012])\!"
-    match = re.match(pattern, data)
-    if match:
-        value = int(match.group(2))
-        if value == 0:
-            ui_serial.state_fbr = { "state": "connected" }
-        elif value == 1:
-            ui_serial.state_fbr = { "state": "running" }
-        elif value == 2:
-            ui_serial.state_fbr = { "state": "finished" }
-        print(ui_serial.state_fbr.get("state"))
-    
-    pattern = r"#(SYN)([01])\!"
-    match = re.match(pattern, data)
-    if match:
-        value = int(match.group(2))
-        if value == 0:
-            ui_serial.state_fbr = { "state": "syncing" }
-        elif value == 1:
-            ui_serial.state_fbr = { "state": "running" }
-        print(ui_serial.state_fbr.get("state"))
-    
-
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        self.geometry(f"{screen_width}x{screen_height}+0+0")
+
+        ui_serial.publisher.subscribe(self.update_btn)
+
         self.title("FBR SIMCONEX")
-        #self.geometry("700x450")
         ctk.set_appearance_mode("Light")
 
-        # set grid layout 1x2
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
-        # load images with light and dark mode image
         image_path = os.path.join(os.getcwd(), "images")
         self.logo_image = ctk.CTkImage(Image.open(os.path.join(image_path, "logo_edited.png")), size=(40, 40))
         self.large_test_image = ctk.CTkImage(Image.open(os.path.join(image_path, "large_test_image.png")), size=(500, 150))
@@ -91,8 +74,8 @@ class App(ctk.CTk):
         self.alerts_image = ctk.CTkImage(light_image=Image.open(os.path.join(image_path, "alert.png")), size=(20, 20))
         self.unlink_image = ctk.CTkImage(Image.open(os.path.join(image_path, "unlink.png")), size=(24, 24))
         self.link_image = ctk.CTkImage(Image.open(os.path.join(image_path, "link.png")), size=(24, 24))
+        self.unsync_image = ctk.CTkImage(Image.open(os.path.join(image_path, "unsync.png")), size=(24, 24))
 
-        # create navigation frame
         self.navigation_frame = ctk.CTkFrame(self, corner_radius=0)
         self.navigation_frame.grid(row=0, column=0, sticky="nsew")
         self.navigation_frame.grid_rowconfigure(6, weight=1)
@@ -126,40 +109,38 @@ class App(ctk.CTk):
                                             image=self.alerts_image, anchor="w", command=self.alerts_button_event)
         self.alerts_button.grid(row=5, column=0, sticky="ew")
 
-        # Connection Menu SideBar
         self.connection_label = ctk.CTkLabel(self.navigation_frame, text="Estado:   ", anchor="w",
                                              font=ctk.CTkFont(size=12, weight="bold"), image=self.unlink_image, compound="right")
         self.connection_label.grid(row=7, column=0, padx=20, pady=(10, 0))
         self.connection_button = ctk.CTkButton(self.navigation_frame, text="Conectar", command=self.connection_button_event)
         self.connection_button.grid(row=8, column=0, padx=20, pady=(10, 0))
 
-        # Scaling Menu SideBar
+        self.sync_button = ctk.CTkButton(self.navigation_frame, text="Sincronizar", command=self.sync_button_event, state="disabled")
+        self.sync_button.grid(row=9, column=0, padx=20, pady=(10, 0))
+
         self.scaling_label = ctk.CTkLabel(self.navigation_frame, text="Zoom:", anchor="w")
-        self.scaling_label.grid(row=9, column=0, padx=20, pady=(10, 0))
+        self.scaling_label.grid(row=10, column=0, padx=20, pady=(10, 0))
         self.scaling_optionemenu = ctk.CTkOptionMenu(self.navigation_frame, values=["80%", "90%", "100%", "110%", "120%"],
                                                      command=self.change_scaling_event)
-        self.scaling_optionemenu.set("100%")  # set default value
-        self.scaling_optionemenu.grid(row=10, column=0, padx=20, pady=(10, 20), sticky="s")
+        self.scaling_optionemenu.set("90%")
+        ctk.set_widget_scaling(0.9)
+        self.scaling_optionemenu.grid(row=11, column=0, padx=20, pady=(10, 20), sticky="s")
 
-        # create frames
         self.home_frame = HomeFrame(self)
         self.cycle_frame = CycleFrame(self)
         self.manual_frame = ManualFrame(self)
         self.calibration_frame = CalibrationFrame(self)
         self.alerts_frame = AlertsFrame(self)
 
-        # select default frame
         self.select_frame_by_name("home")
 
     def select_frame_by_name(self, name):
-        # set button color for selected button
         self.home_button.configure(fg_color=("gray75", "gray25") if name == "home" else "transparent")
         self.cycle_button.configure(fg_color=("gray75", "gray25") if name == "cycle" else "transparent")
         self.manual_button.configure(fg_color=("gray75", "gray25") if name == "manual" else "transparent")
         self.calibration_button.configure(fg_color=("gray75", "gray25") if name == "calibration" else "transparent")
         self.alerts_button.configure(fg_color=("gray75", "gray25") if name == "alerts" else "transparent")
 
-        # show selected frame
         if name == "home":
             self.home_frame.grid(row=0, column=1, sticky="nsew")
         else:
@@ -203,22 +184,55 @@ class App(ctk.CTk):
         new_scaling_float = int(new_scaling.replace("%", "")) / 100
         ctk.set_widget_scaling(new_scaling_float)
 
+    def sync_button_event(self): 
+        cycle_sync = CycleSync()
+        cycle_sync.sync_running_cycle()
+
     def connection_button_event(self): 
         if self.connection_button.cget("text") == "Conectar":        
             ui_serial.publisher.start_find_thread()
             ui_serial.publisher.find_thread.join()
             if ui_serial.publisher.ser.is_open:
-                self.connection_label.configure(image=self.link_image)  
-                self.connection_button.configure(text="Desconectar")
+                self.connection_label.configure(image=self.unsync_image)  
+                self.connection_button.configure(text="Desconectar")     
+                self.sync_button.configure(state="normal")         
         else: 
-            ui_serial.publisher.send_data(b"#Z1!")
             self.connection_label.configure(image=self.unlink_image)  
             self.connection_button.configure(text="Conectar")
-            print(f"Desconectado")
-            ui_serial.publisher.stop_read_thread()
+            self.sync_button.configure(state="disabled")     
+            ui_serial.publisher.send_data(b"#Z1!")
+            ui_serial.publisher.stop_read_thread() 
+
+    def update_btn(self, data):        
+        if data == MsgType.ESP_SYNCRONIZED:
+            self.connection_label.configure(image=self.link_image)  
+
+def backend(data):
+    if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
+        fname = os.path.join(os.getcwd(), "Log", ui_serial.cycle_id, "data_"+ui_serial.cycle_id+".csv")
+        with open(fname, "r") as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                if len(row) == 5:
+                    data_lists_expected['id'].append(int(row[0]))
+                    data_lists_expected['ph'].append(float(row[1]))
+                    data_lists_expected['od'].append(float(row[2]))
+                    data_lists_expected['temperature'].append(float(row[3]))
+                    data_lists_expected['light'].append(int(row[4]))
+        
+        fname = os.path.join(os.getcwd(), "Log", ui_serial.cycle_id, "header_"+ui_serial.cycle_id+".csv")
+        with open(fname, newline='') as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                if row[0] == 'cycle_name':
+                    ui_serial.cycle_alias = row[1]
+                elif row[0] == 'interval_time':
+                    ui_serial.cycle_interval = int(row[1])  
+                elif row[0] == 'cycle_id':
+                    ui_serial.cycle_id = row[1]
 
 if __name__ == "__main__":
-    ui_serial.publisher.subscribe(view_data)
+    ui_serial.publisher.subscribe(backend)
 
     app = App()
     app.mainloop()

@@ -6,60 +6,39 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import matplotlib.dates as mdates
+from matplotlib.ticker import MaxNLocator
 from matplotlib.animation import FuncAnimation
 import numpy as np
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 import frames.serial_handler as ui_serial
+from frames.serial_handler import MsgType 
+from frames.serial_handler import CycleStatus 
+from frames.serial_handler import data_lists 
+from frames.serial_handler import data_lists_expected 
 import re
+from enum import Enum
+import time
 
-def read_datalog(fname):
-    id_list = []
-    ph_list = []
-    od_list = []
-    temp_list = []
-    light_list = []
-    index = {}
-    
-    with open(fname, newline='') as csvfile:
-        handler = csv.reader(csvfile)
-        for i, line in enumerate(handler):
-            if i==0:
-                for j, column in enumerate(line):
-                    if column == "ID":
-                        index['id'] = j
-                    elif column == "pH":
-                        index['ph'] = j
-                    elif column == "OD":
-                        index['do'] = j
-                    elif column == "Temperatura":
-                        index['temperatura'] = j
-                    elif column == "Luz":
-                        index['led1'] = j
-                    elif column == "LED2":
-                        index['led2'] = j
-                    elif column == "LED3":
-                        index['led3'] = j
-                    elif column == "LED4":
-                        index['led4'] = j
-                    elif column == "LED5":
-                        index['led5'] = j
-            else: 
-                id_list.append(int(line[index.get("id")]))                
-                ph_list.append(float(line[index.get("ph")]))
-                od_list.append(float(line[index.get("do")]))
-                temp_list.append(float(line[index.get("temperatura")]))
-                light_list.append(float(line[index.get("led1")]))  
-    
-    return id_list, ph_list, od_list, temp_list, light_list
+class HandshakeStatus(Enum):
+    MSG_VALID = 7
+    TIMESTAMP = 6
+    DATAOUT1 = 5
+    DATAOUT0 = 4
+    ID1 = 3
+    ID0 = 2
+    OK = 1
+    NOT_YET = 0
+    TIMEOUT = -1
+    ERROR = -2
+    DATA_FAIL = -3
 
 class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
 
-        ui_serial.publisher.subscribe(self.process_data)
-
+        ui_serial.publisher.subscribe(self.process_data_instant_values)
         image_path = os.path.join(os.getcwd(), "images")
 
         self.grid_rowconfigure(0, weight=1)
@@ -94,15 +73,15 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.o2_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, state="disabled", width=100)
         self.o2_button.grid(row=4, column=0, padx=10, pady=0, sticky="ns")
 
-        self.label_air = ctk.CTkLabel(self.left_frame, text="Aire", font=ctk.CTkFont(weight="bold"))
-        self.label_air.grid(row=5, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.air_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, state="disabled", width=100)
-        self.air_button.grid(row=6, column=0, padx=10, pady=0, sticky="ns")
+        self.label_n2 = ctk.CTkLabel(self.left_frame, text="N2", font=ctk.CTkFont(weight="bold"))
+        self.label_n2.grid(row=5  , column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.n2_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, state="disabled", width=100)
+        self.n2_button.grid(row=6, column=0, padx=10, pady=(0,10), sticky="ns")
 
-        self.label_pump = ctk.CTkLabel(self.left_frame, text="Bomba", font=ctk.CTkFont(weight="bold"))
-        self.label_pump.grid(row=7  , column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.pump_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, state="disabled", width=100)
-        self.pump_button.grid(row=8, column=0, padx=10, pady=(0,10), sticky="ns")
+        self.label_air = ctk.CTkLabel(self.left_frame, text="Aire", font=ctk.CTkFont(weight="bold"))
+        self.label_air.grid(row=7, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.air_button = ctk.CTkButton(self.left_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, state="disabled", width=100)
+        self.air_button.grid(row=8, column=0, padx=10, pady=0, sticky="ns")
 
         self.center_frame = ctk.CTkFrame(self)
         self.center_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
@@ -151,43 +130,40 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.temp_button = ctk.CTkButton(self.right_frame, text="--°C", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.temp_button.grid(row=8, column=0, padx=10, pady=(0,10), sticky="ns")
     
-    def process_data(self, data):
-        if "#Z1!" in data:
+    def process_data_instant_values(self, data):
+        if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected()
 
-        if ui_serial.state_fbr.get("state") == "running":
-            pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$" # linea de log
-            match = re.match(pattern, data)            
-            if match:
-                self.light_button.configure(text = f"{int(match.group(5))}")
-                self.ph_button.configure(text = "{0:.2f}".format(float(match.group(2))))
-                self.do_button.configure(text = "{0:.2f}".format(float(match.group(3))))
-                self.temp_button.configure(text = "{0:.2f}".format(float(match.group(4))))            
-                
-                # if match.group(6) == '0':
-                #         self.co2_button.configure(text="Apagado")
-                #         self.co2_button.configure(fg_color="red")
-                # elif match.group(6) == '1':
-                #         self.co2_button.configure(text="Encendido")
-                #         self.co2_button.configure(fg_color="green")
-                # if match.group(7) == '0':
-                #     self.o2_button.configure(text="Apagado")
-                #     self.o2_button.configure(fg_color="red")
-                # elif match.group(7) == '1':
-                #     self.o2_button.configure(text="Encendido")
-                #     self.o2_button.configure(fg_color="green")
-                # if match.group(8) == '0':
-                #     self.air_button.configure(text="Apagado")
-                #     self.air_button.configure(fg_color="red")
-                # elif match.group(8) == '1':
-                #     self.air_button.configure(text="Encendido")
-                #     self.air_button.configure(fg_color="green")
-                # if match.group(9) == '0':
-                #     self.pump_button.configure(text="Apagado")
-                #     self.pump_button.configure(fg_color="red")
-                # elif match.group(9) == '1':
-                #     self.pump_button.configure(text="Encendido")
-                #     self.pump_button.configure(fg_color="green")
+        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):  
+            self.light_button.configure(text = f"{data_lists['light'][-1]}")
+            self.ph_button.configure(text = "{0:.2f}".format(data_lists['ph'][-1]))
+            self.do_button.configure(text = "{0:.2f}".format(data_lists['od'][-1]))
+            self.temp_button.configure(text = "{0:.2f}".format(data_lists['temperature'][-1]))   
+
+            if data_lists['co2'][-1] == 0:
+                self.co2_button.configure(text="Apagado")
+                self.co2_button.configure(fg_color="red")
+            else:
+                self.co2_button.configure(text="Encendido")
+                self.co2_button.configure(fg_color="green")
+            if data_lists['o2'][-1] == 0:
+                self.o2_button.configure(text="Apagado")
+                self.o2_button.configure(fg_color="red")
+            else:
+                self.o2_button.configure(text="Encendido")
+                self.o2_button.configure(fg_color="green")
+            if data_lists['air'][-1] == 0:
+                self.air_button.configure(text="Apagado")
+                self.air_button.configure(fg_color="red")
+            else:
+                self.air_button.configure(text="Encendido")
+                self.air_button.configure(fg_color="green")
+            if data_lists['n2'][-1] == 0:
+                self.n2_button.configure(text="Apagado")
+                self.n2_button.configure(fg_color="red")
+            else:
+                self.n2_button.configure(text="Encendido")
+                self.n2_button.configure(fg_color="green")
 
     def esp_disconnected(self):
         self.light_button.configure(text = "--")
@@ -200,13 +176,13 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.o2_button.configure(fg_color="orange")
         self.air_button.configure(text="Desconectado")
         self.air_button.configure(fg_color="orange")
-        self.pump_button.configure(text="Desconectado")
-        self.pump_button.configure(fg_color="orange")
+        self.n2_button.configure(text="Desconectado")
+        self.n2_button.configure(fg_color="orange")
 
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)         
-        ui_serial.publisher.subscribe(self.process_data)
+        ui_serial.publisher.subscribe(self.process_data_actual_cycle)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(4, weight=1)
@@ -214,7 +190,7 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_actual = ctk.CTkLabel(self, text="Ciclo Actual", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_actual.grid(row=0, column=0, padx=20, pady=(10, 0), sticky="w")
 
-        self.label_actual_days = ctk.CTkLabel(self, text="10 Dias", font=ctk.CTkFont(size=18))
+        self.label_actual_days = ctk.CTkLabel(self, text="", font=ctk.CTkFont(size=18))
         self.label_actual_days.grid(row=1, column=0, padx=20, pady=(10, 10), sticky="w")
         self.label_actual_days.grid_forget()
 
@@ -239,21 +215,32 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="nsew")
         self.label_left_colour.grid_forget()
 
-        self.label_done_text = ctk.CTkLabel(self.frame_actual, text="5 dias", font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_done_text = ctk.CTkLabel(self.frame_actual, text="", font=ctk.CTkFont(size=15, weight="bold"))
         self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="nsew")
         self.label_done_text.grid_forget()
 
-        self.label_left_text = ctk.CTkLabel(self.frame_actual, text="5 dias", font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_left_text = ctk.CTkLabel(self.frame_actual, text="", font=ctk.CTkFont(size=15, weight="bold"))
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
         self.label_left_text.grid_forget()
 
-    def process_data(self, data):        
-        pattern = r"#(STA)([012])\!"
-        if re.match(pattern, data):
-            self.esp_connected()
+    def process_data_actual_cycle(self, data):    
+        if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
+            total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
+            elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
+            restant_time = total_time - elapsed_time
+
+            self.esp_connected()  
+            self.update_progressbar(total_time, elapsed_time, restant_time)  
+
+        if data == MsgType.NEW_MEASUREMENT:
+            total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
+            elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
+            restant_time = total_time - elapsed_time
+
+            self.update_progressbar(total_time, elapsed_time, restant_time)
         
-        if "#Z1!" in data:
-            self.esp_disconnected()    
+        if data == MsgType.ESP_DISCONNECTED:
+            self.esp_disconnected() 
     
     def esp_connected(self):
         self.label_actual_days.grid(row=1, column=0, padx=20, pady=(10, 10), sticky="w")
@@ -263,6 +250,25 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="nsew")
         self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="nsew")
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
+
+    def format_seconds(self, seconds):
+        if seconds >= 86400:  
+            days = seconds // 86400
+            return f"{days} día(s)"
+        elif seconds >= 3600:  
+            hours = seconds // 3600
+            return f"{hours} hora(s)"
+        elif seconds >= 60:  
+            minutes = seconds // 60
+            return f"{minutes} minuto(s)"
+        else:
+            return f"{seconds} segundo(s)"
+    
+    def update_progressbar(self, total_time, elapsed_time, restant_time):
+        self.progressbar_actual.set(elapsed_time/total_time)
+        self.label_actual_days.configure(text=self.format_seconds(total_time))
+        self.label_done_text.configure(text=self.format_seconds(elapsed_time))
+        self.label_left_text.configure(text=self.format_seconds(restant_time))
     
     def esp_disconnected(self):
         self.label_actual_days.grid_forget()
@@ -276,9 +282,8 @@ class ActualCycleFrame(ctk.CTkFrame):
 class MyPlot(ctk.CTkFrame):
     def __init__(self, master, var):
         super().__init__(master)
-        ui_serial.publisher.subscribe(self.process_data)
-
-        id_list_i, ph_list_i, od_list_i, temp_list_i, light_list_i = read_datalog("Log/test_1.csv")
+        ui_serial.publisher.subscribe(self.update_plot)
+        self.var = var
 
         self.fig, self.ax = plt.subplots()
         self.line, = self.ax.plot([], [], 'r-')
@@ -289,33 +294,18 @@ class MyPlot(ctk.CTkFrame):
         self.temp_data = []
         self.light_data = []
         
-        self.ax.set_xlim(0, 30)
-        
-        if var=="pH":
-            self.ph_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
+        if var=="ph":
             self.ax.set_ylim(0, 14)
-            self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in ph_list_i], label="Valores esperados")
-        elif var=="OD":
-            self.od_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
+        elif var=="od":
             self.ax.set_ylabel("[%]")
             self.ax.set_ylim(0, 100)
-            self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in od_list_i], label="Valores esperados")
-        elif var=="Temperatura":
-            self.temp_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
+        elif var=="temperature":
             self.ax.set_ylabel("[°C]")
             self.ax.set_ylim(10, 30)
-            self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in temp_list_i], label="Valores esperados")
-        elif var=="Luz":
-            self.light_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
+        elif var=="light":
             self.ax.set_ylabel("[%]")
             self.ax.set_ylim(0, 100)
-            self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in light_list_i], label="Valores esperados")
         
-        self.ax.legend()  
-        # locator = mdates.AutoDateLocator(minticks=7, maxticks=10)
-        # formatter = mdates.ConciseDateFormatter(locator)
-        # ax.xaxis.set_major_locator(locator)
-        # ax.xaxis.set_major_formatter(formatter)
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)  
         self.canvas.draw()
 
@@ -325,52 +315,44 @@ class MyPlot(ctk.CTkFrame):
         toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
         self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
 
-        self.update_plot(var)
-
-    def process_data(self, data):       
-        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$" # linea de log
-        match = re.match(pattern, data)
+    def update_plot(self, data): # TODO: esto tiene que appendear un dato solo al plot por cada medicion que llega nada mas 
         
-        if match:
-            self.id_data.append(float(match.group(1)))
-            self.light_data.append(int(match.group(5)))
-            self.ph_data.append(float(match.group(2)))
-            self.od_data.append(float(match.group(3)))
-            self.temp_data.append(float(match.group(4))) 
-            
-            # Limitar el tamaño de la lista para que el gráfico no crezca indefinidamente
-            if len(self.light_data) > 100:
-                self.light_data.pop(0)
-                self.ph_data.pop(0)
-                self.od_data.pop(0)
-                self.temp_data.pop(0)
+        if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
+            initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
+            num_measurements = len(data_lists['id'])
+            datetime_axis = [initial_time + timedelta(seconds=i * ui_serial.cycle_interval) for i in range(num_measurements)]
+            datetime_axis_expected = [initial_time + timedelta(seconds=i * ui_serial.cycle_interval) for i in range(num_measurements)]
+            self.ax.plot(datetime_axis_expected, data_lists_expected[self.var][:num_measurements], label="Valores esperados")
+            self.ax.plot(datetime_axis, data_lists[self.var], label="Valores medidos")
 
-    def update_plot(self, var):
-        if ui_serial.state_fbr.get("state") == "running":
-            if var=="pH":
-                self.ph_line.set_ydata(self.ph_data)
-                self.ph_line.set_xdata(self.id_data)
-            elif var=="OD":
-                self.od_line.set_ydata(self.od_data)
-                self.od_line.set_xdata(self.id_data)
-            elif var=="Temperatura":
-                self.temp_line.set_ydata(self.temp_data)
-                self.temp_line.set_xdata(self.id_data)
-            elif var=="Luz":
-                self.light_line.set_ydata(self.light_data)  
-                self.light_line.set_xdata(self.id_data)
+            self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%m %H:%M'))
+            self.ax.xaxis.set_major_locator(MaxNLocator(nbins=10))
+            self.fig.autofmt_xdate()
+
+            self.ax.legend()  
+
+        # if data == MsgType.NEW_MEASUREMENT:
+        #     if var=="pH":
+        #         self.ph_line.set_ydata(self.ph_data)
+        #         self.ph_line.set_xdata(self.id_data)
+        #     elif var=="OD":
+        #         self.od_line.set_ydata(self.od_data)
+        #         self.od_line.set_xdata(self.id_data)
+        #     elif var=="Temperatura":
+        #         self.temp_line.set_ydata(self.temp_data)
+        #         self.temp_line.set_xdata(self.id_data)
+        #     elif var=="Luz":
+        #         self.light_line.set_ydata(self.light_data)  
+        #         self.light_line.set_xdata(self.id_data)
             
             self.canvas.draw()
-        self.master.after(1000, lambda: self.update_plot(var))
-        #print("update_plot")
+        # self.master.after(30*1000, lambda: self.update_plot(var))
 
 
 class PlotFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
-        ui_serial.publisher.subscribe(self.process_data)
-
-        datalog_path = os.path.join(os.getcwd(), "test_data")
+        ui_serial.publisher.subscribe(self.process_data_plot_frame)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -388,24 +370,16 @@ class PlotFrame(ctk.CTkFrame):
         self.tabview.tab("OD").grid_columnconfigure(0, weight=1)
         self.tabview.tab("Temperatura").grid_columnconfigure(0, weight=1)
 
-        self.plot_light = MyPlot(self.tabview.tab("Luz"), "Luz")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
-        self.plot_ph = MyPlot(self.tabview.tab("pH"), "pH")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
-        self.plot_od = MyPlot(self.tabview.tab("OD"), "OD")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
-        self.plot_temp = MyPlot(self.tabview.tab("Temperatura"), "Temperatura")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
+        self.plot_light = MyPlot(self.tabview.tab("Luz"), "light")
+        self.plot_ph = MyPlot(self.tabview.tab("pH"), "ph")
+        self.plot_od = MyPlot(self.tabview.tab("OD"), "od")
+        self.plot_temp = MyPlot(self.tabview.tab("Temperatura"), "temperature")
         
-    def process_data(self, data):
-        pattern = r"#(STA)([012])\!"
-        match = re.match(pattern, data)
-        if match:
-            self.esp_connected()
-
-            value = match.group(2) 
-            if value == 1:
-                # Hay un ciclo en curso, tengo que cargar los valores esperados del log
-                print("cargo grafico")
-
+    def process_data_plot_frame(self, data):
+        if data == MsgType.ESP_CONNECTED or data == MsgType.ESP_SYNCRONIZED:
+            self.esp_connected()        
         
-        if "#Z1!" in data:
+        if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected()  
 
     def esp_connected(self):
