@@ -6,10 +6,11 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import matplotlib.dates as mdates
+from matplotlib.ticker import MaxNLocator
 from matplotlib.animation import FuncAnimation
 import numpy as np
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 import frames.serial_handler as ui_serial
 from frames.serial_handler import MsgType 
@@ -32,46 +33,6 @@ class HandshakeStatus(Enum):
     TIMEOUT = -1
     ERROR = -2
     DATA_FAIL = -3
-
-def read_datalog(fname):
-    id_list = []
-    ph_list = []
-    od_list = []
-    temp_list = []
-    light_list = []
-    index = {}
-    
-    with open(fname, newline='') as csvfile:
-        handler = csv.reader(csvfile)
-        for i, line in enumerate(handler):
-            if i==0:
-                for j, column in enumerate(line):
-                    if column == "ID":
-                        index['id'] = j
-                    elif column == "pH":
-                        index['ph'] = j
-                    elif column == "OD":
-                        index['do'] = j
-                    elif column == "Temperatura":
-                        index['temperatura'] = j
-                    elif column == "Luz":
-                        index['led1'] = j
-                    elif column == "LED2":
-                        index['led2'] = j
-                    elif column == "LED3":
-                        index['led3'] = j
-                    elif column == "LED4":
-                        index['led4'] = j
-                    elif column == "LED5":
-                        index['led5'] = j
-            else: 
-                id_list.append(int(line[index.get("id")]))                
-                ph_list.append(float(line[index.get("ph")]))
-                od_list.append(float(line[index.get("do")]))
-                temp_list.append(float(line[index.get("temperatura")]))
-                light_list.append(float(line[index.get("led1")]))  
-    
-    return id_list, ph_list, od_list, temp_list, light_list
 
 class InstantValuesFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -323,7 +284,6 @@ class MyPlot(ctk.CTkFrame):
         super().__init__(master)
         ui_serial.publisher.subscribe(self.update_plot)
         self.var = var
-        id_list_i, ph_list_i, od_list_i, temp_list_i, light_list_i = read_datalog("Log/test_1.csv") # TODO: volar esto a la mierda y poner que se lean los datos de donde corresponde
 
         self.fig, self.ax = plt.subplots()
         self.line, = self.ax.plot([], [], 'r-')
@@ -334,33 +294,18 @@ class MyPlot(ctk.CTkFrame):
         self.temp_data = []
         self.light_data = []
         
-        # self.ax.set_xlim(0, 30)
+        if var=="ph":
+            self.ax.set_ylim(0, 14)
+        elif var=="od":
+            self.ax.set_ylabel("[%]")
+            self.ax.set_ylim(0, 100)
+        elif var=="temperature":
+            self.ax.set_ylabel("[°C]")
+            self.ax.set_ylim(10, 30)
+        elif var=="light":
+            self.ax.set_ylabel("[%]")
+            self.ax.set_ylim(0, 100)
         
-        # if var=="ph":
-        #     #self.ph_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
-        #     self.ax.set_ylim(0, 14)
-        #     #self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in ph_list_i], label="Valores esperados")
-        # elif var=="od":
-        #     #self.od_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
-        #     #self.ax.set_ylabel("[%]")
-        #     self.ax.set_ylim(0, 100)
-        #     #self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in od_list_i], label="Valores esperados")
-        # elif var=="temperature":
-        #     #self.temp_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
-        #     #self.ax.set_ylabel("[°C]")
-        #     self.ax.set_ylim(10, 30)
-        #     #self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in temp_list_i], label="Valores esperados")
-        # elif var=="light":
-        #     #self.light_line, = self.ax.plot([], [], 'r-', label="Valores medidos")
-        #     #self.ax.set_ylabel("[%]")
-        #     self.ax.set_ylim(0, 100)
-        #     #self.ax.plot(id_list_i, [x * random.uniform(0.9, 1.1) for x in light_list_i], label="Valores esperados")
-        
-        # self.ax.legend()  
-        # locator = mdates.AutoDateLocator(minticks=7, maxticks=10)
-        # formatter = mdates.ConciseDateFormatter(locator)
-        # ax.xaxis.set_major_locator(locator)
-        # ax.xaxis.set_major_formatter(formatter)
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)  
         self.canvas.draw()
 
@@ -370,13 +315,21 @@ class MyPlot(ctk.CTkFrame):
         toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
         self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
 
-        #self.update_plot(var)
-
     def update_plot(self, data): # TODO: esto tiene que appendear un dato solo al plot por cada medicion que llega nada mas 
         
         if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
-            self.ax.plot(data_lists_expected['id'], data_lists_expected[self.var], label="Valores esperados")
-            self.ax.plot(data_lists['id'], data_lists[self.var], label="Valores medidos")
+            initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
+            num_measurements = len(data_lists['id'])
+            datetime_axis = [initial_time + timedelta(seconds=i * ui_serial.cycle_interval) for i in range(num_measurements)]
+            datetime_axis_expected = [initial_time + timedelta(seconds=i * ui_serial.cycle_interval) for i in range(num_measurements)]
+            self.ax.plot(datetime_axis_expected, data_lists_expected[self.var][:num_measurements], label="Valores esperados")
+            self.ax.plot(datetime_axis, data_lists[self.var], label="Valores medidos")
+
+            self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%m %H:%M'))
+            self.ax.xaxis.set_major_locator(MaxNLocator(nbins=10))
+            self.fig.autofmt_xdate()
+
+            self.ax.legend()  
 
         # if data == MsgType.NEW_MEASUREMENT:
         #     if var=="pH":

@@ -49,17 +49,19 @@ logger.addHandler(console_handler)
 class App(ctk.CTk):
     def __init__(self):
         super().__init__()
+
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        self.geometry(f"{screen_width}x{screen_height}+0+0")
+
         ui_serial.publisher.subscribe(self.update_btn)
 
         self.title("FBR SIMCONEX")
-        #self.geometry("700x450")
         ctk.set_appearance_mode("Light")
 
-        # set grid layout 1x2
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
-        # load images with light and dark mode image
         image_path = os.path.join(os.getcwd(), "images")
         self.logo_image = ctk.CTkImage(Image.open(os.path.join(image_path, "logo_edited.png")), size=(40, 40))
         self.large_test_image = ctk.CTkImage(Image.open(os.path.join(image_path, "large_test_image.png")), size=(500, 150))
@@ -74,7 +76,6 @@ class App(ctk.CTk):
         self.link_image = ctk.CTkImage(Image.open(os.path.join(image_path, "link.png")), size=(24, 24))
         self.unsync_image = ctk.CTkImage(Image.open(os.path.join(image_path, "unsync.png")), size=(24, 24))
 
-        # create navigation frame
         self.navigation_frame = ctk.CTkFrame(self, corner_radius=0)
         self.navigation_frame.grid(row=0, column=0, sticky="nsew")
         self.navigation_frame.grid_rowconfigure(6, weight=1)
@@ -108,7 +109,6 @@ class App(ctk.CTk):
                                             image=self.alerts_image, anchor="w", command=self.alerts_button_event)
         self.alerts_button.grid(row=5, column=0, sticky="ew")
 
-        # Connection Menu SideBar
         self.connection_label = ctk.CTkLabel(self.navigation_frame, text="Estado:   ", anchor="w",
                                              font=ctk.CTkFont(size=12, weight="bold"), image=self.unlink_image, compound="right")
         self.connection_label.grid(row=7, column=0, padx=20, pady=(10, 0))
@@ -118,34 +118,29 @@ class App(ctk.CTk):
         self.sync_button = ctk.CTkButton(self.navigation_frame, text="Sincronizar", command=self.sync_button_event, state="disabled")
         self.sync_button.grid(row=9, column=0, padx=20, pady=(10, 0))
 
-        # Scaling Menu SideBar
         self.scaling_label = ctk.CTkLabel(self.navigation_frame, text="Zoom:", anchor="w")
         self.scaling_label.grid(row=10, column=0, padx=20, pady=(10, 0))
         self.scaling_optionemenu = ctk.CTkOptionMenu(self.navigation_frame, values=["80%", "90%", "100%", "110%", "120%"],
                                                      command=self.change_scaling_event)
-        self.scaling_optionemenu.set("90%")  # set default value
+        self.scaling_optionemenu.set("90%")
         ctk.set_widget_scaling(0.9)
         self.scaling_optionemenu.grid(row=11, column=0, padx=20, pady=(10, 20), sticky="s")
 
-        # create frames
         self.home_frame = HomeFrame(self)
         self.cycle_frame = CycleFrame(self)
         self.manual_frame = ManualFrame(self)
         self.calibration_frame = CalibrationFrame(self)
         self.alerts_frame = AlertsFrame(self)
 
-        # select default frame
         self.select_frame_by_name("home")
 
     def select_frame_by_name(self, name):
-        # set button color for selected button
         self.home_button.configure(fg_color=("gray75", "gray25") if name == "home" else "transparent")
         self.cycle_button.configure(fg_color=("gray75", "gray25") if name == "cycle" else "transparent")
         self.manual_button.configure(fg_color=("gray75", "gray25") if name == "manual" else "transparent")
         self.calibration_button.configure(fg_color=("gray75", "gray25") if name == "calibration" else "transparent")
         self.alerts_button.configure(fg_color=("gray75", "gray25") if name == "alerts" else "transparent")
 
-        # show selected frame
         if name == "home":
             self.home_frame.grid(row=0, column=1, sticky="nsew")
         else:
@@ -190,7 +185,6 @@ class App(ctk.CTk):
         ctk.set_widget_scaling(new_scaling_float)
 
     def sync_button_event(self): 
-        #ui_serial.publisher.force_sync() # TODO: una vez que se corrija la sincronizacion, eliminar esta linea
         cycle_sync = CycleSync()
         cycle_sync.sync_running_cycle()
 
