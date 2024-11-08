@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import frames.serial_handler as ui_serial
 import re
 from frames.serial_handler import MsgType 
+from frames.serial_handler import CycleStatus 
 from frames.serial_handler import data_lists 
 
 class LogFrame(ctk.CTkFrame):
@@ -74,7 +75,7 @@ class LogFrame(ctk.CTkFrame):
         self.scrollable_frame.pack(pady=10, padx=10, fill="both", expand=True)   
   
     def update_log_frame(self, data):
-        if data == MsgType.NEW_MEASUREMENT or data == MsgType.ESP_SYNCRONIZED:
+        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):
             num_measurements = len(data_lists['id'])
             start_index = max(0, num_measurements - 50)
 
@@ -182,7 +183,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
 
-        if data == MsgType.NEW_MEASUREMENT or data == MsgType.ESP_SYNCRONIZED:  
+        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):  
             self.light_button.configure(text = f"{data_lists['light'][-1]}")
             self.ph_button.configure(text = "{0:.2f}".format(data_lists['ph'][-1]))
             self.do_button.configure(text = "{0:.2f}".format(data_lists['od'][-1]))
@@ -293,7 +294,7 @@ class SetPointsFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
 
-        if data == MsgType.NEW_MEASUREMENT or data == MsgType.ESP_SYNCRONIZED:
+        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):
             self.update_data()
 
     def esp_connected(self):

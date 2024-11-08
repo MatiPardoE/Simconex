@@ -16,6 +16,7 @@ from frames.cycle_sync import CycleSync
 from frames.serial_handler import MsgType 
 import csv
 from frames.serial_handler import data_lists 
+from frames.serial_handler import CycleStatus 
 from frames.serial_handler import data_lists_expected 
 
 # Crear un logger
@@ -122,7 +123,8 @@ class App(ctk.CTk):
         self.scaling_label.grid(row=10, column=0, padx=20, pady=(10, 0))
         self.scaling_optionemenu = ctk.CTkOptionMenu(self.navigation_frame, values=["80%", "90%", "100%", "110%", "120%"],
                                                      command=self.change_scaling_event)
-        self.scaling_optionemenu.set("100%")  # set default value
+        self.scaling_optionemenu.set("90%")  # set default value
+        ctk.set_widget_scaling(0.9)
         self.scaling_optionemenu.grid(row=11, column=0, padx=20, pady=(10, 20), sticky="s")
 
         # create frames
@@ -212,7 +214,7 @@ class App(ctk.CTk):
             self.connection_label.configure(image=self.link_image)  
 
 def backend(data):
-    if data == MsgType.ESP_SYNCRONIZED:
+    if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
         fname = os.path.join(os.getcwd(), "Log", ui_serial.cycle_id, "data_"+ui_serial.cycle_id+".csv")
         with open(fname, "r") as csvfile:
             reader = csv.reader(csvfile)

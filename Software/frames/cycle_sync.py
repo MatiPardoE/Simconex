@@ -66,30 +66,34 @@ class CycleSync:
             ui_serial.publisher.send_data(b"#SYNC0!\n")
             self.wait_message(HandshakeStatus.STA, timeout)
             ui_serial.publisher.send_data(b"#OK!\n")
-            self.wait_message(HandshakeStatus.ID0, timeout)
-            ui_serial.publisher.send_data(b"#OK!\n")
-            self.wait_message(HandshakeStatus.TIMESTAMP, timeout)
-            ui_serial.publisher.send_data(b"#OK!\n")
-            self.wait_message(HandshakeStatus.ID1, timeout)
-            ui_serial.publisher.send_data(b"#OK!\n")
-            self.wait_message(HandshakeStatus.DATAOUT0, timeout)
-            ui_serial.publisher.send_data(b"#OK!\n")
-            ui_serial.publisher.unsubscribe(self.wait_for_response)
 
-            start_time = time.time()  # Start timing the transfer
+            if not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
+                self.wait_message(HandshakeStatus.ID0, timeout)
+                ui_serial.publisher.send_data(b"#OK!\n")
+                self.wait_message(HandshakeStatus.TIMESTAMP, timeout)
+                ui_serial.publisher.send_data(b"#OK!\n")
+                self.wait_message(HandshakeStatus.ID1, timeout)
+                ui_serial.publisher.send_data(b"#OK!\n")
+                self.wait_message(HandshakeStatus.DATAOUT0, timeout)
+                ui_serial.publisher.send_data(b"#OK!\n")
+                ui_serial.publisher.unsubscribe(self.wait_for_response)
 
-            ui_serial.publisher.subscribe(self.wait_for_dataout)
-            self.receive_data(timeout=5)
-            ui_serial.publisher.unsubscribe(self.wait_for_dataout)
+                start_time = time.time()  # Start timing the transfer
 
-            end_time = time.time()  # End timing the transfer
-            print(f"Transfer completed in {end_time - start_time:.2f} seconds")
+                ui_serial.publisher.subscribe(self.wait_for_dataout)
+                self.receive_data(timeout=5)
+                ui_serial.publisher.unsubscribe(self.wait_for_dataout)
 
-            ui_serial.publisher.subscribe(self.wait_for_response)
+                end_time = time.time()  # End timing the transfer
+                print(f"Transfer completed in {end_time - start_time:.2f} seconds")
+
+                ui_serial.publisher.subscribe(self.wait_for_response)
+
             self.send_data_and_wait_hs(b"#SYNC1!\n")
             ui_serial.publisher.unsubscribe(self.wait_for_response) 
 
-            self.generate_cycleout_file()
+            if not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
+                self.generate_cycleout_file()
             self.success_loading_window()
             ui_serial.publisher.notify_sync()           
         

@@ -13,6 +13,7 @@ from datetime import datetime
 import random
 import frames.serial_handler as ui_serial
 from frames.serial_handler import MsgType 
+from frames.serial_handler import CycleStatus 
 from frames.serial_handler import data_lists 
 from frames.serial_handler import data_lists_expected 
 import re
@@ -172,7 +173,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected()
 
-        if data == MsgType.NEW_MEASUREMENT or data == MsgType.ESP_SYNCRONIZED:  
+        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):  
             self.light_button.configure(text = f"{data_lists['light'][-1]}")
             self.ph_button.configure(text = "{0:.2f}".format(data_lists['ph'][-1]))
             self.do_button.configure(text = "{0:.2f}".format(data_lists['od'][-1]))
@@ -262,7 +263,7 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.grid_forget()
 
     def process_data_actual_cycle(self, data):    
-        if data == MsgType.ESP_SYNCRONIZED:
+        if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
             elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
             restant_time = total_time - elapsed_time
@@ -373,7 +374,7 @@ class MyPlot(ctk.CTkFrame):
 
     def update_plot(self, data): # TODO: esto tiene que appendear un dato solo al plot por cada medicion que llega nada mas 
         
-        if data == MsgType.ESP_SYNCRONIZED:
+        if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
             self.ax.plot(data_lists_expected['id'], data_lists_expected[self.var], label="Valores esperados")
             self.ax.plot(data_lists['id'], data_lists[self.var], label="Valores medidos")
 
@@ -400,8 +401,6 @@ class PlotFrame(ctk.CTkFrame):
         super().__init__(master) 
         ui_serial.publisher.subscribe(self.process_data_plot_frame)
 
-        datalog_path = os.path.join(os.getcwd(), "test_data")
-
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
@@ -418,13 +417,13 @@ class PlotFrame(ctk.CTkFrame):
         self.tabview.tab("OD").grid_columnconfigure(0, weight=1)
         self.tabview.tab("Temperatura").grid_columnconfigure(0, weight=1)
 
-        self.plot_light = MyPlot(self.tabview.tab("Luz"), "light")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
-        self.plot_ph = MyPlot(self.tabview.tab("pH"), "ph")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
-        self.plot_od = MyPlot(self.tabview.tab("OD"), "od")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
-        self.plot_temp = MyPlot(self.tabview.tab("Temperatura"), "temperature")#, os.path.join(datalog_path, "datos_generados_logico.csv"), os.path.join(datalog_path, "datos_generados_logico.csv"))
+        self.plot_light = MyPlot(self.tabview.tab("Luz"), "light")
+        self.plot_ph = MyPlot(self.tabview.tab("pH"), "ph")
+        self.plot_od = MyPlot(self.tabview.tab("OD"), "od")
+        self.plot_temp = MyPlot(self.tabview.tab("Temperatura"), "temperature")
         
     def process_data_plot_frame(self, data):
-        if data == MsgType.ESP_CONNECTED:
+        if data == MsgType.ESP_CONNECTED or data == MsgType.ESP_SYNCRONIZED:
             self.esp_connected()        
         
         if data == MsgType.ESP_DISCONNECTED:

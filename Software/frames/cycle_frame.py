@@ -12,7 +12,8 @@ from customtkinter import filedialog
 from tkinter import messagebox
 import pandas as pd
 import time
-from frames.serial_handler import MsgType 
+from frames.serial_handler import MsgType
+from frames.serial_handler import CycleStatus 
 from frames.serial_handler import data_lists 
 from frames.serial_handler import data_lists_expected 
 
@@ -60,7 +61,7 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.grid_forget()
 
     def process_data_cycle_frame(self, data):
-        if data == MsgType.ESP_SYNCRONIZED:
+        if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
             elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
             restant_time = total_time - elapsed_time
@@ -542,7 +543,7 @@ class LogFrame(ctk.CTkFrame):
         self.label_export.configure(cursor="arrow") 
     
     def update_log(self, data):      
-        if data == MsgType.NEW_MEASUREMENT or data == MsgType.ESP_SYNCRONIZED:
+        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):
             num_measurements = len(data_lists['id'])
             start_index = max(0, num_measurements - 50)
 
