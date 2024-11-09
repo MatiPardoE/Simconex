@@ -118,28 +118,17 @@ bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uin
     }
 
     // Write the measures to the file
-    file.printf("%08d",interval_id_measure);
-    file.print(",");
-    file.printf("%02.2f", measuresAndOutputs.ph);
-    file.print(",");
-    file.printf("%03.2f", measuresAndOutputs.oxygen);
-    file.print(",");
-    file.printf("%02.2f", measuresAndOutputs.temperature);
-    file.print(",");
-    file.printf("%03d", measuresAndOutputs.light);
-    file.print(",");
-    file.print(measuresAndOutputs.EV_co2);
-    file.print(",");
-    file.print(measuresAndOutputs.EV_oxygen);
-    file.print(",");
-    file.print(measuresAndOutputs.EV_nitrogen);
-    file.print(",");
-    file.print(measuresAndOutputs.EV_air);
+    file.printf("%08d,%05.2f,%06.2f,%05.2f,%02d,%d,%d,%d,%d",
+        interval_id_measure, measuresAndOutputs.ph, measuresAndOutputs.oxygen, measuresAndOutputs.temperature,
+        measuresAndOutputs.light, measuresAndOutputs.EV_co2, measuresAndOutputs.EV_oxygen, measuresAndOutputs.EV_nitrogen, measuresAndOutputs.EV_air);
     file.println();
     file.close();
 
     // TODO: sendDataToUI(measuresAndOutputs);
-
+    Serial.printf("%08d,%05.2f,%06.2f,%05.2f,%02d,%d,%d,%d,%d",
+        interval_id_measure, measuresAndOutputs.ph, measuresAndOutputs.oxygen, measuresAndOutputs.temperature,
+        measuresAndOutputs.light, measuresAndOutputs.EV_co2, measuresAndOutputs.EV_oxygen, measuresAndOutputs.EV_nitrogen, measuresAndOutputs.EV_air);
+    Serial.println();
     return true;
 }
 
@@ -298,7 +287,7 @@ cycle_manager::CycleBundle cycle_manager::run()
         alarmFlag = false;
         if (readNextInterval())
         {
-            Log.infoln("New interval available");
+            //Log.infoln("New interval available");
             bundle.command = CommandBundle::NEW_INTERVAL;
             bundle.intervalData = intervalData;
         }
@@ -346,7 +335,7 @@ bool cycle_manager::readNextInterval()
         return false;
 
     case INTERVAL_AVAILABLE:
-        Log.infoln("Interval available: %d", cycleData.interval_current);
+        //Log.infoln("Interval available: %d", cycleData.interval_current);
         return readInterval();
 
     default:
@@ -455,7 +444,7 @@ bool cycle_manager::readInterval()
 
 bool cycle_manager::finishCycle()
 {
-    Log.infoln("Cycle finished.id: %s, %d intervals processed.", cycleData.cycle_id.c_str(),cycleData.interval_current);
+    Log.infoln("Cycle finished.id: %s, %d intervals processed.", cycleData.cycle_id.c_str(), cycleData.interval_current);
     cycleData.status = CYCLE_COMPLETED;
     if (!evaluateAlarmStatus())
     {

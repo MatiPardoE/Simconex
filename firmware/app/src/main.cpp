@@ -94,7 +94,7 @@ void loop()
         Log.noticeln("Cycle FINISIHED");
         break;
     case cycle_manager::NEW_INTERVAL:
-        Log.noticeln("New interval available");
+        //Log.noticeln("New interval available");
         new_measure_outputs = sensorControl.takeMeasuresAndOutputs();                          // No deberia tardar mucho
         cm.writeMeasuresToSD(new_measure_outputs, (cycleBundle.intervalData.interval_id - 1)); // Envio el ID-1 porque el ID es el siguiente intervalo
         sensorControl.set_control_var(cycleBundle.intervalData);
