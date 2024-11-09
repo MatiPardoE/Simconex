@@ -15,17 +15,17 @@ void LedStrip::begin(int pin, int channel, int freq, int resolution) {
     ledcAttachPin(_pin, _channel);
     off();  // Apagar por defecto
 
-    Log.info("LedStrip initialized on pin %d, channel %d, freq %d, resolution %d\n", _pin, _channel, freq, _resolution);
+    //Log.info("LedStrip initialized on pin %d, channel %d, freq %d, resolution %d\n", _pin, _channel, freq, _resolution);
 }
 
 void LedStrip::on() {
     ledcWrite(_channel, _currentDuty);
-    Log.info("LedStrip turned on with duty %d\n", _currentDuty);
+    //Log.info("LedStrip turned on with duty %d\n", _currentDuty);
 }
 
 void LedStrip::off() {
     ledcWrite(_channel, 0);
-    Log.info("LedStrip turned off\n");
+    //Log.info("LedStrip turned off\n");
 }
 
 void LedStrip::setDuty(int duty) {
@@ -39,7 +39,7 @@ void LedStrip::setDuty(int duty) {
     }
     _currentDuty = map(duty, 0, 100, 0, _maxDuty);
     ledcWrite(_channel, _currentDuty);
-    Log.verbose("Duty set to %d%% (PWM value: %d)\n", duty, _currentDuty);
+    //Log.verbose("Duty set to %d%% (PWM value: %d)\n", duty, _currentDuty);
 }
 
 int LedStrip::getDuty()
