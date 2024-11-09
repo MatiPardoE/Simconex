@@ -52,6 +52,7 @@ void loop()
         // Log.notice("Transfer file start\n");
         Serial.println("#OK!"); // TODO Create function to send commands to UI
         fileTransfer.transferFiles("/input/header.csv", "/input/data.csv", 10000);
+        //TODO: levantar el archivo de header y data
         break;
     case CommUI::UNKNOWN_COMMAND:
         // Do nothing

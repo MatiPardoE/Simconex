@@ -26,7 +26,7 @@ bool ShiftRegister74HC595::begin(int data, int latch, int clock)
     pinMode(clockPin, OUTPUT);
 
     // Log de inicialización
-    Log.info("Shift register initialized: DATA pin %d, LATCH pin %d, CLOCK pin %d\n", dataPin, latchPin, clockPin);
+    //Log.info("Shift register initialized: DATA pin %d, LATCH pin %d, CLOCK pin %d\n", dataPin, latchPin, clockPin);
     return true;
 }
 
@@ -42,12 +42,12 @@ void ShiftRegister74HC595::setOutput(int pin, bool state)
     if (state)
     {
         outputState |= (1 << pin); // Establece el bit en 1
-        Log.info("Set pin %d to HIGH.\n", pin);
+        //Log.info("Set pin %d to HIGH.\n", pin);
     }
     else
     {
         outputState &= ~(1 << pin); // Establece el bit en 0
-        Log.info("Set pin %d to LOW.\n", pin);
+        //Log.info("Set pin %d to LOW.\n", pin);
     }
 
     updateShiftRegister(); // Actualiza el registro de desplazamiento
@@ -57,17 +57,17 @@ void ShiftRegister74HC595::setOutput(int pin, bool state)
 void ShiftRegister74HC595::updateShiftRegister()
 {
     digitalWrite(latchPin, LOW); // Baja LATCH para comenzar la transmisión
-    Log.info("Updating shift register with state: 0b" BYTE_TO_BINARY_PATTERN "\n", BYTE_TO_BINARY(outputState));
+    //Log.info("Updating shift register with state: 0b" BYTE_TO_BINARY_PATTERN "\n", BYTE_TO_BINARY(outputState));
 
     shiftOut(dataPin, clockPin, MSBFIRST, outputState); // Envía los datos
 
     digitalWrite(latchPin, HIGH); // Sube LATCH para actualizar las salidas
-    Log.info("Shift register updated.\n");
+    //Log.info("Shift register updated.\n");
 }
 
 // Obtener el estado actual de las salidas
 byte ShiftRegister74HC595::getOutputState()
 {
-    Log.info("Current shift register state: 0b" BYTE_TO_BINARY_PATTERN "\n", BYTE_TO_BINARY(outputState));
+    //Log.info("Current shift register state: 0b" BYTE_TO_BINARY_PATTERN "\n", BYTE_TO_BINARY(outputState));
     return outputState;
 }
