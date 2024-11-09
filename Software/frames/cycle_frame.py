@@ -5,25 +5,29 @@ from PIL import Image
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 import frames.serial_handler as ui_serial
 import re
 from customtkinter import filedialog    
 from tkinter import messagebox
 import pandas as pd
 import time
+from frames.serial_handler import MsgType
+from frames.serial_handler import CycleStatus 
+from frames.serial_handler import data_lists 
+from frames.serial_handler import data_lists_expected 
 
 class ActualCycleFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master) 
-        ui_serial.publisher.subscribe(self.process_data)
+        ui_serial.publisher.subscribe(self.process_data_cycle_frame)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(4, weight=1)
 
         self.label_actual = ctk.CTkLabel(self, text="Ciclo Actual", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_actual.grid(row=0, column=0, padx=20, pady=(10, 0), sticky="w")
 
-        self.label_actual_days = ctk.CTkLabel(self, text="10 Dias", font=ctk.CTkFont(size=18))
+        self.label_actual_days = ctk.CTkLabel(self, text="", font=ctk.CTkFont(size=18))
         self.label_actual_days.grid(row=1, column=0, padx=20, pady=(10, 10), sticky="w")
         self.label_actual_days.grid_forget()
 
@@ -48,21 +52,32 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="nsew")
         self.label_left_colour.grid_forget()
 
-        self.label_done_text = ctk.CTkLabel(self.frame_actual, text="5 dias", font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_done_text = ctk.CTkLabel(self.frame_actual, text="", font=ctk.CTkFont(size=15, weight="bold"))
         self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="nsew")
         self.label_done_text.grid_forget()
 
-        self.label_left_text = ctk.CTkLabel(self.frame_actual, text="5 dias", font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_left_text = ctk.CTkLabel(self.frame_actual, text="", font=ctk.CTkFont(size=15, weight="bold"))
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
         self.label_left_text.grid_forget()
 
-    def process_data(self, data):
-        pattern = r"#(STA)([012])\!"
-        if re.match(pattern, data):
-            self.esp_connected()
+    def process_data_cycle_frame(self, data):
+        if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
+            total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
+            elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
+            restant_time = total_time - elapsed_time
+
+            self.esp_connected()  
+            self.update_progressbar(total_time, elapsed_time, restant_time) 
+
+        if data == MsgType.NEW_MEASUREMENT:
+            total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
+            elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
+            restant_time = total_time - elapsed_time
+            
+            self.update_progressbar(total_time, elapsed_time, restant_time)
         
-        if "#Z1!" in data:
-            self.esp_disconnected()
+        if data == MsgType.ESP_DISCONNECTED:
+            self.esp_disconnected() 
 
     def esp_connected(self):
         self.label_actual_days.grid(row=1, column=0, padx=20, pady=(10, 10), sticky="w")
@@ -71,7 +86,26 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_done_colour.grid(row=0, column=0, padx=20, pady=0, sticky="nsew")
         self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="nsew")
         self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="nsew")
-        self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
+        self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")       
+    
+    def format_seconds(self, seconds):
+        if seconds >= 86400:  
+            days = seconds // 86400
+            return f"{days} día(s)"
+        elif seconds >= 3600:  
+            hours = seconds // 3600
+            return f"{hours} hora(s)"
+        elif seconds >= 60:  
+            minutes = seconds // 60
+            return f"{minutes} minuto(s)"
+        else:
+            return f"{seconds} segundo(s)"
+    
+    def update_progressbar(self, total_time, elapsed_time, restant_time):
+        self.progressbar_actual.set(elapsed_time/total_time)
+        self.label_actual_days.configure(text=self.format_seconds(total_time))
+        self.label_done_text.configure(text=self.format_seconds(elapsed_time))
+        self.label_left_text.configure(text=self.format_seconds(restant_time))
     
     def esp_disconnected(self):
         self.label_actual_days.grid_forget()
@@ -95,7 +129,7 @@ class ControlCycleFrame(ctk.CTkFrame):
     
     def __init__(self, master):
         super().__init__(master) 
-        ui_serial.publisher.subscribe(self.process_data)
+        ui_serial.publisher.subscribe(self.process_data_control_cycle)
 
         image_path = os.path.join(os.getcwd(), "images")
         self.validate = self.register(self.only_numbers)
@@ -171,13 +205,12 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.main_button_interval = ctk.CTkButton(master=self.frame_info, text="Enviar", command=self.send_button_event, width=80, state="disabled")
         self.main_button_interval.grid(row=0, column=2, padx=0, pady=5)
     
-    def process_data(self, data):
-        pattern = r"#(STA)([012])\!"
-        if re.match(pattern, data):
-            self.esp_connected()
+    def process_data_control_cycle(self, data):
+        if data == MsgType.ESP_CONNECTED:
+            self.esp_connected()        
         
-        if "#Z1!" in data:
-            self.esp_disconnected()
+        if data == MsgType.ESP_DISCONNECTED:
+            self.esp_disconnected() 
 
     def esp_connected(self):
         self.play_pause_image_label.bind("<Enter>", self.on_hover)
@@ -459,9 +492,6 @@ class LogFrame(ctk.CTkFrame):
         self.label_export = ctk.CTkLabel(self, text="", image=self.export_image)
         self.label_export.grid(row=0, column=1, padx=(10, 20), pady=(10, 0), sticky="e")
 
-        self.label_export.bind("<Enter>", self.on_hover)
-        self.label_export.bind("<Leave>", self.off_hover)
-
         self.frame_lines = ctk.CTkFrame(self, width=1500)
         self.frame_lines.grid(row=1, column=0, padx=10, pady=10, columnspan=2)
         self.frame_lines.grid_columnconfigure(0, weight=1)
@@ -512,71 +542,80 @@ class LogFrame(ctk.CTkFrame):
     def off_hover(self, event):
         self.label_export.configure(cursor="arrow") 
     
-    def update_log(self, data):
-        pattern = r"#(STA)([012])\!"
-        if re.match(pattern, data):
-            self.create_log()
-        
-        if ui_serial.state_fbr.get("state") == "running":
-            pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$" # linea de log
-            match = re.match(pattern, data)
-            if match: 
-                self.id_list.insert(0, int(match.group(1)))
-                self.light_list.insert(0, int(match.group(5)))
-                self.ph_list.insert(0, float(match.group(2)))
-                self.od_list.insert(0, float(match.group(3)))
-                self.temp_list.insert(0, float(match.group(4)))
-                
-                # self.append_log([int(match.group(1)),
-                #                  float(match.group(2)),
-                #                  float(match.group(3)),
-                #                  float(match.group(4)),
-                #                  int(match.group(5))])
+    def update_log(self, data):      
+        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):
+            num_measurements = len(data_lists['id'])
+            start_index = max(0, num_measurements - 50)
 
-                self.append_log(data)
-
+            for i in range(start_index, num_measurements):
                 self.frame_line = ctk.CTkFrame(self.scrollable_frame)
                 self.frame_line.pack(fill="x")
 
                 self.in_frame = ctk.CTkFrame(self.frame_line)
                 self.in_frame.pack(fill="x")
+
+                date, hour = self.calculate_datetime(i)
                 
-                self.label_time = ctk.CTkLabel(self.in_frame, text="12:30", corner_radius=0, width=150)
+                self.label_time = ctk.CTkLabel(self.in_frame, text=hour, corner_radius=0, width=150) 
                 self.label_time.pack(side='left')
 
-                self.label_date = ctk.CTkLabel(self.in_frame, text="11/10/2024", corner_radius=0, width=200)
+                self.label_date = ctk.CTkLabel(self.in_frame, text=date, corner_radius=0, width=200) 
                 self.label_date.pack(side='left')
 
-                self.label_od = ctk.CTkLabel(self.in_frame, text=match.group(3), corner_radius=0, width=150)
+                self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['od'][i]), corner_radius=0, width=150)
                 self.label_od.pack(side='left')
 
-                self.label_ph = ctk.CTkLabel(self.in_frame, text=match.group(2), corner_radius=0, width=150)
+                self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['ph'][i]), corner_radius=0, width=150)
                 self.label_ph.pack(side='left')
 
-                self.label_light = ctk.CTkLabel(self.in_frame, text=match.group(5), corner_radius=0, width=150)
+                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light'][i]}", corner_radius=0, width=150)
                 self.label_light.pack(side='left')
 
-                self.label_temp = ctk.CTkLabel(self.in_frame, text=match.group(4), corner_radius=0, width=200)
+                self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][i]), corner_radius=0, width=200)
                 self.label_temp.pack(side='left')
 
-                self.label_cycle = ctk.CTkLabel(self.in_frame, text="Ciclo1", corner_radius=0, width=150)
+                self.label_cycle = ctk.CTkLabel(self.in_frame, text=ui_serial.cycle_alias, corner_radius=0, width=150) 
                 self.label_cycle.pack(side='left')
 
-                self.scrollable_frame._parent_canvas.yview_moveto(1.0)
+            self.scrollable_frame._parent_canvas.yview_moveto(1.0)
     
-    def create_log(self):
-        fname = "Log/test.csv"
-        header = ['ID', 'pH', 'OD', 'Temperatura', 'Luz']
-        with open(fname, mode='w', newline='') as csv_file:
-            w_csv = csv.writer(csv_file)
-            w_csv.writerow(header) 
+        if data == MsgType.ESP_SYNCRONIZED:
+            self.label_export.bind("<Enter>", self.on_hover)
+            self.label_export.bind("<Leave>", self.off_hover)
+            self.label_export.bind("<Button-1>", self.export_event)
 
-    def append_log(self, line):
-        fname = "Log/test.csv"
-        with open(fname, mode='a', newline='') as csv_file:
-            #w_csv = csv.writer(csv_file)
-            csv_file.write(line+"\n")  
+        if data == MsgType.ESP_DISCONNECTED:
+            self.label_export.unbind("<Enter>")
+            self.label_export.unbind("<Leave>")
+            self.label_export.unbind("<Button-1>")
+    
+    def calculate_datetime(self, intervals):
+        initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
+        seconds_elapsed = intervals * ui_serial.cycle_interval
+        current_time = initial_time + timedelta(seconds=seconds_elapsed)
 
+        current_date = current_time.strftime("%d/%m/%Y") 
+        current_hour = current_time.strftime("%H:%M") 
+
+        return current_date, current_hour
+
+    def export_event(self, event):
+        file = filedialog.asksaveasfilename(
+            defaultextension=".xlsx", 
+            filetypes=[("Planilla de Excel", "*.xlsx")], 
+            title="Guardar datalog como"
+        )
+        if file: 
+            df = pd.read_csv(os.path.join(os.getcwd(), "Log", ui_serial.cycle_id, "cycle_out_"+ui_serial.cycle_id+".csv"), header=None)
+            header = ["ID", "pH", "OD [%]", "Temperatura [°C]", "Luz [%]", "CO2", "O2", "N2", "Aire"]
+            df.columns = header
+            date_time = df[header[0]].apply(self.calculate_datetime) # Aplica la función calculate_datetime a cada valor de la primera columna
+            df['Fecha'], df['Hora'] = zip(*date_time) # Añade las columnas de fecha y hora al DataFrame
+            df = df.drop(columns=[header[0]]) # Elimina la columna de intervalo
+            df = df[['Hora', 'Fecha'] + header[1:]]  # Reorganiza las columnas
+            df.to_excel(file, index=False)
+
+    
 class CycleFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, corner_radius=0, fg_color="transparent")
