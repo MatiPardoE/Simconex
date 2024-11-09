@@ -17,14 +17,14 @@ bool ControlAPI::run()
     }
 
     //Umbrales de control
-    if (measuresAndOutputs.ph > goalValues.ph + 0.1)
+    if (measuresAndOutputs.ph < goalValues.ph + 0.1)
     {
         shiftRegister.setOutput(0, HIGH);
         shiftRegister.setOutput(1, LOW);
         shiftRegister.setOutput(2, LOW);
         shiftRegister.setOutput(3, LOW);
     }
-    else if (measuresAndOutputs.ph < goalValues.ph - 0.1)
+    else if (measuresAndOutputs.ph > goalValues.ph - 0.1)
     {
         shiftRegister.setOutput(0, LOW);
         shiftRegister.setOutput(1, HIGH);
