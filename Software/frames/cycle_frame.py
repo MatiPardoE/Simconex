@@ -72,12 +72,12 @@ class ActualCycleFrame(ctk.CTkFrame):
             self.esp_connected()  
             self.update_progressbar(total_time, elapsed_time, restant_time) 
 
-        if data == MsgType.NEW_MEASUREMENT:
-            total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
-            elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
-            restant_time = total_time - elapsed_time
+        # if data == MsgType.NEW_MEASUREMENT:
+        #     total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
+        #     elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
+        #     restant_time = total_time - elapsed_time
             
-            self.update_progressbar(total_time, elapsed_time, restant_time)
+        #     self.update_progressbar(total_time, elapsed_time, restant_time)
         
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
@@ -284,6 +284,7 @@ class ControlCycleFrame(ctk.CTkFrame):
             print("No se eligio ningun archivo")
         else:
             self.timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+            ui_serial.cycle_id = self.timestamp
             self.cycle_path = os.path.join(os.getcwd(), "input_csv", self.timestamp)   
             os.makedirs(self.cycle_path, exist_ok=True) 
             self.excel_to_csv(self.fname, os.path.join(self.cycle_path, "data_"+self.timestamp+".csv"))
@@ -373,6 +374,8 @@ class ControlCycleFrame(ctk.CTkFrame):
             self.send_data_and_wait_hs(b"#DATA1!\n")
             self.send_data_and_wait_hs(b"#TRANSFER1!\n")
             ui_serial.publisher.unsubscribe(self.wait_for_ok)
+            ui_serial.publisher.notify_sync()
+            ui_serial.cycle_status = CycleStatus.CYCLE_RUNNING
         except Exception as e:
             print(e)
             messagebox.showerror("Error", "Se produjo un error durante la transferencia del ciclo!")
@@ -443,6 +446,18 @@ class ControlCycleFrame(ctk.CTkFrame):
         
         end_time = time.time()  # End timing the transfer
         print(f"Transfer completed in {end_time - start_time:.2f} seconds")
+
+        with open(fname, "r") as file:
+            for linea in file:
+                pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(0|1),(0|1),(0|1),(0|1)$"
+                match = re.match(pattern, linea)
+
+                if match: 
+                    data_lists_expected['id'].append(int(match.group(1)))
+                    data_lists_expected['light'].append(int(match.group(5)))
+                    data_lists_expected['ph'].append(float(match.group(2)))
+                    data_lists_expected['od'].append(float(match.group(3)))
+                    data_lists_expected['temperature'].append(float(match.group(4)))
     
     def wait_handshake(self,timeout = 5):
         start_time = time.time()

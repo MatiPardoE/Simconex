@@ -35,6 +35,7 @@ class SerialPublisher:
     
     def notify_sync(self):
         for callback in self.subscribers: callback(MsgType.ESP_SYNCRONIZED)
+        print("Sync notify!")
         
     def notify_connected(self):
         for callback in self.subscribers: callback(MsgType.ESP_CONNECTED)
@@ -47,6 +48,7 @@ class SerialPublisher:
         match = re.match(pattern, data)
 
         if match and cycle_status == CycleStatus.CYCLE_RUNNING: 
+            print("Valid measurement and cycle running!")
             data_lists['id'].append(int(match.group(1)))
             data_lists['light'].append(int(match.group(5)))
             data_lists['ph'].append(float(match.group(2)))
