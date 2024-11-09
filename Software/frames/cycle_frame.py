@@ -363,6 +363,7 @@ class ControlCycleFrame(ctk.CTkFrame):
             writer.writerows(data)
         
     def transfer_cycle(self, id):
+        
         try:
             ui_serial.publisher.subscribe(self.wait_for_ok)
             self.send_data_and_wait_hs(b"#TRANSFER0!\n")
@@ -374,6 +375,7 @@ class ControlCycleFrame(ctk.CTkFrame):
             self.send_data_and_wait_hs(b"#DATA1!\n")
             self.send_data_and_wait_hs(b"#TRANSFER1!\n")
             ui_serial.publisher.unsubscribe(self.wait_for_ok)
+            self.load_expected_lists("input_csv/"+id+"/data_"+id+".csv")
             ui_serial.publisher.notify_sync()
             ui_serial.cycle_status = CycleStatus.CYCLE_RUNNING
         except Exception as e:
@@ -446,18 +448,22 @@ class ControlCycleFrame(ctk.CTkFrame):
         
         end_time = time.time()  # End timing the transfer
         print(f"Transfer completed in {end_time - start_time:.2f} seconds")
-
+        
+    def load_expected_lists(self, fname):
+        #print("Loading expected data")	
         with open(fname, "r") as file:
             for linea in file:
-                pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(0|1),(0|1),(0|1),(0|1)$"
+                pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$"
                 match = re.match(pattern, linea)
 
                 if match: 
+                    #print("line")
                     data_lists_expected['id'].append(int(match.group(1)))
                     data_lists_expected['light'].append(int(match.group(5)))
                     data_lists_expected['ph'].append(float(match.group(2)))
                     data_lists_expected['od'].append(float(match.group(3)))
                     data_lists_expected['temperature'].append(float(match.group(4)))
+            #print(data_lists_expected['id'])
     
     def wait_handshake(self,timeout = 5):
         start_time = time.time()
