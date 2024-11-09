@@ -3,18 +3,18 @@
 
 ControlAPI::ControlAPI()
 {
-    measuresAndOutputs = {0, 0, 0, 0, false, false, false, false}; // ph, oxygen, temperature, light, EV-1, EV-2, EV-3, EV-4
+    measuresAndOutputs = {7.2, 0, 0, 0, false, false, false, false}; // ph = 7.2 to force change in led, oxygen, temperature, light, EV-1, EV-2, EV-3, EV-4
     goalValues = {0, 0, 0, 0};
 }
 
 bool ControlAPI::run()
 {
-    float ph_response = get_ph();
-    if(ph_response != -1)
-    {
-        measuresAndOutputs.ph = ph_response;
-        //Serial.printf("pH: %02.2f \n", ph_response);
-    }
+    // float ph_response = get_ph();
+    // if(ph_response != -1)
+    // {
+    //     measuresAndOutputs.ph = ph_response;
+    //     //Serial.printf("pH: %02.2f \n", ph_response);
+    // }
 
     //Umbrales de control
     if (measuresAndOutputs.ph > goalValues.ph + 0.1)
@@ -37,8 +37,8 @@ bool ControlAPI::run()
 
 bool ControlAPI::init()
 {
-    Wire.begin(I2C_SDA, I2C_SCL); //start the I2C
-    init_pH_probe();
+    //Wire.begin(I2C_SDA, I2C_SCL); //start the I2C
+    //init_pH_probe();
     ledStrip1.begin(PIN_LED_STRIP_1, 0, 5000, 8); // Configura el pin 5, canal 0, frecuencia de 5000 Hz, resolución de 8 bits
     ledStrip2.begin(PIN_LED_STRIP_2, 1, 5000, 8); // Configura el pin 18, canal 1, frecuencia de 5000 Hz, resolución de 8 bits
     ledStrip3.begin(PIN_LED_STRIP_3, 2, 5000, 8); // Configura el pin 19, canal 2, frecuencia de 5000 Hz, resolución de 8 bits
@@ -77,15 +77,15 @@ cycle_manager::MeasuresAndOutputs ControlAPI::takeMeasuresAndOutputs()
     measuresAndOutputs.light = ledStrip1.getDuty();
     measuresAndOutputs.oxygen = 0;
     // la medicion de ph se actualiza en el .run()
-    Log.info("Measures and Outputs: pH: %02.2f, Oxygen: %02.2f, Temperature: %02.2f, Light: %d, EV-1: %s, EV-2: %s, EV-3: %s, EV-4: %s",
+    Log.info("Measures and Outputs: pH: %02.2F, Oxygen: %02.2F, Temperature: %02.2F, Light: %d, EV-CO2: %d, EV-OX: %d, EV-NIT: %d, EV-AIR: %d",
              measuresAndOutputs.ph,
              measuresAndOutputs.oxygen,
              measuresAndOutputs.temperature,
              measuresAndOutputs.light,
-             measuresAndOutputs.EV_co2 ? "ON" : "OFF",
-             measuresAndOutputs.EV_oxygen ? "ON" : "OFF",
-             measuresAndOutputs.EV_nitrogen ? "ON" : "OFF",
-             measuresAndOutputs.EV_air ? "ON" : "OFF");
+             measuresAndOutputs.EV_co2 ? 1 : 0,
+             measuresAndOutputs.EV_oxygen ? 1 : 0,
+             measuresAndOutputs.EV_nitrogen ? 1 : 0,
+             measuresAndOutputs.EV_air ? 1 : 0);
 
     return measuresAndOutputs;
 }

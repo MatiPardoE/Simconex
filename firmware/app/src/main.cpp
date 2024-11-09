@@ -16,20 +16,16 @@ CommUI commUI;
 FileTransfer fileTransfer(Serial, SD_CS_PIN);
 ControlAPI sensorControl;
 
-pH pH_Device = pH(20, "EZO pH probe");   
+pH pH_Device = pH(20, "EZO pH probe");
 
 void setup()
 {
     commUI.begin(230400); // Solo define el puerto y velocidad de comunicación
     Log.begin(LOG_LEVEL_TRACE, &Serial, true);
     Log.notice("Starting...\n");
-    sensorControl.init();   
+    sensorControl.init();
     delay(350);
-    if (cm.begin(SD_CS_PIN)) // Inicializa la SD y lee el header
-    {
-        Log.notice("Cycle manager initialized\n");
-    }
-    else
+    if (!cm.begin(SD_CS_PIN)) // Inicializa la SD y lee el header
     {
         Log.error("Cycle manager failed to initialize\n");
     }
@@ -51,8 +47,15 @@ void loop()
         // ------- BLOQUEANTE ---------
         // Log.notice("Transfer file start\n");
         Serial.println("#OK!"); // TODO Create function to send commands to UI
-        fileTransfer.transferFiles("/input/header.csv", "/input/data.csv", 10000);
-        //TODO: levantar el archivo de header y data
+        fileTransfer.transferFiles(cm.headerPath.c_str(), cm.dataPath.c_str(), 10000);
+        if (cm.begin(SD_CS_PIN)) // Inicializa la SD y lee el header
+        {
+            Log.notice("Cycle manager initialized\n");
+        }
+        else
+        {
+            Log.error("Cycle manager failed to initialize\n");
+        }
         break;
     case CommUI::UNKNOWN_COMMAND:
         // Do nothing
@@ -61,8 +64,21 @@ void loop()
         Serial.println("#ESP!"); // TODO: el estado del ciclo lo tengo que obtener desde el header
         break;
     case CommUI::SYNC_CYCLE_START:
-        Serial.println("#STA1!"); // STA0 = NOT_CYCLE - STA1 = CYCLE_RUNNING - STA0 = CYCLE_FINISHED
-        fileTransfer.transferCycle("/input/header.csv", "/output/cycle_out.csv", 10000);
+        // STA0 = NOT_CYCLE - STA1 = CYCLE_RUNNING - STA2 = CYCLE_FINISHED
+        if (cm.cycleData.status == cycle_manager::NO_CYCLE_IN_SD)
+        {
+            Serial.println("#STA0!");
+        }
+        else if (cm.cycleData.status == cycle_manager::CYCLE_RUNNING)
+        {
+            Serial.println("#STA1!");
+            fileTransfer.transferCycle(cm.headerPath.c_str(), cm.dataOutPath.c_str(), 10000);
+        }
+        else if (cm.cycleData.status == cycle_manager::CYCLE_COMPLETED)
+        {
+            Serial.println("#STA2!");
+            fileTransfer.transferCycle(cm.headerPath.c_str(), cm.dataOutPath.c_str(), 10000);
+        }
         break;
     default:
         Log.warning("Unknown command\n");
@@ -79,8 +95,8 @@ void loop()
         break;
     case cycle_manager::NEW_INTERVAL:
         Log.noticeln("New interval available");
-        new_measure_outputs = sensorControl.takeMeasuresAndOutputs();      //No deberia tardar mucho
-        cm.writeMeasuresToSD(new_measure_outputs,(cycleBundle.intervalData.interval_id-1)); //Envio el ID-1 porque el ID es el siguiente intervalo
+        new_measure_outputs = sensorControl.takeMeasuresAndOutputs();                          // No deberia tardar mucho
+        cm.writeMeasuresToSD(new_measure_outputs, (cycleBundle.intervalData.interval_id - 1)); // Envio el ID-1 porque el ID es el siguiente intervalo
         sensorControl.set_control_var(cycleBundle.intervalData);
         break;
     default:
