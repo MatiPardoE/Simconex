@@ -58,6 +58,7 @@ class SerialPublisher:
     def read_port(self):
         buffer = bytearray()
         last_received_time = time.time()
+        self.notify_connected()
         print("Starting read_port")
 
         while True:
@@ -135,9 +136,6 @@ class SerialPublisher:
                         print("Response:", response)
                         if response == "#ESP!":
                             print(f"Successfully connected to ESP on {port.device}")
-                            
-                            self.notify_connected()
-                            print("self.start_read_thread()")
                             self.start_read_thread()
                             return True
                         time.sleep(0.1)
