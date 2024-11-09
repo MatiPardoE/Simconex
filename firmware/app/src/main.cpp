@@ -44,7 +44,6 @@ void loop()
     // .run
     commandUI = commUI.run();
     cycleBundle = cm.run();
-    // TODO: sensorControl.run()
     sensorControl.run();
     switch (commandUI)
     {
@@ -52,7 +51,7 @@ void loop()
         // ------- BLOQUEANTE ---------
         // Log.notice("Transfer file start\n");
         Serial.println("#OK!"); // TODO Create function to send commands to UI
-        fileTransfer.transferFiles("/input_test/header.csv", "/input_test/data.csv", 10000);
+        fileTransfer.transferFiles("/input/header.csv", "/input/data.csv", 10000);
         break;
     case CommUI::UNKNOWN_COMMAND:
         // Do nothing
@@ -62,7 +61,7 @@ void loop()
         break;
     case CommUI::SYNC_CYCLE_START:
         Serial.println("#STA1!"); // STA0 = NOT_CYCLE - STA1 = CYCLE_RUNNING - STA0 = CYCLE_FINISHED
-        fileTransfer.transferCycle("/input_test/header.csv", "/output_test/cycle_out.csv", 10000);
+        fileTransfer.transferCycle("/input/header.csv", "/output/cycle_out.csv", 10000);
         break;
     default:
         Log.warning("Unknown command\n");

@@ -136,6 +136,8 @@ bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uin
     file.println();
     file.close();
 
+    // TODO: sendDataToUI(measuresAndOutputs);
+
     return true;
 }
 
