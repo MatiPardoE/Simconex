@@ -25,6 +25,7 @@ class pH {
 												//as well a name of your choice
 	pH(uint8_t address, TwoWire* wire); //Takes I2C address and TwoWire interface
 	pH(uint8_t address, const char* name, TwoWire* wire); //Takes all 3 parameters
+
 	
 	void send_cmd(const char* command);	
 	//send any command in a string, see the devices datasheet for available i2c commands

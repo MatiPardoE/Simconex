@@ -11,6 +11,7 @@ public:
     void on();
     void off();
     void setDuty(int duty); // duty en rango de 0 a 100
+    int getDuty();
 private:
     int _pin;
     int _channel;

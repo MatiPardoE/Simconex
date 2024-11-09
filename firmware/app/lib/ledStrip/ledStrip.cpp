@@ -39,5 +39,10 @@ void LedStrip::setDuty(int duty) {
     }
     _currentDuty = map(duty, 0, 100, 0, _maxDuty);
     ledcWrite(_channel, _currentDuty);
-    Log.info("Duty set to %d%% (PWM value: %d)\n", duty, _currentDuty);
+    Log.verbose("Duty set to %d%% (PWM value: %d)\n", duty, _currentDuty);
+}
+
+int LedStrip::getDuty()
+{
+    return _currentDuty;
 }

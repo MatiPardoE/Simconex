@@ -16,11 +16,14 @@ CommUI commUI;
 FileTransfer fileTransfer(Serial, SD_CS_PIN);
 ControlAPI sensorControl;
 
+pH pH_Device = pH(20, "EZO pH probe");   
+
 void setup()
 {
     commUI.begin(230400); // Solo define el puerto y velocidad de comunicación
-    Log.begin(LOG_LEVEL_VERBOSE, &Serial, true);
+    Log.begin(LOG_LEVEL_TRACE, &Serial, true);
     Log.notice("Starting...\n");
+    sensorControl.init();   
     delay(350);
     if (cm.begin(SD_CS_PIN)) // Inicializa la SD y lee el header
     {
@@ -42,6 +45,7 @@ void loop()
     commandUI = commUI.run();
     cycleBundle = cm.run();
     // TODO: sensorControl.run()
+    sensorControl.run();
     switch (commandUI)
     {
     case CommUI::TRANSFER_FILE_START:
