@@ -31,6 +31,15 @@ bool ControlAPI::run()
         shiftRegister.setOutput(2, LOW);
         shiftRegister.setOutput(3, LOW);
     }
+
+    if(ledStrip1.getDuty() != goalValues.light)
+    {
+        ledStrip1.setDuty(goalValues.light);
+        ledStrip2.setDuty(goalValues.light);
+        ledStrip3.setDuty(goalValues.light);
+        ledStrip4.setDuty(goalValues.light);
+        ledStrip5.setDuty(goalValues.light);
+    }
     
     return true;
 }
@@ -75,7 +84,6 @@ cycle_manager::MeasuresAndOutputs ControlAPI::takeMeasuresAndOutputs()
     measuresAndOutputs.EV_nitrogen = (output_shift & 0x04) == 0x04;
     measuresAndOutputs.EV_air = (output_shift & 0x08) == 0x08;
     measuresAndOutputs.light = ledStrip1.getDuty();
-    measuresAndOutputs.oxygen = 0;
     measuresAndOutputs.temperature = 24;
     measuresAndOutputs.oxygen = 100.42;
     measuresAndOutputs.light = 20;
