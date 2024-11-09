@@ -35,6 +35,9 @@ class SerialPublisher:
     
     def notify_sync(self):
         for callback in self.subscribers: callback(MsgType.ESP_SYNCRONIZED)
+        
+    def notify_connected(self):
+        for callback in self.subscribers: callback(MsgType.ESP_CONNECTED)
 
     def notify_subscribers(self, data):
         if "#Z1!" in data:
@@ -133,6 +136,8 @@ class SerialPublisher:
                         if response == "#ESP!":
                             print(f"Successfully connected to ESP on {port.device}")
                             
+                            self.notify_connected()
+                            print("self.start_read_thread()")
                             self.start_read_thread()
                             return True
                         time.sleep(0.1)

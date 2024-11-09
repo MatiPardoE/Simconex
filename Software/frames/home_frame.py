@@ -224,6 +224,9 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.grid_forget()
 
     def process_data_actual_cycle(self, data):    
+        if data == MsgType.ESP_CONNECTED:
+            self.esp_connected()
+            
         if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
             elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval

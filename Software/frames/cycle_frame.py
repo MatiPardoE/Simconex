@@ -61,6 +61,9 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.grid_forget()
 
     def process_data_cycle_frame(self, data):
+        if data == MsgType.ESP_CONNECTED:
+            self.esp_connected()
+            
         if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
             elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
@@ -579,7 +582,7 @@ class LogFrame(ctk.CTkFrame):
 
             self.scrollable_frame._parent_canvas.yview_moveto(1.0)
     
-        if data == MsgType.ESP_SYNCRONIZED:
+        if data == MsgType.ESP_SYNCRONIZED or data == MsgType.ESP_CONNECTED:
             self.label_export.bind("<Enter>", self.on_hover)
             self.label_export.bind("<Leave>", self.off_hover)
             self.label_export.bind("<Button-1>", self.export_event)
