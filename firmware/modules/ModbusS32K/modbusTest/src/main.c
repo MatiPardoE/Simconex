@@ -26,7 +26,7 @@
 #define _192000E1				24 , 100 , 0
 
 #define SYSTICK_msec(x)			(x*( ((CORE_FREQ/DIV_TOTAL)*1000) ))
-#define TICKS_SEND				1000
+#define TICKS_SEND				2000
 __RW time_t		tick_ms 	= {.ticks32b = 0,	.ticks16b = 0,	.ticks8b = 0};
 ////////////////////
 //// 	UART	////
@@ -80,22 +80,25 @@ uint16_t calcular_crc_modbus(uint8_t *data, uint16_t length) {
     return crc;
 }
 
-void sendRequest ( __RW circ_buff_t * buff , uint8_t deviceID , uint8_t fc , uint8_t startAddr , uint8 qty ){
+void sendRequest ( __RW circ_buff_t * buff , uint8_t deviceID , uint8_t fc , uint8_t startAddr , uint8_t qty ){
 
 	uint16_t crc;
-	uint8_t len = sizeof(deviceID) + sizeof(fc) + sizeof(startAddr) + sizeof(qty);
+	uint8_t len = sizeof(deviceID) + sizeof(fc) + 2*sizeof(startAddr) + 2*sizeof(qty);
 	pushCircBuff(buff, deviceID);
 	pushCircBuff(buff, fc);
+	pushCircBuff(buff, 0);
 	pushCircBuff(buff, startAddr);
-	pushCircBuff(buff, startAddr);
+	pushCircBuff(buff, 0);
 	pushCircBuff(buff, qty);
 	crc = calcular_crc_modbus(&buff->buff[buff->inx_out], len );
-	pushCircBuff(buff, crc & 0xFF);
-	pushCircBuff(buff, (uint8_t)((crc>>8) & 0xFF));
+//	pushCircBuff(buff, crc & 0xFF);
+//	pushCircBuff(buff, (uint8_t)((crc>>8) & 0xFF));
+	pushCircBuff(buff, 0xD4);
+	pushCircBuff(buff, 0x05);
 
 #ifdef __S32K1XX__
 	LPUARTx_TI(_UART_,1);
-	_SET_GPIO(DERE_PORT,DERE_GPIO);
+//	_SET_GPIO(DERE_PORT,DERE_GPIO);
 #endif
 
 }
@@ -131,7 +134,7 @@ int main(void) {
 
     	//hacer función que envíe el paquete y escribir el handler
     	if( (msec16_t)(tick_ms.ticks16b - ticksSend) > TICKS_SEND){
-    		_SET_GPIO(DERE_PORT,DERE_GPIO);
+//    		_SET_GPIO(DERE_PORT,DERE_GPIO);
     		sendRequest( &txCbuff , RDO_SLAVE_ID , HOLDING_REGISTER , _MEASURED_VALUE_TEMP_ , _MEASURED_VALUE_TEMP_SIZE_ );
     		ticksSend = tick_ms.ticks16b;
     	}
@@ -174,6 +177,13 @@ void LPUART0_RxTx_IRQHandler(void){
 		if( popCircBuff(&uart_tx, &txCbuff) != ERROR_VAL ){
 #ifdef __S32K1XX__
 			IP_LPUART0->DATA = uart_tx;
+			if(txCbuff.inx_out != txCbuff.inx_in){
+				_SET_GPIO(DERE_PORT,DERE_GPIO);
+			}
+			else{
+				for(uint16_t i = 0; i<1250; i++);
+				_CLEAR_GPIO(DERE_PORT,DERE_GPIO);
+			}
 #endif
 		}
 		else{

@@ -6,6 +6,10 @@
 		{
 			"name": "Rdo",
 			"path": "Rdo"
+		},
+		{
+			"name": "RDO_BAREMETAL",
+			"path": "RDO_BAREMETAL/RDO_BAREMETAL"
 		}
 	],
 	"settings": {
@@ -57,7 +61,10 @@
 			"stdexcept": "cpp",
 			"streambuf": "cpp",
 			"cinttypes": "cpp",
-			"typeinfo": "cpp"
+			"typeinfo": "cpp",
+			"cbuff.h": "c",
+			"rdoapidefs.h": "c",
+			"arduino.h": "c"
 		}
 	}
 }
