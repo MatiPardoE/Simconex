@@ -1,0 +1,13 @@
+Change Component Designator: OldDesignator=J2 NewDesignator=J3
+Change Component Designator: OldDesignator=J3 NewDesignator=J2
+Change Component Designator: OldDesignator=R1 NewDesignator=R2
+Change Component Designator: OldDesignator=R2 NewDesignator=R3
+Change Component Designator: OldDesignator=R3 NewDesignator=R4
+Change Component Designator: OldDesignator=R4 NewDesignator=R5
+Change Component Designator: OldDesignator=R5 NewDesignator=R6
+Change Component Designator: OldDesignator=R6 NewDesignator=R7
+Added Component: Designator=R1(RESC0603)
+Add component. Clean all parameters for all variants
+Added Pin To Net: NetName=A Pin=R1-1
+Added Pin To Net: NetName=B Pin=R1-2
+Added Member To Class: ClassName=GatewayModbus Member=Component R7 10.0K - 5%

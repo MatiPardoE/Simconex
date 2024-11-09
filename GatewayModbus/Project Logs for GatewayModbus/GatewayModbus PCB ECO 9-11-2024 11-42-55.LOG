@@ -1,0 +1,23 @@
+Removed Pin From Net: NetName=SWD DIO Pin=J1-4
+Removed Pin From Net: NetName=SWD DIO Pin=J1-6
+Removed Pin From Net: NetName=SWD DIO Pin=J1-8
+Removed Pin From Net: NetName=SWD DIO Pin=J1-9
+Removed Pin From Net: NetName=SWD DIO Pin=J1-10
+Removed Pin From Net: NetName=SWD DIO Pin=R3-2
+Removed Pin From Net: NetName=SWD DIO Pin=R4-2
+Removed Pin From Net: NetName=SWD DIO Pin=R5-2
+Removed Pin From Net: NetName=SWD DIO Pin=R6-2
+Removed Pin From Net: NetName=SWD DIO Pin=R7-2
+Change Component Footprint: Designator=D1 Old Footprint=MINIMELF New Footprint=SOD123
+Added Pin To Net: NetName=SWD CLK Pin=J1-4
+Added Pin To Net: NetName=SWO Pin=J1-6
+Added Pin To Net: NetName=TDI Pin=J1-8
+Added Pin To Net: NetName=R\E\S\E\T\ Pin=J1-10
+Added Pin To Net: NetName=SWO Pin=R3-2
+Added Pin To Net: NetName=TDI Pin=R4-2
+Added Pin To Net: NetName=R\E\S\E\T\ Pin=R5-2
+Added Pin To Net: NetName=SWD CLK Pin=R6-2
+Added Pin To Net: NetName=GND SENSE Pin=J1-9
+Added Pin To Net: NetName=GND SENSE Pin=R7-2
+Added Net: Name=GND SENSE
+Added Member To Class: ClassName=GatewayModbus Member=Component R1 120.0 - 5%
