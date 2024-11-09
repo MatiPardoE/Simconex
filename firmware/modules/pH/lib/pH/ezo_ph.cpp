@@ -118,11 +118,10 @@ uint8_t me_ph() {
             if(read_seq.run() == read_seq.FINISHED) {
                 if(pH_Device.get_error() == pH::SUCCESS){
                     Serial.printf("Valor de pH: %.2f \n", pH_Device.get_last_received_reading());
-                    return ME_FINISHED;
                 } else {
                     Serial.println("ph read error");
                 }
-                state_ph = CALIB_PH;
+                state_ph = READ_PH;
                 delay(1000);
             }
             break;

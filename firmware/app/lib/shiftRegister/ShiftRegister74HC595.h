@@ -4,6 +4,9 @@
 #include <Arduino.h>
 #include <ArduinoLog.h>
 
+/////////// PINES DE NUESTRO MICROCONTROLADOR ///////////
+
+
 class ShiftRegister74HC595 {
   private:
     int dataPin;   // Pin de DATA
@@ -13,7 +16,9 @@ class ShiftRegister74HC595 {
 
   public:
     // Constructor
-    ShiftRegister74HC595(int data, int latch, int clock);
+    ShiftRegister74HC595() : dataPin(-1), latchPin(-1), clockPin(-1), outputState(0) {}
+
+    bool begin(int data, int latch, int clock);
 
     // Actualiza el estado de una salida específica
     void setOutput(int pin, bool state);

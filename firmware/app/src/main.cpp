@@ -3,6 +3,7 @@
 #include <cycle_manager.h>
 #include <commUI.h>
 #include <file_transfer.h>
+#include <controlAPI.h>
 
 #define SPI_MISO 34
 #define SPI_MOSI 33
@@ -13,12 +14,16 @@
 cycle_manager cm(SPI_CLK, SPI_MISO, SPI_MOSI, SPI_SS); // Pide los pines SPI de la SD
 CommUI commUI;
 FileTransfer fileTransfer(Serial, SD_CS_PIN);
+ControlAPI sensorControl;
+
+pH pH_Device = pH(20, "EZO pH probe");   
 
 void setup()
 {
     commUI.begin(230400); // Solo define el puerto y velocidad de comunicación
-    Log.begin(LOG_LEVEL_VERBOSE, &Serial, true);
+    Log.begin(LOG_LEVEL_TRACE, &Serial, true);
     Log.notice("Starting...\n");
+    sensorControl.init();   
     delay(350);
     if (cm.begin(SD_CS_PIN)) // Inicializa la SD y lee el header
     {
@@ -33,12 +38,18 @@ void setup()
 void loop()
 {
     static CommUI::CommandFromUI commandUI;
+    static cycle_manager::CycleBundle cycleBundle;
+    static cycle_manager::MeasuresAndOutputs new_measure_outputs;
 
+    // .run
     commandUI = commUI.run();
-
+    cycleBundle = cm.run();
+    // TODO: sensorControl.run()
+    sensorControl.run();
     switch (commandUI)
     {
     case CommUI::TRANSFER_FILE_START:
+        // ------- BLOQUEANTE ---------
         // Log.notice("Transfer file start\n");
         Serial.println("#OK!"); // TODO Create function to send commands to UI
         fileTransfer.transferFiles("/input_test/header.csv", "/input_test/data.csv", 10000);
@@ -55,6 +66,24 @@ void loop()
         break;
     default:
         Log.warning("Unknown command\n");
+        break;
+    }
+
+    switch (cycleBundle.command)
+    {
+    case cycle_manager::NO_COMMAND:
+        // Do nothing
+        break;
+    case cycle_manager::FINISH_CYCLE:
+        Log.noticeln("Cycle FINISIHED");
+        break;
+    case cycle_manager::NEW_INTERVAL:
+        Log.noticeln("New interval available");
+        new_measure_outputs = sensorControl.takeMeasuresAndOutputs();      //No deberia tardar mucho
+        cm.writeMeasuresToSD(new_measure_outputs,(cycleBundle.intervalData.interval_id-1)); //Envio el ID-1 porque el ID es el siguiente intervalo
+        sensorControl.set_control_var(cycleBundle.intervalData);
+        break;
+    default:
         break;
     }
 }
