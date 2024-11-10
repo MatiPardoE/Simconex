@@ -300,7 +300,7 @@ class MyPlot(ctk.CTkFrame):
         self.datetime_axis_expected = []
         
         if var=="ph":
-            self.ax.set_ylim(0, 14)
+            self.ax.set_ylim(6, 10)
         elif var=="od":
             self.ax.set_ylabel("[%]")
             self.ax.set_ylim(0, 100)
@@ -338,24 +338,25 @@ class MyPlot(ctk.CTkFrame):
 
         if data == MsgType.NEW_MEASUREMENT:
             num_measurements = len(data_lists['id'])
-
-            if len(self.datetime_axis) == 0:
-                initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
-                self.datetime_axis.append(initial_time)
-
-                self.datetime_axis_expected = [initial_time + timedelta(seconds=i * ui_serial.cycle_interval) for i in range(num_measurements)]
-
-                self.line_expected, = self.ax.plot(self.datetime_axis_expected, data_lists_expected[self.var][:num_measurements], label="Valores esperados")
-                self.line, = self.ax.plot(self.datetime_axis, data_lists[self.var], label="Valores medidos")
+            initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
             
-            new_datetime = self.datetime_axis[-1] + timedelta(seconds=ui_serial.cycle_interval)
-            self.datetime_axis.append(new_datetime)
+            self.datetime_axis = [initial_time + timedelta(seconds=(i * ui_serial.cycle_interval)) for i in range(num_measurements)]
+            self.datetime_axis_expected = [initial_time + timedelta(seconds=(i * ui_serial.cycle_interval)) for i in range(num_measurements)]
 
-            self.line.set_xdata(self.datetime_axis)            
+            if num_measurements == 1:
+                
+
+                self.line_expected, = self.ax.plot(data_lists['id'], data_lists_expected[self.var][:num_measurements], label="Valores esperados")
+                self.line, = self.ax.plot(data_lists['id'], data_lists[self.var], label="Valores medidos")
+
+
+            self.line.set_xdata(data_lists['id'])            
             self.line.set_ydata(data_lists[self.var])
+            #print(self.datetime_axis)
 
-            self.line_expected.set_xdata(self.datetime_axis)            
+            self.line_expected.set_xdata(data_lists['id'])            
             self.line_expected.set_ydata(data_lists_expected[self.var][:num_measurements])
+            #print(self.datetime_axis_expected)
 
             self.ax.relim()  
             self.ax.autoscale_view()  
