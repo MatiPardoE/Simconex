@@ -34,7 +34,13 @@ class SerialPublisher:
         self.notify_subscribers(data)
     
     def notify_sync(self):
-        for callback in self.subscribers: callback(MsgType.ESP_SYNCRONIZED)
+        i=0
+        for callback in self.subscribers: 
+            print("callback n", i)
+            print(self.subscribers[i])
+            i+=1
+            callback(MsgType.ESP_SYNCRONIZED)
+        print("Sync notify!")
         
     def notify_connected(self):
         for callback in self.subscribers: callback(MsgType.ESP_CONNECTED)
@@ -43,8 +49,27 @@ class SerialPublisher:
         if "#Z1!" in data:
             for callback in self.subscribers: callback(MsgType.ESP_DISCONNECTED)
         
-        for callback in self.subscribers:          
-            callback(data)
+        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(0|1),(0|1),(0|1),(0|1)$"
+        match = re.match(pattern, data)
+
+        if match and cycle_status == CycleStatus.CYCLE_RUNNING: 
+            print("Valid measurement and cycle running!")
+            data_lists['id'].append(int(match.group(1)))
+            data_lists['light'].append(int(match.group(5)))
+            data_lists['ph'].append(float(match.group(2)))
+            data_lists['od'].append(float(match.group(3)))
+            data_lists['temperature'].append(float(match.group(4)))
+            data_lists['co2'].append(int(match.group(6)))
+            data_lists['o2'].append(int(match.group(7)))
+            data_lists['n2'].append(int(match.group(8)))
+            data_lists['air'].append(int(match.group(9)))
+            self.send_data(b"#OK!\n")
+
+            for callback in self.subscribers: callback(MsgType.NEW_MEASUREMENT)
+        
+        else:
+            for callback in self.subscribers:          
+                callback(data)
 
     def subscribe(self, callback):
         self.subscribers.append(callback)

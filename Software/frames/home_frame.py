@@ -134,7 +134,8 @@ class InstantValuesFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected()
 
-        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):  
+        #if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE): 
+        if data == MsgType.NEW_MEASUREMENT:  
             self.light_button.configure(text = f"{data_lists['light'][-1]}")
             self.ph_button.configure(text = "{0:.2f}".format(data_lists['ph'][-1]))
             self.do_button.configure(text = "{0:.2f}".format(data_lists['od'][-1]))
@@ -235,12 +236,12 @@ class ActualCycleFrame(ctk.CTkFrame):
             self.esp_connected()  
             self.update_progressbar(total_time, elapsed_time, restant_time)  
 
-        if data == MsgType.NEW_MEASUREMENT:
-            total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
-            elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
-            restant_time = total_time - elapsed_time
+        # if data == MsgType.NEW_MEASUREMENT:
+        #     total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
+        #     elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
+        #     restant_time = total_time - elapsed_time
 
-            self.update_progressbar(total_time, elapsed_time, restant_time)
+        #     self.update_progressbar(total_time, elapsed_time, restant_time)
         
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
@@ -296,9 +297,11 @@ class MyPlot(ctk.CTkFrame):
         self.od_data = []
         self.temp_data = []
         self.light_data = []
+        self.datetime_axis = []
+        self.datetime_axis_expected = []
         
         if var=="ph":
-            self.ax.set_ylim(0, 14)
+            self.ax.set_ylim(6, 10)
         elif var=="od":
             self.ax.set_ylabel("[%]")
             self.ax.set_ylim(0, 100)
@@ -323,10 +326,10 @@ class MyPlot(ctk.CTkFrame):
         if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
             initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
             num_measurements = len(data_lists['id'])
-            datetime_axis = [initial_time + timedelta(seconds=i * ui_serial.cycle_interval) for i in range(num_measurements)]
-            datetime_axis_expected = [initial_time + timedelta(seconds=i * ui_serial.cycle_interval) for i in range(num_measurements)]
-            self.ax.plot(datetime_axis_expected, data_lists_expected[self.var][:num_measurements], label="Valores esperados")
-            self.ax.plot(datetime_axis, data_lists[self.var], label="Valores medidos")
+            self.datetime_axis = [initial_time + timedelta(seconds=i * ui_serial.cycle_interval) for i in range(num_measurements)]
+            self.datetime_axis_expected = [initial_time + timedelta(seconds=i * ui_serial.cycle_interval) for i in range(num_measurements)]
+            self.line_expected, = self.ax.plot(self.datetime_axis_expected, data_lists_expected[self.var][:num_measurements], label="Valores esperados")
+            self.line, = self.ax.plot(self.datetime_axis, data_lists[self.var], label="Valores medidos")
 
             self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%m %H:%M'))
             self.ax.xaxis.set_major_locator(MaxNLocator(nbins=10))
@@ -334,23 +337,32 @@ class MyPlot(ctk.CTkFrame):
 
             self.ax.legend()  
 
-        # if data == MsgType.NEW_MEASUREMENT:
-        #     if var=="pH":
-        #         self.ph_line.set_ydata(self.ph_data)
-        #         self.ph_line.set_xdata(self.id_data)
-        #     elif var=="OD":
-        #         self.od_line.set_ydata(self.od_data)
-        #         self.od_line.set_xdata(self.id_data)
-        #     elif var=="Temperatura":
-        #         self.temp_line.set_ydata(self.temp_data)
-        #         self.temp_line.set_xdata(self.id_data)
-        #     elif var=="Luz":
-        #         self.light_line.set_ydata(self.light_data)  
-        #         self.light_line.set_xdata(self.id_data)
+        if data == MsgType.NEW_MEASUREMENT:
+            num_measurements = len(data_lists['id'])
+            initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
+            
+            self.datetime_axis = [initial_time + timedelta(seconds=(i * ui_serial.cycle_interval)) for i in range(num_measurements)]
+            self.datetime_axis_expected = [initial_time + timedelta(seconds=(i * ui_serial.cycle_interval)) for i in range(num_measurements)]
+
+            if num_measurements == 1:
+                
+
+                self.line_expected, = self.ax.plot(data_lists['id'], data_lists_expected[self.var][:num_measurements], label="Valores esperados")
+                self.line, = self.ax.plot(data_lists['id'], data_lists[self.var], label="Valores medidos")
+
+
+            self.line.set_xdata(data_lists['id'])            
+            self.line.set_ydata(data_lists[self.var])
+            #print(self.datetime_axis)
+
+            self.line_expected.set_xdata(data_lists['id'])            
+            self.line_expected.set_ydata(data_lists_expected[self.var][:num_measurements])
+            #print(self.datetime_axis_expected)
+
+            self.ax.relim()  
+            self.ax.autoscale_view()  
             
             self.canvas.draw()
-        # self.master.after(30*1000, lambda: self.update_plot(var))
-
 
 class PlotFrame(ctk.CTkFrame):
     def __init__(self, master):

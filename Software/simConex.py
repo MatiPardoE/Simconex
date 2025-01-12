@@ -209,7 +209,7 @@ class App(ctk.CTk):
 
 def backend(data):
     if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
-        fname = os.path.join(os.getcwd(), "Log", ui_serial.cycle_id, "data_"+ui_serial.cycle_id+".csv")
+        fname = os.path.join(os.getcwd(), "input_csv", ui_serial.cycle_id, "data_"+ui_serial.cycle_id+".csv")
         with open(fname, "r") as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
@@ -220,7 +220,7 @@ def backend(data):
                     data_lists_expected['temperature'].append(float(row[3]))
                     data_lists_expected['light'].append(int(row[4]))
         
-        fname = os.path.join(os.getcwd(), "Log", ui_serial.cycle_id, "header_"+ui_serial.cycle_id+".csv")
+        fname = os.path.join(os.getcwd(), "input_csv", ui_serial.cycle_id, "header_"+ui_serial.cycle_id+".csv")
         with open(fname, newline='') as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
