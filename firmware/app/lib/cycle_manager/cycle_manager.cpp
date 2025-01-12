@@ -97,6 +97,8 @@ bool cycle_manager::analyzeHeaderandEvalAlarm()
 bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uint32_t interval_id_measure)
 {
     File file;
+
+    Log.infoln("Writing measures to SD in oputput path");
     // Check if the directory exists, if not create it
     if (!SD.exists("/output"))
     {
@@ -116,28 +118,22 @@ bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uin
     }
 
     // Write the measures to the file
-    file.printf("%08d",interval_id_measure);
-    file.print(",");
-    file.printf("%02.2f", measuresAndOutputs.ph);
-    file.print(",");
-    file.printf("%03.2f", measuresAndOutputs.oxygen);
-    file.print(",");
-    file.printf("%02.2f", measuresAndOutputs.temperature);
-    file.print(",");
-    file.printf("%03d", measuresAndOutputs.light);
-    file.print(",");
-    file.print(measuresAndOutputs.EV_co2);
-    file.print(",");
-    file.print(measuresAndOutputs.EV_oxygen);
-    file.print(",");
-    file.print(measuresAndOutputs.EV_nitrogen);
-    file.print(",");
-    file.print(measuresAndOutputs.EV_air);
+    file.printf("%08d,%05.2f,%06.2f,%05.2f,%02d,%d,%d,%d,%d",
+        interval_id_measure, measuresAndOutputs.ph, measuresAndOutputs.oxygen, measuresAndOutputs.temperature,
+        measuresAndOutputs.light, measuresAndOutputs.EV_co2, measuresAndOutputs.EV_oxygen, measuresAndOutputs.EV_nitrogen, measuresAndOutputs.EV_air);
     file.println();
     file.close();
 
-    // TODO: sendDataToUI(measuresAndOutputs);
+    sendDataToUI(measuresAndOutputs,interval_id_measure);
+    return true;
+}
 
+bool cycle_manager::sendDataToUI(MeasuresAndOutputs measuresAndOutputs, uint32_t interval_id_measure)
+{
+    Serial.printf("%08d,%05.2f,%06.2f,%05.2f,%02d,%d,%d,%d,%d",
+        interval_id_measure, measuresAndOutputs.ph, measuresAndOutputs.oxygen, measuresAndOutputs.temperature,
+        measuresAndOutputs.light, measuresAndOutputs.EV_co2, measuresAndOutputs.EV_oxygen, measuresAndOutputs.EV_nitrogen, measuresAndOutputs.EV_air);
+    Serial.println();
     return true;
 }
 
@@ -204,8 +200,8 @@ cycle_manager::analyzeHeaderState cycle_manager::analyzeHeader()
 
     switch (temp_status[0]) // no admite string en switch
     {
-    case 'n': // 'new'
-        cycleData.status = CYCLE_NEW;
+    case 'n': // 'new_cycle'
+        cycleData.status = CYCLE_RUNNING;
         break;
     case 'r': // 'running'
         cycleData.status = CYCLE_RUNNING;
@@ -252,9 +248,9 @@ cycle_manager::CheckNextInterval cycle_manager::readAndWriteCurrentIntervalFromC
     // Increment interval_current and write back to the file
     cycleData.interval_current++;
 
-    if (writeHeaderToSD())
+    if (!writeHeaderToSD())
     {
-        Log.errorln("Failed to open header file for writing");
+        Log.errorln("Failed to open header file for writing 1");
         return INTERVAL_ERROR;
     }
 
@@ -266,7 +262,7 @@ bool cycle_manager::writeHeaderToSD()
     File file = SD.open(headerPath, FILE_WRITE);
     if (!file)
     {
-        Log.errorln("Failed to open header file for writing");
+        Log.errorln("Failed to open header file for writing 3");
         return false;
     }
 
@@ -296,7 +292,7 @@ cycle_manager::CycleBundle cycle_manager::run()
         alarmFlag = false;
         if (readNextInterval())
         {
-            Log.infoln("New interval available");
+            //Log.infoln("New interval available");
             bundle.command = CommandBundle::NEW_INTERVAL;
             bundle.intervalData = intervalData;
         }
@@ -344,7 +340,7 @@ bool cycle_manager::readNextInterval()
         return false;
 
     case INTERVAL_AVAILABLE:
-        Log.infoln("Interval available: %d", cycleData.interval_current);
+        //Log.infoln("Interval available: %d", cycleData.interval_current);
         return readInterval();
 
     default:
@@ -453,14 +449,14 @@ bool cycle_manager::readInterval()
 
 bool cycle_manager::finishCycle()
 {
-    Log.infoln("Cycle finished.id: %s, %d intervals processed.", cycleData.interval_current, cycleData.cycle_id.c_str());
+    Log.infoln("Cycle finished.id: %s, %d intervals processed.", cycleData.cycle_id.c_str(), cycleData.interval_current);
     cycleData.status = CYCLE_COMPLETED;
     if (!evaluateAlarmStatus())
     {
         Log.errorln("Failed to evaluate alarm status");
         return false;
     }
-    if (writeHeaderToSD())
+    if (!writeHeaderToSD())
     {
         Log.errorln("Failed to write header to SD");
         return false;
@@ -490,9 +486,6 @@ bool cycle_manager::evaluateAlarmStatus()
     {
     case NO_CYCLE_IN_SD:
         // Do nothing
-        break;
-    case CYCLE_NEW:
-        cycleAlarm.setAlarm(cycleData.interval_time, cycle_manager::onAlarm);
         break;
     case CYCLE_RUNNING:
         cycleAlarm.setAlarm(cycleData.interval_time, cycle_manager::onAlarm);
@@ -524,8 +517,6 @@ String cycle_manager::cycleStatusToString(CycleStatus status)
     {
     case NO_CYCLE_IN_SD:
         return "no_cycle_in_sd";
-    case CYCLE_NEW:
-        return "new_cycle";
     case CYCLE_RUNNING:
         return "running_cycle";
     case CYCLE_PAUSED:
@@ -555,7 +546,7 @@ bool cycle_manager::resetHeaderForDebug(uint8_t SD_CS_PIN)
     File file = SD.open("/input/header.csv", FILE_WRITE);
     if (!file)
     {
-        Log.errorln("Failed to open header file for writing");
+        Log.errorln("Failed to open header file for writing 2");
         return INTERVAL_ERROR;
     }
     file.print("cycle_name,");

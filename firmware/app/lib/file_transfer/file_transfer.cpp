@@ -111,6 +111,15 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
         SD.remove(destPathData);
         // Log.infoln("Removed existing header file");
     }
+    
+    // Check if the directory exists, if not create it
+    String directoryPath = String(destPathHeader).substring(0, String(destPathHeader).lastIndexOf('/'));
+    if (!SD.exists(directoryPath.c_str())) {
+        if (!SD.mkdir(directoryPath.c_str())) {
+            Log.errorln("Failed to create directory: %s", directoryPath.c_str());
+            return FILE_TRANSFER_ERROR;
+        }
+    }
 
     while (true)
     {
@@ -185,7 +194,7 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
                 destFileHeader = SD.open(destPathHeader, FILE_WRITE);
                 if (!destFileHeader)
                 {
-                    Log.errorln("Failed to open header file for writing");
+                    Log.errorln("Failed to open header file for writing 3");
                     return FILE_TRANSFER_ERROR;
                 }
                 headerOpen = true;

@@ -30,14 +30,14 @@ bool init_pH_probe()
 void read_step1()
 {
     // send a read command
-    //Serial.println("read_step1");
+    // Serial.println("read_step1");
     pH_Device.send_read_cmd();
 }
 
 void read_step2()
 {
     // get the reading from the device
-    //Serial.println("read_step2");
+    // Serial.println("read_step2");
     pH_Device.receive_read_cmd();
 }
 
@@ -126,20 +126,27 @@ void print_help()
 
 float get_ph()
 {
-    if (read_seq.run() == read_seq.FINISHED)
+    static bool is_working = true;
+
+    if (is_working)
     {
-        if (pH_Device.get_error() == pH::SUCCESS)
+        if (read_seq.run() == read_seq.FINISHED)
         {
-            float ph = pH_Device.get_last_received_reading();
-            //Serial.printf("Valor de pH: %.2f \n", ph);
-            return ph;
-        }
-        else
-        {
-            Log.errorln("ph read error");
-            return -1;
+            if (pH_Device.get_error() == pH::SUCCESS)
+            {
+                float ph = pH_Device.get_last_received_reading();
+                // Serial.printf("Valor de pH: %.2f \n", ph);
+                return ph;
+            }
+            else
+            {
+                Log.errorln("ph read error");
+                is_working = false;
+                return -1;
+            }
         }
     }
+
     return -1;
 }
 uint8_t me_ph()

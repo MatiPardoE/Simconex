@@ -9,6 +9,11 @@
 class cycle_manager
 {
 public:
+    // Constants
+    const String headerPath = "/input/header.csv";
+    const String dataPath = "/input/data.csv";
+    const String dataOutPath = "/output/cycle_out.csv";
+    
     struct MeasuresAndOutputs
     {
         float ph;
@@ -45,7 +50,6 @@ public:
     enum CycleStatus
     {
         NO_CYCLE_IN_SD,
-        CYCLE_NEW,
         CYCLE_RUNNING,
         CYCLE_PAUSED,
         CYCLE_COMPLETED,
@@ -74,10 +78,7 @@ private:
     IntervalData intervalData;
     Alarm cycleAlarm;
     static volatile bool alarmFlag;
-    // Constants
-    const String headerPath = "/input/header.csv";
-    const String dataPath = "/input/data.csv";
-    const String dataOutPath = "output/cycle_out.csv";
+
     // Private Structs
     enum CheckNextInterval
     {
@@ -102,6 +103,7 @@ private:
     String cycleStatusToString(CycleStatus status);
     bool finishCycle();
     bool writeHeaderToSD();
+    bool sendDataToUI(MeasuresAndOutputs measuresAndOutputs,uint32_t interval_id_measure);
 };
 
 #endif // CYCLE_MANAGER_H

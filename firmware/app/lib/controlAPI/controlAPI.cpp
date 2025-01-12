@@ -3,7 +3,7 @@
 
 ControlAPI::ControlAPI()
 {
-    measuresAndOutputs = {0, 0, 0, 0, false, false, false, false}; // ph, oxygen, temperature, light, EV-1, EV-2, EV-3, EV-4
+    measuresAndOutputs = {7.2, 0, 0, 0, false, false, false, false}; // ph = 7.2 to force change in led, oxygen, temperature, light, EV-1, EV-2, EV-3, EV-4
     goalValues = {0, 0, 0, 0};
 }
 
@@ -17,19 +17,28 @@ bool ControlAPI::run()
     }
 
     //Umbrales de control
-    if (measuresAndOutputs.ph > goalValues.ph + 0.1)
+    if (measuresAndOutputs.ph < goalValues.ph + 0.1)
     {
         shiftRegister.setOutput(0, HIGH);
         shiftRegister.setOutput(1, LOW);
         shiftRegister.setOutput(2, LOW);
         shiftRegister.setOutput(3, LOW);
     }
-    else if (measuresAndOutputs.ph < goalValues.ph - 0.1)
+    else if (measuresAndOutputs.ph > goalValues.ph - 0.1)
     {
         shiftRegister.setOutput(0, LOW);
         shiftRegister.setOutput(1, HIGH);
         shiftRegister.setOutput(2, LOW);
         shiftRegister.setOutput(3, LOW);
+    }
+
+    if(ledStrip1.getDuty() != goalValues.light)
+    {
+        ledStrip1.setDuty(goalValues.light);
+        ledStrip2.setDuty(goalValues.light);
+        ledStrip3.setDuty(goalValues.light);
+        ledStrip4.setDuty(goalValues.light);
+        ledStrip5.setDuty(goalValues.light);
     }
     
     return true;
@@ -75,17 +84,11 @@ cycle_manager::MeasuresAndOutputs ControlAPI::takeMeasuresAndOutputs()
     measuresAndOutputs.EV_nitrogen = (output_shift & 0x04) == 0x04;
     measuresAndOutputs.EV_air = (output_shift & 0x08) == 0x08;
     measuresAndOutputs.light = ledStrip1.getDuty();
-    measuresAndOutputs.oxygen = 0;
+    measuresAndOutputs.temperature = 24;
+    measuresAndOutputs.oxygen = 100.42;
+    measuresAndOutputs.light = 20;
     // la medicion de ph se actualiza en el .run()
-    Log.info("Measures and Outputs: pH: %02.2f, Oxygen: %02.2f, Temperature: %02.2f, Light: %d, EV-1: %s, EV-2: %s, EV-3: %s, EV-4: %s",
-             measuresAndOutputs.ph,
-             measuresAndOutputs.oxygen,
-             measuresAndOutputs.temperature,
-             measuresAndOutputs.light,
-             measuresAndOutputs.EV_co2 ? "ON" : "OFF",
-             measuresAndOutputs.EV_oxygen ? "ON" : "OFF",
-             measuresAndOutputs.EV_nitrogen ? "ON" : "OFF",
-             measuresAndOutputs.EV_air ? "ON" : "OFF");
+
 
     return measuresAndOutputs;
 }
