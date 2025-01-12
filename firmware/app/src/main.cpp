@@ -61,7 +61,7 @@ void loop()
         // Do nothing
         break;
     case CommUI::INIT_COMM_UI:
-        Serial.println("#ESP!"); // TODO: el estado del ciclo lo tengo que obtener desde el header
+        Serial.println("#ESP!"); // Comando para inicializar la comunicación e identificar el puerto
         break;
     case CommUI::SYNC_CYCLE_START:
         // STA0 = NOT_CYCLE - STA1 = CYCLE_RUNNING - STA2 = CYCLE_FINISHED
@@ -103,5 +103,3 @@ void loop()
         break;
     }
 }
-
-// TODO: Implementar la alarma por software y que ya la clase cycle_manager la maneje cuando lee el header.
