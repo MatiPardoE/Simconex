@@ -339,6 +339,8 @@ class ControlCycleFrame(ctk.CTkFrame):
         
         answer = messagebox.askquestion("Comenzar ciclo", msg)
         if answer == "yes":
+            self.cycle_path = os.path.join(os.getcwd(), "input_csv", self.timestamp)   
+            os.makedirs(self.cycle_path, exist_ok=True) 
             self.generate_header_csv(os.path.join(self.cycle_path, "header_"+self.timestamp+".csv"))
             self.transfer_cycle(self.timestamp) 
         else:
@@ -368,16 +370,17 @@ class ControlCycleFrame(ctk.CTkFrame):
             ui_serial.publisher.subscribe(self.wait_for_ok)
             self.send_data_and_wait_hs(b"#TRANSFER0!\n")
             self.send_data_and_wait_hs(b"#HEADER0!\n")
-            self.send_file_serial("input_csv/"+id+"/header_"+id+".csv") # TODO: tiene que ser dinamico
+            self.send_file_serial("input_csv/"+id+"/header_"+id+".csv") 
             self.send_data_and_wait_hs(b"#HEADER1!\n")
             self.send_data_and_wait_hs(b"#DATA0!\n")
-            self.send_file_serial_hs("input_csv/"+id+"/data_"+id+".csv") # TODO: tiene que ser dinamico
+            self.send_file_serial_hs("input_csv/"+id+"/data_"+id+".csv") 
             self.send_data_and_wait_hs(b"#DATA1!\n")
             self.send_data_and_wait_hs(b"#TRANSFER1!\n")
             ui_serial.publisher.unsubscribe(self.wait_for_ok)
             self.load_expected_lists("input_csv/"+id+"/data_"+id+".csv")
-            ui_serial.publisher.notify_sync()
             ui_serial.cycle_status = CycleStatus.CYCLE_RUNNING
+            ui_serial.publisher.notify_sync()
+            print("termino notify_sync") # TODO: tengo que hacer un aviso disinto a sync cuando envio el excel y arranca el ciclo, sino se rompe
         except Exception as e:
             print(e)
             messagebox.showerror("Error", "Se produjo un error durante la transferencia del ciclo!")
@@ -450,20 +453,17 @@ class ControlCycleFrame(ctk.CTkFrame):
         print(f"Transfer completed in {end_time - start_time:.2f} seconds")
         
     def load_expected_lists(self, fname):
-        #print("Loading expected data")	
         with open(fname, "r") as file:
             for linea in file:
                 pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$"
                 match = re.match(pattern, linea)
 
                 if match: 
-                    #print("line")
                     data_lists_expected['id'].append(int(match.group(1)))
                     data_lists_expected['light'].append(int(match.group(5)))
                     data_lists_expected['ph'].append(float(match.group(2)))
                     data_lists_expected['od'].append(float(match.group(3)))
                     data_lists_expected['temperature'].append(float(match.group(4)))
-            #print(data_lists_expected['id'])
     
     def wait_handshake(self,timeout = 5):
         start_time = time.time()

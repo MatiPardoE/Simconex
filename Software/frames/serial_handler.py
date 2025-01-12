@@ -34,7 +34,12 @@ class SerialPublisher:
         self.notify_subscribers(data)
     
     def notify_sync(self):
-        for callback in self.subscribers: callback(MsgType.ESP_SYNCRONIZED)
+        i=0
+        for callback in self.subscribers: 
+            print("callback n", i)
+            print(self.subscribers[i])
+            i+=1
+            callback(MsgType.ESP_SYNCRONIZED)
         print("Sync notify!")
         
     def notify_connected(self):

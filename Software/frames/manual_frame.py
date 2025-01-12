@@ -183,12 +183,12 @@ class InstantValuesFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
 
-        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):  
+        if data == MsgType.NEW_MEASUREMENT:# or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):  
             self.light_button.configure(text = f"{data_lists['light'][-1]}")
             self.ph_button.configure(text = "{0:.2f}".format(data_lists['ph'][-1]))
             self.do_button.configure(text = "{0:.2f}".format(data_lists['od'][-1]))
             self.temp_button.configure(text = "{0:.2f}".format(data_lists['temperature'][-1]))             
-    
+
     def esp_disconnected(self):
         self.light_button.configure(text = "--")
         self.ph_button.configure(text = "--")
@@ -294,7 +294,7 @@ class SetPointsFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
 
-        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):
+        if data == MsgType.NEW_MEASUREMENT:# or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):
             self.update_data()
 
     def esp_connected(self):

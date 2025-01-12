@@ -277,6 +277,8 @@ class CycleSync:
                 raise TimeoutError("Timeout waiting for handshake from ESP")
     
     def generate_cycleout_file(self):
+        self.cycle_out_path = os.path.join(os.getcwd(), "Log", ui_serial.cycle_id)
+        os.makedirs(self.cycle_out_path, exist_ok=True) 
         fname = os.path.join(os.getcwd(), "Log", ui_serial.cycle_id, "cycle_out_"+ui_serial.cycle_id+".csv")
         with open(fname, "w", newline='') as csvfile:
             writer = csv.writer(csvfile)
