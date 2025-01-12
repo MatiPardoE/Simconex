@@ -103,6 +103,7 @@ private:
     String cycleStatusToString(CycleStatus status);
     bool finishCycle();
     bool writeHeaderToSD();
+    bool sendDataToUI(MeasuresAndOutputs measuresAndOutputs,uint32_t interval_id_measure);
 };
 
 #endif // CYCLE_MANAGER_H
