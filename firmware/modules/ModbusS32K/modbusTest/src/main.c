@@ -15,8 +15,10 @@
 #define RX_MUX		GPIO_MUX_ALT6
 
 #define _DERE_		DERE_PORT,DERE_GPIO
-#define DERE_GPIO	2
-#define DERE_PORT	PORT_D
+#define DERE_GPIO	1
+#define DERE_PORT	PORT_A
+//#define DERE_GPIO	2
+//#define DERE_PORT	PORT_D
 #define DERE_MUX	GPIO_MUX_GPIO
 
 #define UART_BUFF_SZ 256
@@ -26,7 +28,7 @@
 #define _192000E1				24 , 100 , 0
 
 #define SYSTICK_msec(x)			(x*( ((CORE_FREQ/DIV_TOTAL)*1000) ))
-#define TICKS_SEND				2000
+#define TICKS_SEND				1000
 __RW time_t		tick_ms 	= {.ticks32b = 0,	.ticks16b = 0,	.ticks8b = 0};
 ////////////////////
 //// 	UART	////
@@ -90,7 +92,7 @@ void sendRequest ( __RW circ_buff_t * buff , uint8_t deviceID , uint8_t fc , uin
 	pushCircBuff(buff, startAddr);
 	pushCircBuff(buff, 0);
 	pushCircBuff(buff, qty);
-	crc = calcular_crc_modbus(&buff->buff[buff->inx_out], len );
+	crc = calcular_crc_modbus( (uint8_t*) &buff->buff[buff->inx_out], len );
 //	pushCircBuff(buff, crc & 0xFF);
 //	pushCircBuff(buff, (uint8_t)((crc>>8) & 0xFF));
 	pushCircBuff(buff, 0xD4);

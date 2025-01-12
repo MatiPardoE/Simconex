@@ -30,8 +30,6 @@
 #include <rdoApiGlobalVariables.h>
 
 #define __DEBUG__
-//#define __PREV_REPLY__
-#define __PIN_DEBUG__
 
 /***********************************************
  * @brief			: 	Function project prototype
@@ -46,7 +44,8 @@
 void clearRDO (void){
 
   //rdo.status = SENSOR_ID;
-  rdo.status = GET_TEMP;
+  rdo.status = GET_DO;
+  //rdo.status = GET_TEMP;
 
   rdo.requests  = 0;
   rdo.replies   = 0;
@@ -93,6 +92,7 @@ void requestRDO ( volatile rdo_t * rdo ){
       break;
   }
 
+
 #ifdef __DEBUG__
 
   Serial.print("\n\t<--- TX --->\n");
@@ -123,6 +123,7 @@ void requestRDO ( volatile rdo_t * rdo ){
   Serial.printf("ERRORES:\t %d \n",rdo->errors);
   Serial.print("\t<--- TX --->\n");
 #endif
+
   
 }
 
@@ -168,28 +169,17 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
   //
 
   case GET_DO:
-    std::reverse(data, data + 4);
-#ifndef __PREV_REPLY__ 
+    std::reverse(data, data + 4); 
     rdo.doConcentration.measuredValue = *reinterpret_cast<float*>(data);
-#endif
-#ifdef __PREV_REPLY__
-    rdo.temperature.measuredValue = *reinterpret_cast<float*>(data);
-#endif
     rdo.replies++;
     rdo.status = GET_TEMP;
-    //Srdo.status = GET_DO;
     break;
 
   case GET_TEMP:
     std::reverse(data, data + 4);
-#ifndef __PREV_REPLY__ 
     rdo.temperature.measuredValue = *reinterpret_cast<float*>(data);
-#endif
-#ifdef __PREV_REPLY__
-    rdo.doConcentration.measuredValue = *reinterpret_cast<float*>(data);
-#endif
     rdo.replies++;
-    rdo.status = GET_TEMP;
+    rdo.status = GET_DO;
     break;
 
   default:
@@ -209,21 +199,11 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
   //
 
   case GET_DO:
-#ifndef __PREV_REPLY__ 
     Serial.printf("OD %.2f\n", rdo.doConcentration.measuredValue);
-#endif
-#ifdef __PREV_REPLY__
-    Serial.printf("TEMP %.2f\n", rdo.temperature.measuredValue);
-#endif
     break;
 
   case GET_TEMP:
-  #ifndef __PREV_REPLY__ 
     Serial.printf("TEMP %.2f\n", rdo.temperature.measuredValue);
-  #endif
-  #ifdef __PREV_REPLY__
-    Serial.printf("OD %.2f\n", rdo.doConcentration.measuredValue);
-  #endif
     break;
 
   default:

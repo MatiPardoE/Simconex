@@ -29,14 +29,15 @@
 #define RDO_RX_GPIO     GPIO_NUM_35
 #define RDO_TX_GPIO     GPIO_NUM_32
 
+
 //RDO UART
 #define RDO_BAUD_RATE       19200
 
 //
 #define _TIMEOUT_RDO_INIT_          1000
-//#define _TIMEOUT_RDO_REQUEST_     5000
+#define _TIMEOUT_RDO_REQUEST_       1000
 //#define _TIMEOUT_RDO_REQUEST_     30000
-#define _TIMEOUT_RDO_REQUEST_       10000
+//#define _TIMEOUT_RDO_REQUEST_     10000
 
 #define RDO_SLAVE_ID            0x01
 
@@ -154,7 +155,8 @@ typedef enum {
     _LOW_ALARM_CLEAR_SIZE_        = 2,
 
     // DO Concentration Parameters
-    _MEASURED_VALUE_DO_SIZE_      = 2,
+    //_MEASURED_VALUE_DO_SIZE_      = 2,
+    _MEASURED_VALUE_DO_SIZE_      = 8,
     _PARAMETER_ID_DO_SIZE_        = 1,
     _UNIT_ID_DO_SIZE_             = 1,
     _DATA_QUALITY_ID_DO_SIZE_     = 1,

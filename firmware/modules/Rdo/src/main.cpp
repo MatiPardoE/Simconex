@@ -18,7 +18,8 @@ bool initRDO = true;
 
 void setup() {
   Serial.begin(9600);  // Serial output
-  Serial1.begin(RDO_BAUD_RATE, SERIAL_8E1, RDO_RX_GPIO, RDO_TX_GPIO, true);  // Modbus connection de libreria
+  Serial1.begin(RDO_BAUD_RATE, SERIAL_8E1, RDO_RX_GPIO, RDO_TX_GPIO, false);  // Modbus connection de libreria
+  //Serial1.begin(RDO_BAUD_RATE, SERIAL_8E1, RDO_TX_GPIO, RDO_RX_GPIO, false);  // Modbus connection de libreria
   
   modbus.onData(rxRDO);
   modbus.onError(rxErrorRDO);
@@ -26,30 +27,10 @@ void setup() {
 
   clearRDO();
 
-  pinMode(RDO_LED1,OUTPUT);
-  pinMode(RDO_LED2,OUTPUT);
-  pinMode(RDO_LED3,OUTPUT);
-  pinMode(RDO_LED4,OUTPUT);
-
 }
 
 void loop() {
-  /*
-  if( initRDO == false){
-    if ( _TIMEOUT_TO_RDO_INIT_ ) {
-      requestRDO( &rdo );
-      _updateTimeout_;
-    }
-    if( rdo.headers.serialNumber != 0){
-      initRDO = true;
-      _updateTimeout_;
-    }
-  }
-  else if ( _TIMEOUT_TO_RDO_REQUEST_ ) {
-    requestRDO( &rdo );
-    _updateTimeout_;
-  }
-  */
+
   if ( _TIMEOUT_TO_RDO_REQUEST_ ) {
     requestRDO( &rdo );
     _updateTimeout_;
