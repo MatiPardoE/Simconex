@@ -76,12 +76,12 @@ class ActualCycleFrame(ctk.CTkFrame):
             else:
                 self.update_progressbar(total_time, elapsed_time, restant_time) 
 
-        # if data == MsgType.NEW_MEASUREMENT: # TODO: esto tiene que volver a funcionar
-        #     total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
-        #     elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
-        #     restant_time = total_time - elapsed_time
+        if data == MsgType.NEW_MEASUREMENT: # TODO: esto tiene que volver a funcionar
+            total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
+            elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
+            restant_time = total_time - elapsed_time
             
-        #     self.update_progressbar(total_time, elapsed_time, restant_time)
+            self.update_progressbar(total_time, elapsed_time, restant_time)
         
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
@@ -360,6 +360,8 @@ class ControlCycleFrame(ctk.CTkFrame):
 
         if self.interval_unit == 1:
             self.interval = self.interval*60
+        
+        ui_serial.cycle_interval = self.interval
 
         data = [
             ["cycle_name", self.alias_cycle],
