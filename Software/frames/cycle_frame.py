@@ -64,15 +64,19 @@ class ActualCycleFrame(ctk.CTkFrame):
         if data == MsgType.ESP_CONNECTED:
             self.esp_connected()
             
-        if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
+        if (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE) or data == MsgType.NEW_CYCLE_SENT:
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
             elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
             restant_time = total_time - elapsed_time
 
             self.esp_connected()  
-            self.update_progressbar(total_time, elapsed_time, restant_time) 
 
-        # if data == MsgType.NEW_MEASUREMENT:
+            if data == MsgType.NEW_CYCLE_SENT:
+                self.reset_progressbar(total_time, elapsed_time, restant_time)
+            else:
+                self.update_progressbar(total_time, elapsed_time, restant_time) 
+
+        # if data == MsgType.NEW_MEASUREMENT: # TODO: esto tiene que volver a funcionar
         #     total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
         #     elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
         #     restant_time = total_time - elapsed_time
@@ -106,6 +110,12 @@ class ActualCycleFrame(ctk.CTkFrame):
     
     def update_progressbar(self, total_time, elapsed_time, restant_time):
         self.progressbar_actual.set(elapsed_time/total_time)
+        self.label_actual_days.configure(text=self.format_seconds(total_time))
+        self.label_done_text.configure(text=self.format_seconds(elapsed_time))
+        self.label_left_text.configure(text=self.format_seconds(restant_time))
+
+    def reset_progressbar(self, total_time, elapsed_time, restant_time):
+        self.progressbar_actual.set(0)
         self.label_actual_days.configure(text=self.format_seconds(total_time))
         self.label_done_text.configure(text=self.format_seconds(elapsed_time))
         self.label_left_text.configure(text=self.format_seconds(restant_time))
@@ -379,8 +389,7 @@ class ControlCycleFrame(ctk.CTkFrame):
             ui_serial.publisher.unsubscribe(self.wait_for_ok)
             self.load_expected_lists("input_csv/"+id+"/data_"+id+".csv")
             ui_serial.cycle_status = CycleStatus.CYCLE_RUNNING
-            ui_serial.publisher.notify_sync()
-            print("termino notify_sync") # TODO: tengo que hacer un aviso disinto a sync cuando envio el excel y arranca el ciclo, sino se rompe
+            ui_serial.publisher.notify_new_cycle_started()
         except Exception as e:
             print(e)
             messagebox.showerror("Error", "Se produjo un error durante la transferencia del ciclo!")
@@ -501,7 +510,7 @@ class LogFrame(ctk.CTkFrame):
         self.temp_list = []
         self.light_list = []
 
-        #ui_serial.publisher.subscribe(self.update_log)
+        #ui_serial.publisher.subscribe(self.update_log) # TODO: esto tiene que volver a funcionar
         image_path = os.path.join(os.getcwd(), "images")
 
         self.grid_columnconfigure(0, weight=1)

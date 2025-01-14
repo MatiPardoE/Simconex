@@ -134,8 +134,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected()
 
-        #if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE): 
-        if data == MsgType.NEW_MEASUREMENT:  
+        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE): 
             self.light_button.configure(text = f"{data_lists['light'][-1]}")
             self.ph_button.configure(text = "{0:.2f}".format(data_lists['ph'][-1]))
             self.do_button.configure(text = "{0:.2f}".format(data_lists['od'][-1]))
@@ -228,15 +227,19 @@ class ActualCycleFrame(ctk.CTkFrame):
         if data == MsgType.ESP_CONNECTED:
             self.esp_connected()
             
-        if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
+        if (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE) or data == MsgType.NEW_CYCLE_SENT:
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
             elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
             restant_time = total_time - elapsed_time
 
-            self.esp_connected()  
-            self.update_progressbar(total_time, elapsed_time, restant_time)  
+            self.esp_connected() 
 
-        # if data == MsgType.NEW_MEASUREMENT:
+            if data == MsgType.NEW_CYCLE_SENT:
+                self.reset_progressbar(total_time, elapsed_time, restant_time)  
+            else:
+                self.update_progressbar(total_time, elapsed_time, restant_time)  
+
+        # if data == MsgType.NEW_MEASUREMENT: # TODO: esto tiene que funcionar
         #     total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
         #     elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
         #     restant_time = total_time - elapsed_time
@@ -270,6 +273,12 @@ class ActualCycleFrame(ctk.CTkFrame):
     
     def update_progressbar(self, total_time, elapsed_time, restant_time):
         self.progressbar_actual.set(elapsed_time/total_time)
+        self.label_actual_days.configure(text=self.format_seconds(total_time))
+        self.label_done_text.configure(text=self.format_seconds(elapsed_time))
+        self.label_left_text.configure(text=self.format_seconds(restant_time))
+    
+    def reset_progressbar(self, total_time, elapsed_time, restant_time):
+        self.progressbar_actual.set(0)
         self.label_actual_days.configure(text=self.format_seconds(total_time))
         self.label_done_text.configure(text=self.format_seconds(elapsed_time))
         self.label_left_text.configure(text=self.format_seconds(restant_time))
@@ -391,7 +400,7 @@ class PlotFrame(ctk.CTkFrame):
         self.plot_temp = MyPlot(self.tabview.tab("Temperatura"), "temperature")
         
     def process_data_plot_frame(self, data):
-        if data == MsgType.ESP_CONNECTED or data == MsgType.ESP_SYNCRONIZED:
+        if data == MsgType.ESP_CONNECTED or data == MsgType.ESP_SYNCRONIZED or data == MsgType.NEW_CYCLE_SENT:
             self.esp_connected()        
         
         if data == MsgType.ESP_DISCONNECTED:

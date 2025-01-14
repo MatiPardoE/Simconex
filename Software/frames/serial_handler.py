@@ -10,6 +10,7 @@ class MsgType(Enum):
     ESP_CONNECTED = 1
     ESP_SYNCRONIZED = 2
     NEW_MEASUREMENT = 3
+    NEW_CYCLE_SENT = 4
 
 class CycleStatus(Enum):
     NOT_CYCLE = 0
@@ -32,15 +33,18 @@ class SerialPublisher:
 
     def save_to_queue(self, data):
         self.notify_subscribers(data)
-    
-    def notify_sync(self):
+
+    def notify_new_cycle_started(self):
         i=0
-        for callback in self.subscribers: 
+        for callback in self.subscribers:
             print("callback n", i)
             print(self.subscribers[i])
-            i+=1
+            i+=1 
+            callback(MsgType.NEW_CYCLE_SENT)
+    
+    def notify_sync(self):
+        for callback in self.subscribers: 
             callback(MsgType.ESP_SYNCRONIZED)
-        print("Sync notify!")
         
     def notify_connected(self):
         for callback in self.subscribers: callback(MsgType.ESP_CONNECTED)

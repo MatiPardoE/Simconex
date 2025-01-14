@@ -21,7 +21,7 @@ class LogFrame(ctk.CTkFrame):
         self.temp_list = []
         self.light_list = []
 
-        #ui_serial.publisher.subscribe(self.update_log_frame)
+        #ui_serial.publisher.subscribe(self.update_log_frame) # TODO: esto tiene que volver a funcionar
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -183,7 +183,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
 
-        if data == MsgType.NEW_MEASUREMENT:# or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):  
+        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):  
             self.light_button.configure(text = f"{data_lists['light'][-1]}")
             self.ph_button.configure(text = "{0:.2f}".format(data_lists['ph'][-1]))
             self.do_button.configure(text = "{0:.2f}".format(data_lists['od'][-1]))
@@ -294,7 +294,7 @@ class SetPointsFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
 
-        if data == MsgType.NEW_MEASUREMENT:# or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):
+        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):
             self.update_data()
 
     def esp_connected(self):
