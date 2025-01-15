@@ -236,6 +236,7 @@ class ActualCycleFrame(ctk.CTkFrame):
 
             if data == MsgType.NEW_CYCLE_SENT:
                 self.reset_progressbar(total_time, elapsed_time, restant_time)  
+                self.label_actual.configure(text="Ciclo Actual: " + ui_serial.cycle_alias + " (en curso)")
             else:
                 self.update_progressbar(total_time, elapsed_time, restant_time)  
 

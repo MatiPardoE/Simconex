@@ -44,6 +44,13 @@ class SerialPublisher:
         data_lists['o2'] = []
         data_lists['n2'] = []
         data_lists['air'] = []
+
+        data_lists_expected['id'] = []
+        data_lists_expected['light'] = []
+        data_lists_expected['ph'] = []
+        data_lists_expected['od'] = []
+        data_lists_expected['temperature'] = []
+
         for callback in self.subscribers:
             callback(MsgType.NEW_CYCLE_SENT)
     
