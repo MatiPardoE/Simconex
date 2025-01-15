@@ -239,7 +239,7 @@ class ActualCycleFrame(ctk.CTkFrame):
             else:
                 self.update_progressbar(total_time, elapsed_time, restant_time)  
 
-        if data == MsgType.NEW_MEASUREMENT: # TODO: esto tiene que funcionar
+        if data == MsgType.NEW_MEASUREMENT: 
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
             elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
             restant_time = total_time - elapsed_time
@@ -330,17 +330,31 @@ class MyPlot(ctk.CTkFrame):
         toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
         self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
 
+    def reset_data(self):
+        self.id_data = []
+        self.ph_data = []
+        self.od_data = []
+        self.temp_data = []
+        self.light_data = []
+        self.datetime_axis = []
+        self.datetime_axis_expected = []
+
     def update_plot(self, data): # TODO: esto tiene que appendear un dato solo al plot por cada medicion que llega nada mas 
+
+        if data == MsgType.NEW_CYCLE_SENT:
+            self.initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")  
+            self.reset_data()    
+            # TODO: aca tengo que limpiar lo que este posiblemente graficado
         
-        if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
-            initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
+        if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE: # Aca es que grafico un ciclo que esta empezado y sigue funcionando
+            self.initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
             num_measurements = len(data_lists['id'])
-            self.datetime_axis = [initial_time + timedelta(seconds=i * ui_serial.cycle_interval) for i in range(num_measurements)]
-            self.datetime_axis_expected = [initial_time + timedelta(seconds=i * ui_serial.cycle_interval) for i in range(num_measurements)]
-            self.line_expected, = self.ax.plot(self.datetime_axis_expected, data_lists_expected[self.var][:num_measurements], label="Valores esperados")
+            self.datetime_axis = [self.initial_time + timedelta(seconds=i * ui_serial.cycle_interval) for i in range(num_measurements)]
+
+            self.line_expected, = self.ax.plot(self.datetime_axis, data_lists_expected[self.var][:num_measurements], label="Valores esperados")
             self.line, = self.ax.plot(self.datetime_axis, data_lists[self.var], label="Valores medidos")
 
-            self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%d/%m %H:%M'))
+            self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
             self.ax.xaxis.set_major_locator(MaxNLocator(nbins=10))
             self.fig.autofmt_xdate()
 
@@ -348,30 +362,40 @@ class MyPlot(ctk.CTkFrame):
 
         if data == MsgType.NEW_MEASUREMENT:
             num_measurements = len(data_lists['id'])
-            initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
-            
-            self.datetime_axis = [initial_time + timedelta(seconds=(i * ui_serial.cycle_interval)) for i in range(num_measurements)]
-            self.datetime_axis_expected = [initial_time + timedelta(seconds=(i * ui_serial.cycle_interval)) for i in range(num_measurements)]
-
             if num_measurements == 1:
+                new_time = self.initial_time + timedelta(seconds=ui_serial.cycle_interval)
+            else:
+                new_time = self.datetime_axis[-1] + timedelta(seconds=ui_serial.cycle_interval)
+
+            self.datetime_axis.append(new_time)
+            self.line.set_data(self.datetime_axis, data_lists[self.var])
+            self.ax.set_xlim(self.datetime_axis[0], self.datetime_axis[-1])
+            self.fig.canvas.draw_idle()
+            
+            #self.datetime_axis = [self.initial_time + timedelta(seconds=(i * ui_serial.cycle_interval)) for i in range(num_measurements)]
+            #self.datetime_axis_expected = [self.initial_time + timedelta(seconds=(i * ui_serial.cycle_interval)) for i in range(num_measurements)]
+
+            #if num_measurements == 1:
                 
 
-                self.line_expected, = self.ax.plot(data_lists['id'], data_lists_expected[self.var][:num_measurements], label="Valores esperados")
-                self.line, = self.ax.plot(data_lists['id'], data_lists[self.var], label="Valores medidos")
+                #self.line_expected, = self.ax.plot(data_lists['id'], data_lists_expected[self.var][:num_measurements], label="Valores esperados")
+                #self.line, = self.ax.plot(data_lists['id'], data_lists[self.var], label="Valores medidos")
 
 
-            self.line.set_xdata(data_lists['id'])            
-            self.line.set_ydata(data_lists[self.var])
-            #print(self.datetime_axis)
+            # self.line.set_xdata(data_lists['id'])            
+            # self.line.set_ydata(data_lists[self.var])
+            # #print(self.datetime_axis)
 
-            self.line_expected.set_xdata(data_lists['id'])            
-            self.line_expected.set_ydata(data_lists_expected[self.var][:num_measurements])
-            #print(self.datetime_axis_expected)
+            # self.line_expected.set_xdata(data_lists['id'])            
+            # self.line_expected.set_ydata(data_lists_expected[self.var][:num_measurements])
+            # #print(self.datetime_axis_expected)
 
-            self.ax.relim()  
-            self.ax.autoscale_view()  
+            # self.ax.relim()  
+            # self.ax.autoscale_view()  
             
-            self.canvas.draw()
+            # self.canvas.draw()
+
+        
 
 class PlotFrame(ctk.CTkFrame):
     def __init__(self, master):

@@ -35,11 +35,16 @@ class SerialPublisher:
         self.notify_subscribers(data)
 
     def notify_new_cycle_started(self):
-        i=0
+        data_lists['id'] = []
+        data_lists['light'] = []
+        data_lists['ph'] = []
+        data_lists['od'] = []
+        data_lists['temperature'] = []
+        data_lists['co2'] = []
+        data_lists['o2'] = []
+        data_lists['n2'] = []
+        data_lists['air'] = []
         for callback in self.subscribers:
-            print("callback n", i)
-            print(self.subscribers[i])
-            i+=1 
             callback(MsgType.NEW_CYCLE_SENT)
     
     def notify_sync(self):
