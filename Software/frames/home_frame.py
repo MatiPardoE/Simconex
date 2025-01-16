@@ -344,12 +344,11 @@ class MyPlot(ctk.CTkFrame):
         self.datetime_axis = []
         self.datetime_axis_expected = []
 
-    def update_plot(self, data): # TODO: esto tiene que appendear un dato solo al plot por cada medicion que llega nada mas 
+    def update_plot(self, data):  
 
         if data == MsgType.NEW_CYCLE_SENT:
             self.initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")  
             self.reset_data()    
-            # TODO: aca tengo que limpiar lo que este posiblemente graficado
         
         if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE: # Aca es que grafico un ciclo que esta empezado y sigue funcionando
             self.initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
