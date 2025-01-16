@@ -60,24 +60,29 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
         self.label_left_text.grid_forget()
 
-    def process_data_cycle_frame(self, data):
+    def process_data_cycle_frame(self, data): # TODO: mostrar que finalizo el ciclo
         if data == MsgType.ESP_CONNECTED:
             self.esp_connected()
             
-        if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
+        if (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE) or data == MsgType.NEW_CYCLE_SENT:
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
             elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
             restant_time = total_time - elapsed_time
 
             self.esp_connected()  
-            self.update_progressbar(total_time, elapsed_time, restant_time) 
 
-        # if data == MsgType.NEW_MEASUREMENT:
-        #     total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
-        #     elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
-        #     restant_time = total_time - elapsed_time
+            if data == MsgType.NEW_CYCLE_SENT:
+                self.reset_progressbar(total_time, elapsed_time, restant_time)
+                self.label_actual.configure(text="Ciclo Actual: {} (en curso)".format(ui_serial.cycle_alias))
+            else:
+                self.update_progressbar(total_time, elapsed_time, restant_time) 
+
+        if data == MsgType.NEW_MEASUREMENT:
+            total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
+            elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
+            restant_time = total_time - elapsed_time
             
-        #     self.update_progressbar(total_time, elapsed_time, restant_time)
+            self.update_progressbar(total_time, elapsed_time, restant_time)
         
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
@@ -106,7 +111,18 @@ class ActualCycleFrame(ctk.CTkFrame):
     
     def update_progressbar(self, total_time, elapsed_time, restant_time):
         self.progressbar_actual.set(elapsed_time/total_time)
-        self.label_actual_days.configure(text=self.format_seconds(total_time))
+        self.label_actual_days.configure(text="Total: " + self.format_seconds(total_time))
+        self.label_done_text.configure(text=self.format_seconds(elapsed_time))
+        self.label_left_text.configure(text=self.format_seconds(restant_time))
+
+        if(total_time == elapsed_time):
+            self.label_actual.configure(text="Ciclo Actual: {} (terminado)".format(ui_serial.cycle_alias))
+            self.progressbar_actual.configure(progress_color="green")
+            messagebox.showinfo("Ciclo terminado!")
+
+    def reset_progressbar(self, total_time, elapsed_time, restant_time):
+        self.progressbar_actual.set(0)
+        self.label_actual_days.configure(text="Total: " + self.format_seconds(total_time))
         self.label_done_text.configure(text=self.format_seconds(elapsed_time))
         self.label_left_text.configure(text=self.format_seconds(restant_time))
     
@@ -350,6 +366,8 @@ class ControlCycleFrame(ctk.CTkFrame):
 
         if self.interval_unit == 1:
             self.interval = self.interval*60
+        
+        ui_serial.cycle_interval = self.interval
 
         data = [
             ["cycle_name", self.alias_cycle],
@@ -379,8 +397,7 @@ class ControlCycleFrame(ctk.CTkFrame):
             ui_serial.publisher.unsubscribe(self.wait_for_ok)
             self.load_expected_lists("input_csv/"+id+"/data_"+id+".csv")
             ui_serial.cycle_status = CycleStatus.CYCLE_RUNNING
-            ui_serial.publisher.notify_sync()
-            print("termino notify_sync") # TODO: tengo que hacer un aviso disinto a sync cuando envio el excel y arranca el ciclo, sino se rompe
+            ui_serial.publisher.notify_new_cycle_started()
         except Exception as e:
             print(e)
             messagebox.showerror("Error", "Se produjo un error durante la transferencia del ciclo!")
@@ -501,7 +518,7 @@ class LogFrame(ctk.CTkFrame):
         self.temp_list = []
         self.light_list = []
 
-        #ui_serial.publisher.subscribe(self.update_log)
+        ui_serial.publisher.subscribe(self.update_log) # TODO: esto tiene que volver a funcionar
         image_path = os.path.join(os.getcwd(), "images")
 
         self.grid_columnconfigure(0, weight=1)
@@ -566,40 +583,51 @@ class LogFrame(ctk.CTkFrame):
     def off_hover(self, event):
         self.label_export.configure(cursor="arrow") 
     
-    def update_log(self, data):      
+    def update_log(self, data): 
+        if data == MsgType.NEW_CYCLE_SENT:
+            for widget in self.scrollable_frame.winfo_children():
+                widget.destroy()
+            return    
+         
         if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):
             num_measurements = len(data_lists['id'])
-            start_index = max(0, num_measurements - 50)
+            if num_measurements == 0:
+                return
 
-            for i in range(start_index, num_measurements):
-                self.frame_line = ctk.CTkFrame(self.scrollable_frame)
-                self.frame_line.pack(fill="x")
+            last_index = num_measurements - 1  
 
-                self.in_frame = ctk.CTkFrame(self.frame_line)
-                self.in_frame.pack(fill="x")
+            self.frame_line = ctk.CTkFrame(self.scrollable_frame)
+            self.frame_line.pack(fill="x")
 
-                date, hour = self.calculate_datetime(i)
-                
-                self.label_time = ctk.CTkLabel(self.in_frame, text=hour, corner_radius=0, width=150) 
-                self.label_time.pack(side='left')
+            self.in_frame = ctk.CTkFrame(self.frame_line)
+            self.in_frame.pack(fill="x")
 
-                self.label_date = ctk.CTkLabel(self.in_frame, text=date, corner_radius=0, width=200) 
-                self.label_date.pack(side='left')
+            date, hour = self.calculate_datetime(last_index)
 
-                self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['od'][i]), corner_radius=0, width=150)
-                self.label_od.pack(side='left')
+            self.label_time = ctk.CTkLabel(self.in_frame, text=hour, corner_radius=0, width=150)
+            self.label_time.pack(side='left')
 
-                self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['ph'][i]), corner_radius=0, width=150)
-                self.label_ph.pack(side='left')
+            self.label_date = ctk.CTkLabel(self.in_frame, text=date, corner_radius=0, width=200)
+            self.label_date.pack(side='left')
 
-                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light'][i]}", corner_radius=0, width=150)
-                self.label_light.pack(side='left')
+            self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['od'][last_index]), corner_radius=0, width=150)
+            self.label_od.pack(side='left')
 
-                self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][i]), corner_radius=0, width=200)
-                self.label_temp.pack(side='left')
+            self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['ph'][last_index]), corner_radius=0, width=150)
+            self.label_ph.pack(side='left')
 
-                self.label_cycle = ctk.CTkLabel(self.in_frame, text=ui_serial.cycle_alias, corner_radius=0, width=150) 
-                self.label_cycle.pack(side='left')
+            self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light'][last_index]}", corner_radius=0, width=150)
+            self.label_light.pack(side='left')
+
+            self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][last_index]), corner_radius=0, width=200)
+            self.label_temp.pack(side='left')
+
+            self.label_cycle = ctk.CTkLabel(self.in_frame, text=ui_serial.cycle_alias, corner_radius=0, width=150)
+            self.label_cycle.pack(side='left')
+
+            children = self.scrollable_frame.winfo_children()
+            if len(children) > 50:
+                children[0].destroy()  
 
             self.scrollable_frame._parent_canvas.yview_moveto(1.0)
     
@@ -619,7 +647,7 @@ class LogFrame(ctk.CTkFrame):
         current_time = initial_time + timedelta(seconds=seconds_elapsed)
 
         current_date = current_time.strftime("%d/%m/%Y") 
-        current_hour = current_time.strftime("%H:%M") 
+        current_hour = current_time.strftime("%H:%M:%S") 
 
         return current_date, current_hour
 
