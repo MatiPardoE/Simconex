@@ -274,13 +274,17 @@ class ActualCycleFrame(ctk.CTkFrame):
     
     def update_progressbar(self, total_time, elapsed_time, restant_time):
         self.progressbar_actual.set(elapsed_time/total_time)
-        self.label_actual_days.configure(text=self.format_seconds(total_time))
+        self.label_actual_days.configure(text="Total: " + self.format_seconds(total_time))
         self.label_done_text.configure(text=self.format_seconds(elapsed_time))
         self.label_left_text.configure(text=self.format_seconds(restant_time))
+
+        if(total_time == elapsed_time):
+            self.label_actual.configure(text="Ciclo Actual: {} (terminado)".format(ui_serial.cycle_alias))
+            self.progressbar_actual.configure(progress_color="green")
     
     def reset_progressbar(self, total_time, elapsed_time, restant_time):
         self.progressbar_actual.set(0)
-        self.label_actual_days.configure(text=self.format_seconds(total_time))
+        self.label_actual_days.configure(text="Total: " + self.format_seconds(total_time))
         self.label_done_text.configure(text=self.format_seconds(elapsed_time))
         self.label_left_text.configure(text=self.format_seconds(restant_time))
     
