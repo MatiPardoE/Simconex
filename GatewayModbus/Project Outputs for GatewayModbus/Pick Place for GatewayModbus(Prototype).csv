@@ -1,0 +1,38 @@
+Altium Designer Pick and Place Locations
+C:\Users\toto_\Desktop\FBR-SIMCONEX\Simconex\GatewayModbus\Project Outputs for GatewayModbus\Pick Place for GatewayModbus(Prototype).csv
+
+========================================================================================================================
+File Design Information:
+
+Date:       10/11/24
+Time:       23:27
+Revision:   a116c6b36a4cdd739ea5be2e97b28f0fab18c619
+Variant:    Prototype
+Units used: mm
+
+"Designator","Comment","Layer","Footprint","Center-X(mm)","Center-Y(mm)","Rotation","Description"
+"U3","MAX485ESA+T","TopLayer","SOIC8","20.3962","38.9636","90","1/1 Transceiver Half RS422, RS485 8-SOIC"
+"U1","AP7335A-50W-7","TopLayer","SOT-23-5","8.5090","3.5814","90","IC REG LINEAR 5V 300MA SOT25"
+"R9","10.0K - 5%","TopLayer","RESC0603","21.9167","32.3850","90","SMD Chip Resistor 0603"
+"R8","10.0K - 5%","TopLayer","RESC0603","17.8597","32.3850","90","SMD Chip Resistor 0603"
+"C9","100nF 16 X7R","TopLayer","CAPC0603","18.8757","44.6024","90","SMD Ceramic Chip Capacitor 0603"
+"C4","10uF/16V","TopLayer","CAP_POL_TANT_1206","13.1572","3.2245","270","Polarized Capacitor Tantalium"
+"R1","120.0 - 5%","TopLayer","RESC0603","21.9167","44.6024","90","SMD Chip Resistor 0603"
+"U2","PS32K116LFF0MLCR","TopLayer","LQFP48-NXP","15.0616","25.0374","0","Microcontroladores ARM - MCU S32K116, M0+, Flash 128K, RAM 17KB"
+"R7","10.0K - 5%","TopLayer","RESC0603","1.9492","38.8717","270","SMD Chip Resistor 0603"
+"R6","10.0K - 5%","TopLayer","RESC0603","12.2362","41.0035","270","SMD Chip Resistor 0603"
+"R5","10.0K - 5%","TopLayer","RESC0603","10.1788","41.0035","270","SMD Chip Resistor 0603"
+"R4","10.0K - 5%","TopLayer","RESC0603","14.2682","41.0035","270","SMD Chip Resistor 0603"
+"R3","10.0K - 5%","TopLayer","RESC0603","16.3002","41.0035","270","SMD Chip Resistor 0603"
+"R2","10.0K - 5%","TopLayer","RESC0603","8.0706","41.0035","270","SMD Chip Resistor 0603"
+"J2","PIN4","TopLayer","SIP4","12.0000","8.2520","0",""
+"J3","PIN4","TopLayer","SIP4","12.0000","48.8920","0",""
+"J1","HEADER5x2-1.27mm","TopLayer","PAD10-2X05-HH","4.9457","40.4084","270","PAD10-2X05-HH"
+"D1","1N4148","TopLayer","SOD323","16.0528","2.8702","90","Small Signal Diode"
+"C8","100nF 16 X7R","TopLayer","CAPC0603","5.7712","34.8632","90","SMD Ceramic Chip Capacitor 0603"
+"C7","100nF 16 X7R","TopLayer","CAPC0603","3.7272","34.8632","90","SMD Ceramic Chip Capacitor 0603"
+"C6","100nF 16 X7R","TopLayer","CAPC0603","21.5138","23.4442","90","SMD Ceramic Chip Capacitor 0603"
+"C5","100nF 16 X7R","TopLayer","CAPC0603","11.1252","3.5578","270","SMD Ceramic Chip Capacitor 0603"
+"C3","100nF 16 X7R","TopLayer","CAPC0603","8.4799","11.5805","270","SMD Ceramic Chip Capacitor 0603"
+"C2","10uF/16V","TopLayer","CAP_POL_TANT_1206","10.6316","12.6442","270","Polarized Capacitor Tantalium"
+"C1","100nF 16 X7R","TopLayer","CAPC0603","1.4412","42.3515","90","SMD Ceramic Chip Capacitor 0603"

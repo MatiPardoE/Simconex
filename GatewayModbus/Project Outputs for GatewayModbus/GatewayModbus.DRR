@@ -1,0 +1,18 @@
+----------------------------------------------------------------------------------------------------------------------------------
+NCDrill File Report For: GatewayModbus.PcbDoc   10/11/2024  22:32:23
+----------------------------------------------------------------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : GatewayModbus.TXT
+EIA File   : GatewayModbus.DRL
+
+Tool       Hole Size               Hole Tolerance               Hole Type       Hole Count   Plated         Tool Travel
+----------------------------------------------------------------------------------------------------------------------------------
+T1      16mil (0.399mm)                                           Round             145       PTH        14.15inch (359.40mm)
+T2      24mil (0.61mm)                                            Round             10        PTH        0.50inch (12.70mm)
+T3      40mil (1.016mm)                                           Round             14        PTH        3.31inch (84.19mm)
+T4      126mil (3.2mm)                                            Round             4         PTH        3.15inch (79.94mm)
+----------------------------------------------------------------------------------------------------------------------------------
+Totals                                                                              173
+
+Total Processing Time (hh:mm:ss) : 00:00:00

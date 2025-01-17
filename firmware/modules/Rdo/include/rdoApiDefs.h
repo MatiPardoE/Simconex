@@ -47,6 +47,9 @@
 #define RDO_LED3  GPIO_NUM_19
 #define RDO_LED4  GPIO_NUM_21
 
+//
+#define DATA_BYTE_ID    5
+
 
 
 /***********************************************
@@ -172,7 +175,7 @@ typedef enum {
     _AVAILABLE_UNITS_TEMP_SIZE_   = 1,
 
     // DO Saturation
-    _MEASURED_VALUE_DO_SAT_SIZE_   = 2,
+    _MEASURED_VALUE_DO_SAT_SIZE_   = 8,
     _PARAMETER_ID_DO_SAT_SIZE_     = 1,
     _UNIT_ID_DO_SAT_SIZE_          = 1,
     _DATA_QUALITY_ID_DO_SAT_SIZE_  = 1,
@@ -221,8 +224,15 @@ typedef enum{
     LAST_USER_CALIBRATION       ,
     NEXT_USER_CALIBRATION       ,
     GET_DO                      ,
-    GET_TEMP
+    GET_TEMP                    ,
+    GET_DO_SAT                    
 } rdoStatus_t;
+
+typedef enum{
+    DO_CONCENTRATION_ID = 20    ,
+    TEMPERATURE_ID      = 1     ,
+    DO_SATURATION_ID    = 21    ,
+} rdoParameterId_t;
 
 /***********************************************
  * @brief			: Macros
