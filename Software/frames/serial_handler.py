@@ -190,7 +190,7 @@ class SerialPublisher:
                     self.ser.close()
                 continue
         
-        print("No ESP32 device found")
+        print("No ESP32 device found") # TODO: mostrar un mensaje de error en la interfaz
     
     def start_read_thread(self):
         self.read_thread = threading.Thread(target=self.read_port)

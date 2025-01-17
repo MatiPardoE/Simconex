@@ -349,6 +349,10 @@ class MyPlot(ctk.CTkFrame):
         if data == MsgType.NEW_CYCLE_SENT:
             self.initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")  
             self.reset_data()    
+            self.ax.clear()
+            self.line_expected, = self.ax.plot(self.datetime_axis, [], label="Valores esperados")
+            self.line, = self.ax.plot(self.datetime_axis, data_lists[self.var], label="Valores medidos")
+            self.ax.legend()
         
         if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE: # Aca es que grafico un ciclo que esta empezado y sigue funcionando
             self.initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
@@ -372,34 +376,17 @@ class MyPlot(ctk.CTkFrame):
                 new_time = self.datetime_axis[-1] + timedelta(seconds=ui_serial.cycle_interval)
 
             self.datetime_axis.append(new_time)
+
             self.line.set_data(self.datetime_axis, data_lists[self.var])
+            self.line_expected.set_data(self.datetime_axis, data_lists_expected[self.var][:num_measurements])
+
             self.ax.set_xlim(self.datetime_axis[0], self.datetime_axis[-1])
-            self.fig.canvas.draw_idle()
-            
-            #self.datetime_axis = [self.initial_time + timedelta(seconds=(i * ui_serial.cycle_interval)) for i in range(num_measurements)]
-            #self.datetime_axis_expected = [self.initial_time + timedelta(seconds=(i * ui_serial.cycle_interval)) for i in range(num_measurements)]
 
-            #if num_measurements == 1:
-                
+            y_min = min(min(data_lists[self.var]), min(data_lists_expected[self.var]))*0.9
+            y_max = max(max(data_lists[self.var]), max(data_lists_expected[self.var]))*1.1
+            self.ax.set_ylim(y_min, y_max)
 
-                #self.line_expected, = self.ax.plot(data_lists['id'], data_lists_expected[self.var][:num_measurements], label="Valores esperados")
-                #self.line, = self.ax.plot(data_lists['id'], data_lists[self.var], label="Valores medidos")
-
-
-            # self.line.set_xdata(data_lists['id'])            
-            # self.line.set_ydata(data_lists[self.var])
-            # #print(self.datetime_axis)
-
-            # self.line_expected.set_xdata(data_lists['id'])            
-            # self.line_expected.set_ydata(data_lists_expected[self.var][:num_measurements])
-            # #print(self.datetime_axis_expected)
-
-            # self.ax.relim()  
-            # self.ax.autoscale_view()  
-            
-            # self.canvas.draw()
-
-        
+            self.fig.canvas.draw_idle()       
 
 class PlotFrame(ctk.CTkFrame):
     def __init__(self, master):
