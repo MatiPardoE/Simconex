@@ -4,6 +4,8 @@ import queue
 import time
 from enum import Enum
 import re
+import tkinter
+from tkinter import messagebox
 
 class MsgType(Enum):
     ESP_DISCONNECTED = 0
@@ -13,10 +15,10 @@ class MsgType(Enum):
     NEW_CYCLE_SENT = 4
 
 class CycleStatus(Enum):
-    NOT_CYCLE = 0
-    CYCLE_RUNNING = 1
-    CYCLE_FINISHED = 2
-    CYCLE_ERROR = 3
+    NOT_CYCLE = 0 # No hay un ciclo corriendo
+    CYCLE_RUNNING = 1 # Hay un ciclo corriendo
+    CYCLE_FINISHED = 2 # Hay un ciclo terminado
+    CYCLE_ERROR = 3 # El ciclo tuvo un error
 
 class SerialPublisher:
     def __init__(self):
@@ -189,8 +191,7 @@ class SerialPublisher:
                 if self.ser.is_open:
                     self.ser.close()
                 continue
-        
-        print("No ESP32 device found")
+        print("No ESP32 device found") # TODO: mostrar un mensaje de error en la interfaz    
     
     def start_read_thread(self):
         self.read_thread = threading.Thread(target=self.read_port)

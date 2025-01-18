@@ -208,7 +208,7 @@ class App(ctk.CTk):
             self.connection_label.configure(image=self.link_image)  
 
 def backend(data):
-    if (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE) or data == MsgType.ESP_SYNCRONIZED or data == MsgType.NEW_CYCLE_SENT:
+    if data == MsgType.ESP_SYNCRONIZED or data == MsgType.NEW_CYCLE_SENT:
         fname = os.path.join(os.getcwd(), "input_csv", ui_serial.cycle_id, "data_"+ui_serial.cycle_id+".csv")
         with open(fname, "r") as csvfile:
             reader = csv.reader(csvfile)
