@@ -64,7 +64,7 @@ class ActualCycleFrame(ctk.CTkFrame):
         if data == MsgType.ESP_CONNECTED:
             self.esp_connected()
             
-        if (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE) or data == MsgType.NEW_CYCLE_SENT:
+        if (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)) or data == MsgType.NEW_CYCLE_SENT:
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
             elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
             restant_time = total_time - elapsed_time
@@ -118,7 +118,7 @@ class ActualCycleFrame(ctk.CTkFrame):
         if(total_time == elapsed_time):
             self.label_actual.configure(text="Ciclo Actual: {} (terminado)".format(ui_serial.cycle_alias))
             self.progressbar_actual.configure(progress_color="green")
-            messagebox.showinfo("Ciclo terminado!")
+            messagebox.showinfo("Información", "Ciclo terminado!")
 
     def reset_progressbar(self, total_time, elapsed_time, restant_time):
         self.progressbar_actual.set(0)
@@ -590,7 +590,43 @@ class LogFrame(ctk.CTkFrame):
             return 
            
         # TODO: se tienen que cargar todas las mediciones en el log 
-        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):
+        if data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED):
+            num_measurements = len(data_lists['id'])
+            start_index = max(0, num_measurements - 50)
+
+            for i in range(start_index, num_measurements):
+                self.frame_line = ctk.CTkFrame(self.scrollable_frame)
+                self.frame_line.pack(fill="x")
+
+                self.in_frame = ctk.CTkFrame(self.frame_line)
+                self.in_frame.pack(fill="x")
+
+                date, hour = self.calculate_datetime(i)
+                
+                self.label_time = ctk.CTkLabel(self.in_frame, text=hour, corner_radius=0, width=150) 
+                self.label_time.pack(side='left')
+
+                self.label_date = ctk.CTkLabel(self.in_frame, text=date, corner_radius=0, width=200) 
+                self.label_date.pack(side='left')
+
+                self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['od'][i]), corner_radius=0, width=150)
+                self.label_od.pack(side='left')
+
+                self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['ph'][i]), corner_radius=0, width=150)
+                self.label_ph.pack(side='left')
+
+                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light'][i]}", corner_radius=0, width=150)
+                self.label_light.pack(side='left')
+
+                self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][i]), corner_radius=0, width=200)
+                self.label_temp.pack(side='left')
+
+                self.label_cycle = ctk.CTkLabel(self.in_frame, text=ui_serial.cycle_alias, corner_radius=0, width=150) 
+                self.label_cycle.pack(side='left')
+
+            self.scrollable_frame._parent_canvas.yview_moveto(1.0)
+
+        if data == MsgType.NEW_MEASUREMENT:
             num_measurements = len(data_lists['id'])
             if num_measurements == 0:
                 return

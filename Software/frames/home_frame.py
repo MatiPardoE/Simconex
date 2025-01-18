@@ -134,7 +134,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected()
 
-        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE): 
+        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)): 
             self.light_button.configure(text = f"{data_lists['light'][-1]}")
             self.ph_button.configure(text = "{0:.2f}".format(data_lists['ph'][-1]))
             self.do_button.configure(text = "{0:.2f}".format(data_lists['od'][-1]))
@@ -227,7 +227,7 @@ class ActualCycleFrame(ctk.CTkFrame):
         if data == MsgType.ESP_CONNECTED:
             self.esp_connected()
             
-        if (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE) or data == MsgType.NEW_CYCLE_SENT:
+        if (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)) or data == MsgType.NEW_CYCLE_SENT:
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
             elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
             restant_time = total_time - elapsed_time
@@ -362,8 +362,11 @@ class MyPlot(ctk.CTkFrame):
             self.fig.canvas.mpl_connect("button_press_event", self.check_active_tool)
             self.resize_plot_flag = True
         
-        if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE: # Aca es que grafico un ciclo que esta empezado y sigue funcionando
+        if data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED): # Aca es que grafico un ciclo que esta empezado y sigue funcionando
             self.initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
+            self.reset_data() 
+            self.ax.clear()
+            
             num_measurements = len(data_lists['id'])
             self.datetime_axis = [self.initial_time + timedelta(seconds=i * ui_serial.cycle_interval) for i in range(num_measurements)]
 
@@ -372,9 +375,11 @@ class MyPlot(ctk.CTkFrame):
 
             self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
             self.ax.xaxis.set_major_locator(MaxNLocator(nbins=10))
-            self.fig.autofmt_xdate()
+            self.fig.autofmt_xdate() # TODO: revisar si esto esta sirviendo de algo
 
             self.ax.legend()  
+            self.fig.canvas.mpl_connect("button_press_event", self.check_active_tool)
+            self.resize_plot_flag = True
 
         if data == MsgType.NEW_MEASUREMENT:
             num_measurements = len(data_lists['id'])
