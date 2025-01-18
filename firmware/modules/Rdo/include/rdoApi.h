@@ -127,6 +127,9 @@ typedef struct{
     //! Errors track
     rdoStatus_t     lastError;          //estado/comando que provoco el ultimo error
 
+    //! auxiliar
+    bool onCalibration;
+    uint16_t equilibrium;
 
 } rdo_t;
 

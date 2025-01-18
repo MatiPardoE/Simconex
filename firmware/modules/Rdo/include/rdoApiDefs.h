@@ -49,6 +49,11 @@
 
 //
 #define DATA_BYTE_ID    5
+#define SENSOR_CMD_REG  0x2458
+#define CAL_NUM_REGS    0x01
+
+#define EPSILON_MEASURE 0.05
+#define EQUILIBRIUM_ACHIEVED     9
 
 
 
@@ -225,7 +230,10 @@ typedef enum{
     NEXT_USER_CALIBRATION       ,
     GET_DO                      ,
     GET_TEMP                    ,
-    GET_DO_SAT                    
+    GET_DO_SAT                  ,
+
+    WRITE_CALIBRATION_COMMAND   ,
+
 } rdoStatus_t;
 
 typedef enum{

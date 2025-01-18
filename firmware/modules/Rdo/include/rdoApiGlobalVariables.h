@@ -47,7 +47,9 @@
    extern esp32ModbusRTU modbus;
    extern uint32_t lastMillisRDO;
    extern volatile rdo_t   rdo;
-   extern bool initRDO;    
+   extern bool initRDO;
+
+   uint8_t calModeOn [] = { 0xE0, 0x00 };    
 
 
 

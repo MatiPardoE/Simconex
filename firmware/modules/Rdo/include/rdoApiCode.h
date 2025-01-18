@@ -42,6 +42,9 @@ void rxErrorRDO (esp32Modbus::Error error);
 extern void clearRDO   ( void  );
 extern void requestRDO ( volatile rdo_t * rdo );
 
+void triggerPercentSaturationCalibration ( volatile rdo_t * rdo );
 
+bool isRDOequilibrium ( float lastMeasure , float newMeasure );
+bool evaluateEquilibrium ( volatile rdo_t * rdo , uint8_t id , float newMeasure );
 
 #endif
