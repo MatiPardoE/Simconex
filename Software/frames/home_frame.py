@@ -300,6 +300,7 @@ class ActualCycleFrame(ctk.CTkFrame):
 class MyPlot(ctk.CTkFrame):
     def __init__(self, master, var):
         super().__init__(master)
+        self.resize_plot_flag = True
         ui_serial.publisher.subscribe(self.update_plot)
         self.var = var
 
@@ -357,7 +358,7 @@ class MyPlot(ctk.CTkFrame):
             self.reset_data() 
             self.ax.clear()
             self.line_expected, = self.ax.plot(self.datetime_axis, [], label="Valores esperados")
-            self.line, = self.ax.plot(self.datetime_axis, data_lists[self.var], label="Valores medidos")
+            self.line, = self.ax.plot(self.datetime_axis, [], label="Valores medidos")
             self.ax.legend()
             self.fig.canvas.mpl_connect("button_press_event", self.check_active_tool)
             self.resize_plot_flag = True
@@ -385,7 +386,7 @@ class MyPlot(ctk.CTkFrame):
             num_measurements = len(data_lists['id'])
             if num_measurements == 1:
                 new_time = self.initial_time + timedelta(seconds=ui_serial.cycle_interval)
-            else:
+            elif num_measurements > 1:
                 new_time = self.datetime_axis[-1] + timedelta(seconds=ui_serial.cycle_interval)
 
             self.datetime_axis.append(new_time)
