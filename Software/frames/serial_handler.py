@@ -15,10 +15,10 @@ class MsgType(Enum):
     NEW_CYCLE_SENT = 4
 
 class CycleStatus(Enum):
-    NOT_CYCLE = 0
-    CYCLE_RUNNING = 1
-    CYCLE_FINISHED = 2
-    CYCLE_ERROR = 3
+    NOT_CYCLE = 0 # No hay un ciclo corriendo
+    CYCLE_RUNNING = 1 # Hay un ciclo corriendo
+    CYCLE_FINISHED = 2 # Hay un ciclo terminado
+    CYCLE_ERROR = 3 # El ciclo tuvo un error
 
 class SerialPublisher:
     def __init__(self):

@@ -587,8 +587,9 @@ class LogFrame(ctk.CTkFrame):
         if data == MsgType.NEW_CYCLE_SENT:
             for widget in self.scrollable_frame.winfo_children():
                 widget.destroy()
-            return    
-         
+            return 
+           
+        # TODO: se tienen que cargar todas las mediciones en el log 
         if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):
             num_measurements = len(data_lists['id'])
             if num_measurements == 0:

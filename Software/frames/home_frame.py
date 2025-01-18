@@ -354,7 +354,7 @@ class MyPlot(ctk.CTkFrame):
 
         if data == MsgType.NEW_CYCLE_SENT:
             self.initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")  
-            self.reset_data()    
+            self.reset_data() 
             self.ax.clear()
             self.line_expected, = self.ax.plot(self.datetime_axis, [], label="Valores esperados")
             self.line, = self.ax.plot(self.datetime_axis, data_lists[self.var], label="Valores medidos")
