@@ -47,7 +47,7 @@ void loop()
         // ------- BLOQUEANTE ---------
         // Log.notice("Transfer file start\n");
         Serial.println("#OK!"); // TODO Create function to send commands to UI
-        fileTransfer.transferFiles(cm.headerPath.c_str(), cm.dataPath.c_str(), 10000);
+        fileTransfer.transferFiles(cm.headerPath.c_str(), cm.dataPath.c_str(),  cm.dataOutPath.c_str(), 10000);
         if (cm.begin(SD_CS_PIN)) // Inicializa la SD y lee el header
         {
             firstCycleBundle = cm.firstIntervalAtRunning();
