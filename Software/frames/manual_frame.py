@@ -21,7 +21,7 @@ class LogFrame(ctk.CTkFrame):
         self.temp_list = []
         self.light_list = []
 
-        ui_serial.publisher.subscribe(self.update_log_frame) # TODO: esto tiene que volver a funcionar
+        ui_serial.publisher.subscribe(self.update_log_frame)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)

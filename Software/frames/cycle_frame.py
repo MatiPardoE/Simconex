@@ -60,7 +60,7 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
         self.label_left_text.grid_forget()
 
-    def process_data_cycle_frame(self, data): # TODO: mostrar que finalizo el ciclo
+    def process_data_cycle_frame(self, data):
         if data == MsgType.ESP_CONNECTED:
             self.esp_connected()
             
@@ -518,7 +518,7 @@ class LogFrame(ctk.CTkFrame):
         self.temp_list = []
         self.light_list = []
 
-        ui_serial.publisher.subscribe(self.update_log) # TODO: esto tiene que volver a funcionar
+        ui_serial.publisher.subscribe(self.update_log) 
         image_path = os.path.join(os.getcwd(), "images")
 
         self.grid_columnconfigure(0, weight=1)

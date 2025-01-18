@@ -329,10 +329,10 @@ class MyPlot(ctk.CTkFrame):
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)  
         self.canvas.draw()
 
-        toolbar = NavigationToolbar2Tk(self.canvas, master, pack_toolbar=False)
-        toolbar.update()
+        self.toolbar = NavigationToolbar2Tk(self.canvas, master, pack_toolbar=False)
+        self.toolbar.update()
+        self.toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
 
-        toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
         self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
 
     def reset_data(self):
@@ -343,6 +343,12 @@ class MyPlot(ctk.CTkFrame):
         self.light_data = []
         self.datetime_axis = []
         self.datetime_axis_expected = []
+    
+    def check_active_tool(self, event):
+        if self.toolbar.mode != "":
+            self.resize_plot_flag = False
+        else:
+            self.resize_plot_flag = True
 
     def update_plot(self, data):  
 
@@ -353,6 +359,8 @@ class MyPlot(ctk.CTkFrame):
             self.line_expected, = self.ax.plot(self.datetime_axis, [], label="Valores esperados")
             self.line, = self.ax.plot(self.datetime_axis, data_lists[self.var], label="Valores medidos")
             self.ax.legend()
+            self.fig.canvas.mpl_connect("button_press_event", self.check_active_tool)
+            self.resize_plot_flag = True
         
         if data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE: # Aca es que grafico un ciclo que esta empezado y sigue funcionando
             self.initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
@@ -380,11 +388,12 @@ class MyPlot(ctk.CTkFrame):
             self.line.set_data(self.datetime_axis, data_lists[self.var])
             self.line_expected.set_data(self.datetime_axis, data_lists_expected[self.var][:num_measurements])
 
-            self.ax.set_xlim(self.datetime_axis[0], self.datetime_axis[-1])
+            if self.resize_plot_flag:
+                self.ax.set_xlim(self.datetime_axis[0], self.datetime_axis[-1])
 
-            y_min = min(min(data_lists[self.var]), min(data_lists_expected[self.var]))*0.9
-            y_max = max(max(data_lists[self.var]), max(data_lists_expected[self.var]))*1.1
-            self.ax.set_ylim(y_min, y_max)
+                y_min = min(min(data_lists[self.var]), min(data_lists_expected[self.var]))*0.9
+                y_max = max(max(data_lists[self.var]), max(data_lists_expected[self.var]))*1.1
+                self.ax.set_ylim(y_min, y_max)
 
             self.fig.canvas.draw_idle()       
 
