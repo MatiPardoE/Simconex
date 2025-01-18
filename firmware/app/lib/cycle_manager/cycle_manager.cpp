@@ -109,13 +109,12 @@ bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uin
     }
 
     // Open the file for writing
-    file = SD.open(dataOutPath, FILE_WRITE);
+    file = SD.open(dataOutPath, FILE_APPEND);
     if (!file)
     {
         Log.errorln("Failed to open data output file for writing");
         return false;
     }
-
     // Write the measures to the file
     file.printf("%08d,%05.2f,%06.2f,%05.2f,%02d,%d,%d,%d,%d",
                 interval_id_measure, measuresAndOutputs.ph, measuresAndOutputs.oxygen, measuresAndOutputs.temperature,
@@ -295,7 +294,9 @@ cycle_manager::CycleBundle cycle_manager::firstIntervalAtRunning()
         readInterval();
         bundle.command = CommandBundle::FIRST_INTERVAL_RUNNING;
         bundle.intervalData = intervalData;
-    }else{
+    }
+    else
+    {
         bundle.command = CommandBundle::NO_COMMAND;
     }
     return bundle;
