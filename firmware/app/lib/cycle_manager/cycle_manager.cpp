@@ -59,7 +59,7 @@ bool cycle_manager::begin(uint8_t SD_CS_PIN)
     }
     else
     {
-        Log.infoln("SD Initialization done.");
+        Log.verboseln("SD Initialization done.");
     }
 
     if (analyzeHeaderandEvalAlarm())
@@ -98,7 +98,6 @@ bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uin
 {
     File file;
 
-    Log.infoln("Writing measures to SD in oputput path");
     // Check if the directory exists, if not create it
     if (!SD.exists("/output"))
     {
@@ -119,20 +118,20 @@ bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uin
 
     // Write the measures to the file
     file.printf("%08d,%05.2f,%06.2f,%05.2f,%02d,%d,%d,%d,%d",
-        interval_id_measure, measuresAndOutputs.ph, measuresAndOutputs.oxygen, measuresAndOutputs.temperature,
-        measuresAndOutputs.light, measuresAndOutputs.EV_co2, measuresAndOutputs.EV_oxygen, measuresAndOutputs.EV_nitrogen, measuresAndOutputs.EV_air);
+                interval_id_measure, measuresAndOutputs.ph, measuresAndOutputs.oxygen, measuresAndOutputs.temperature,
+                measuresAndOutputs.light, measuresAndOutputs.EV_co2, measuresAndOutputs.EV_oxygen, measuresAndOutputs.EV_nitrogen, measuresAndOutputs.EV_air);
     file.println();
     file.close();
 
-    sendDataToUI(measuresAndOutputs,interval_id_measure);
+    sendDataToUI(measuresAndOutputs, interval_id_measure);
     return true;
 }
 
 bool cycle_manager::sendDataToUI(MeasuresAndOutputs measuresAndOutputs, uint32_t interval_id_measure)
 {
     Serial.printf("%08d,%05.2f,%06.2f,%05.2f,%02d,%d,%d,%d,%d",
-        interval_id_measure, measuresAndOutputs.ph, measuresAndOutputs.oxygen, measuresAndOutputs.temperature,
-        measuresAndOutputs.light, measuresAndOutputs.EV_co2, measuresAndOutputs.EV_oxygen, measuresAndOutputs.EV_nitrogen, measuresAndOutputs.EV_air);
+                  interval_id_measure, measuresAndOutputs.ph, measuresAndOutputs.oxygen, measuresAndOutputs.temperature,
+                  measuresAndOutputs.light, measuresAndOutputs.EV_co2, measuresAndOutputs.EV_oxygen, measuresAndOutputs.EV_nitrogen, measuresAndOutputs.EV_air);
     Serial.println();
     return true;
 }
@@ -220,14 +219,6 @@ cycle_manager::analyzeHeaderState cycle_manager::analyzeHeader()
         break;
     }
 
-    Log.verboseln("Header Read OK, Cycle Name: %s, Cycle ID: %s, State: %s, Interval Time: %d, Interval Total: %d, Interval Current: %d",
-                  cycleData.cycle_name.c_str(),
-                  cycleData.cycle_id.c_str(),
-                  cycleStatusToString(cycleData.status).c_str(),
-                  cycleData.interval_time,
-                  cycleData.interval_total,
-                  cycleData.interval_current);
-
     return HEADER_AVAILABLE;
 }
 
@@ -239,9 +230,9 @@ cycle_manager::CheckNextInterval cycle_manager::readAndWriteCurrentIntervalFromC
     {
         return INTERVAL_ERROR;
     }
-
-    if (cycleData.interval_current >= cycleData.interval_total)
+    if (cycleData.interval_current >= (cycleData.interval_total - 1))
     {
+        Log.infoln("Detecto que no hay mas intervalos disponibles a traves del header");
         return NO_MORE_INTERVALS;
     }
 
@@ -284,6 +275,32 @@ bool cycle_manager::writeHeaderToSD()
     return true;
 }
 
+/**
+ * @brief Retrieves the first interval data when the cycle is running.
+ *
+ * This function checks if the cycle status is CYCLE_RUNNING. If it is,
+ * it reads the interval data and sets the command to FIRST_INTERVAL_RUNNING.
+ * Otherwise, it sets the command to NO_COMMAND.
+ *
+ * This function is important to handle the transfer of the first interval
+ * to control.
+ *
+ * @return A CycleBundle containing the command and interval data.
+ */
+cycle_manager::CycleBundle cycle_manager::firstIntervalAtRunning()
+{
+    CycleBundle bundle;
+    if (cycleData.status == CYCLE_RUNNING)
+    {
+        readInterval();
+        bundle.command = CommandBundle::FIRST_INTERVAL_RUNNING;
+        bundle.intervalData = intervalData;
+    }else{
+        bundle.command = CommandBundle::NO_COMMAND;
+    }
+    return bundle;
+}
+
 cycle_manager::CycleBundle cycle_manager::run()
 {
     CycleBundle bundle;
@@ -292,7 +309,7 @@ cycle_manager::CycleBundle cycle_manager::run()
         alarmFlag = false;
         if (readNextInterval())
         {
-            //Log.infoln("New interval available");
+            // Log.infoln("New interval available");
             bundle.command = CommandBundle::NEW_INTERVAL;
             bundle.intervalData = intervalData;
         }
@@ -301,6 +318,7 @@ cycle_manager::CycleBundle cycle_manager::run()
             // Termino el ciclo
             finishCycle();
             bundle.command = CommandBundle::FINISH_CYCLE;
+            bundle.intervalData.interval_id = cycleData.interval_current;
         }
     }
     else
@@ -336,11 +354,11 @@ bool cycle_manager::readNextInterval()
         return false;
 
     case INTERVAL_ERROR:
-        Log.errorln("Failed to read next interval");
+        Log.errorln("[cycle_manager::readNextInterval()]Failed to read next interval");
         return false;
 
     case INTERVAL_AVAILABLE:
-        //Log.infoln("Interval available: %d", cycleData.interval_current);
+        // Log.infoln("Interval available: %d", cycleData.interval_current);
         return readInterval();
 
     default:
@@ -391,7 +409,7 @@ bool cycle_manager::readInterval()
     // Calcular la posición de la fila actual
 
     int targetLine = (cycleData.interval_current - 1) + 1;
-    // -1 porque mi valor ya lo actualice en el header
+    // -1 porque mi valor ya lo actualice en el header (salvo cuando es la primera del ciclo)
     //+1 para moverse al siguiente intervalo
     int position = targetLine * rowWidth;
 
@@ -441,7 +459,7 @@ bool cycle_manager::readInterval()
     }
     else
     {
-        Log.errorln("Failed to read the next interval");
+        Log.errorln("[cycle_manager::readInterval()]Failed to read the next interval");
         file.close();
         return false;
     }
@@ -489,6 +507,7 @@ bool cycle_manager::evaluateAlarmStatus()
         break;
     case CYCLE_RUNNING:
         cycleAlarm.setAlarm(cycleData.interval_time, cycle_manager::onAlarm);
+        alarmFlag = true;
         break;
     case CYCLE_PAUSED:
         // Handle cycle paused

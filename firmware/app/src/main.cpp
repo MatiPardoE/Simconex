@@ -21,7 +21,7 @@ pH pH_Device = pH(20, "EZO pH probe");
 void setup()
 {
     commUI.begin(230400); // Solo define el puerto y velocidad de comunicación
-    Log.begin(LOG_LEVEL_TRACE, &Serial, true);
+    Log.begin(LOG_LEVEL_VERBOSE, &Serial, true);
     Log.notice("Starting...\n");
     sensorControl.init();
     delay(350);
@@ -36,7 +36,7 @@ void loop()
     static CommUI::CommandFromUI commandUI;
     static cycle_manager::CycleBundle cycleBundle;
     static cycle_manager::MeasuresAndOutputs new_measure_outputs;
-
+    cycle_manager::CycleBundle firstCycleBundle;
     // .run
     commandUI = commUI.run();
     cycleBundle = cm.run();
@@ -50,7 +50,12 @@ void loop()
         fileTransfer.transferFiles(cm.headerPath.c_str(), cm.dataPath.c_str(), 10000);
         if (cm.begin(SD_CS_PIN)) // Inicializa la SD y lee el header
         {
-            Log.notice("Cycle manager initialized\n");
+            firstCycleBundle = cm.firstIntervalAtRunning();
+            if (firstCycleBundle.command == cycle_manager::CommandBundle::FIRST_INTERVAL_RUNNING)
+            {
+                Log.notice("First Intervl set at beginning\n");
+                sensorControl.set_control_var(firstCycleBundle.intervalData);
+            }
         }
         else
         {
@@ -91,10 +96,13 @@ void loop()
         // Do nothing
         break;
     case cycle_manager::FINISH_CYCLE:
+        //Termino el ciclo por lo que debo enviar el ultimo intervalo y finalizar el ciclo
+        new_measure_outputs = sensorControl.takeMeasuresAndOutputs();                          // No deberia tardar mucho
+        cm.writeMeasuresToSD(new_measure_outputs, (cycleBundle.intervalData.interval_id)); // Envio el ID-1 porque el ID es el siguiente intervalo
         Log.noticeln("Cycle FINISIHED");
         break;
     case cycle_manager::NEW_INTERVAL:
-        //Log.noticeln("New interval available");
+        // Log.noticeln("New interval available");
         new_measure_outputs = sensorControl.takeMeasuresAndOutputs();                          // No deberia tardar mucho
         cm.writeMeasuresToSD(new_measure_outputs, (cycleBundle.intervalData.interval_id - 1)); // Envio el ID-1 porque el ID es el siguiente intervalo
         sensorControl.set_control_var(cycleBundle.intervalData);
