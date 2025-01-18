@@ -2,6 +2,9 @@
 #include <SPI.h>
 #include <ArduinoLog.h>
 #include <cycle_manager.h>
+#include "esp_log.h"
+
+static const char *TAG = "cm";
 
 const char *hardcodedHEADER = R"(
 cycle_name,csv base
@@ -53,23 +56,23 @@ bool cycle_manager::begin(uint8_t SD_CS_PIN)
     String header = "";
     if (!SD.begin(SD_CS_PIN))
     {
-        Log.errorln("SD Initialization failed!");
+        ESP_LOGE(TAG,"SD Initialization failed!");
         cycleData.status = NO_CYCLE_IN_SD;
         return false;
     }
     else
     {
-        Log.verboseln("SD Initialization done.");
+        ESP_LOGD(TAG,"SD Initialization done.");
     }
 
     if (analyzeHeaderandEvalAlarm())
     {
-        Log.infoln("Cycle Manager initialized successfully, header data OK, alarm status evaluated");
+        ESP_LOGI(TAG,"Cycle Manager initialized successfully, header data OK, alarm status evaluated");
         return true;
     }
     else
     {
-        Log.errorln("Failed to initialize Cycle Manager");
+        ESP_LOGE(TAG,"Failed to initialize Cycle Manager");
         return false;
     }
     return true;
@@ -79,16 +82,16 @@ bool cycle_manager::analyzeHeaderandEvalAlarm()
 {
     if (analyzeHeader() == HEADER_ERROR) // Parse the data TODO Handle the return value
     {
-        Log.errorln("Failed to parse header data");
+        ESP_LOGE(TAG,"Failed to parse header data");
         return false;
     }
     if (evaluateAlarmStatus())
     {
-        Log.infoln("Alarm status evaluated successfully");
+        ESP_LOGI(TAG,"Alarm status evaluated successfully");
     }
     else
     {
-        Log.errorln("Failed to evaluate alarm status");
+        ESP_LOGE(TAG,"Failed to evaluate alarm status");
         return false;
     }
     return true;
@@ -103,7 +106,7 @@ bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uin
     {
         if (!SD.mkdir("/output"))
         {
-            Log.errorln("Failed to create directory /output");
+            ESP_LOGE(TAG,"Failed to create directory /output");
             return false;
         }
     }
@@ -112,7 +115,7 @@ bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uin
     file = SD.open(dataOutPath, FILE_APPEND);
     if (!file)
     {
-        Log.errorln("Failed to open data output file for writing");
+        ESP_LOGE(TAG,"Failed to open data output file for writing");
         return false;
     }
     // Write the measures to the file
@@ -141,7 +144,7 @@ cycle_manager::analyzeHeaderState cycle_manager::analyzeHeader()
     File file = SD.open(headerPath);
     if (!file)
     {
-        Log.errorln("Failed to open header  or no header file found");
+        ESP_LOGE(TAG,"Failed to open header  or no header file found");
         cycleData.status = NO_CYCLE_IN_SD;
         return HEADER_ERROR;
     }
@@ -212,7 +215,7 @@ cycle_manager::analyzeHeaderState cycle_manager::analyzeHeader()
         break;
     default:
         // Handle unknown state
-        Log.errorln("Unknown state of cycle: %s", temp_status.c_str());
+        ESP_LOGE(TAG,"Unknown state of cycle: %s", temp_status.c_str());
         cycleData.status = CYCLE_ERROR;
         return HEADER_ERROR;
         break;
@@ -229,18 +232,15 @@ cycle_manager::CheckNextInterval cycle_manager::readAndWriteCurrentIntervalFromC
     {
         return INTERVAL_ERROR;
     }
-    if (cycleData.interval_current >= (cycleData.interval_total - 1))
+    if (cycleData.interval_current >= (cycleData.interval_total))
     {
-        Log.infoln("Detecto que no hay mas intervalos disponibles a traves del header");
+        ESP_LOGI(TAG,"Detecto que no hay mas intervalos disponibles a traves del header");
         return NO_MORE_INTERVALS;
     }
 
-    // Increment interval_current and write back to the file
-    cycleData.interval_current++;
-
     if (!writeHeaderToSD())
     {
-        Log.errorln("Failed to open header file for writing 1");
+        ESP_LOGE(TAG,"Failed to open header file for writing 1");
         return INTERVAL_ERROR;
     }
 
@@ -252,7 +252,7 @@ bool cycle_manager::writeHeaderToSD()
     File file = SD.open(headerPath, FILE_WRITE);
     if (!file)
     {
-        Log.errorln("Failed to open header file for writing 3");
+        ESP_LOGE(TAG,"Failed to open header file for writing 3");
         return false;
     }
 
@@ -268,7 +268,7 @@ bool cycle_manager::writeHeaderToSD()
     file.print("interval_total,");
     file.println(cycleData.interval_total);
     file.print("interval_current,");
-    file.println(cycleData.interval_current);
+    file.println(cycleData.interval_current + 1);
     file.close();
 
     return true;
@@ -291,7 +291,7 @@ cycle_manager::CycleBundle cycle_manager::firstIntervalAtRunning()
     CycleBundle bundle;
     if (cycleData.status == CYCLE_RUNNING)
     {
-        readInterval();
+        // readInterval();
         bundle.command = CommandBundle::FIRST_INTERVAL_RUNNING;
         bundle.intervalData = intervalData;
     }
@@ -308,9 +308,10 @@ cycle_manager::CycleBundle cycle_manager::run()
     if (alarmFlag) // la alarma solo se va a activar si el ciclo esta corriendo
     {
         alarmFlag = false;
+        ESP_LOGE(TAG, "SE ACTIVO LA ALARMA");
         if (readNextInterval())
         {
-            // Log.infoln("New interval available");
+            // ESP_LOGI(TAG,"New interval available");
             bundle.command = CommandBundle::NEW_INTERVAL;
             bundle.intervalData = intervalData;
         }
@@ -349,17 +350,17 @@ bool cycle_manager::readNextInterval()
     switch (result)
     {
     case NO_MORE_INTERVALS:
-        Log.infoln("No more intervals available, cycle finished");
+        ESP_LOGI(TAG,"No more intervals available, cycle finished");
         cycleData.status = CYCLE_COMPLETED;
         // TODO: Implementar que se cierre el ciclo
         return false;
 
     case INTERVAL_ERROR:
-        Log.errorln("[cycle_manager::readNextInterval()]Failed to read next interval");
+        ESP_LOGE(TAG,"[cycle_manager::readNextInterval()]Failed to read next interval");
         return false;
 
     case INTERVAL_AVAILABLE:
-        // Log.infoln("Interval available: %d", cycleData.interval_current);
+        // ESP_LOGI(TAG,"Interval available: %d", cycleData.interval_current);
         return readInterval();
 
     default:
@@ -399,7 +400,7 @@ bool cycle_manager::readInterval()
     if (!file)
     {
         cycleData.status = NO_CYCLE_IN_SD;
-        Log.errorln("Failed to open input data file when reading next interval");
+        ESP_LOGE(TAG,"Failed to open input data file when reading next interval");
         return false;
     }
 
@@ -409,7 +410,7 @@ bool cycle_manager::readInterval()
 
     // Calcular la posición de la fila actual
 
-    int targetLine = (cycleData.interval_current - 1) + 1;
+    int targetLine = (cycleData.interval_current - 1)+1;
     // -1 porque mi valor ya lo actualice en el header (salvo cuando es la primera del ciclo)
     //+1 para moverse al siguiente intervalo
     int position = targetLine * rowWidth;
@@ -417,7 +418,7 @@ bool cycle_manager::readInterval()
     // Mover el puntero a la posición calculada
     if (!file.seek(position))
     {
-        Log.errorln("Failed to seek to the target position");
+        ESP_LOGE(TAG,"Failed to seek to the target position");
         file.close();
         return false;
     }
@@ -460,7 +461,7 @@ bool cycle_manager::readInterval()
     }
     else
     {
-        Log.errorln("[cycle_manager::readInterval()]Failed to read the next interval");
+        ESP_LOGE(TAG,"[cycle_manager::readInterval()]Failed to read the next interval");
         file.close();
         return false;
     }
@@ -468,16 +469,16 @@ bool cycle_manager::readInterval()
 
 bool cycle_manager::finishCycle()
 {
-    Log.infoln("Cycle finished.id: %s, %d intervals processed.", cycleData.cycle_id.c_str(), cycleData.interval_current);
+    ESP_LOGI(TAG,"Cycle finished.id: %s, %d intervals processed.", cycleData.cycle_id.c_str(), cycleData.interval_current);
     cycleData.status = CYCLE_COMPLETED;
     if (!evaluateAlarmStatus())
     {
-        Log.errorln("Failed to evaluate alarm status");
+        ESP_LOGE(TAG,"Failed to evaluate alarm status");
         return false;
     }
     if (!writeHeaderToSD())
     {
-        Log.errorln("Failed to write header to SD");
+        ESP_LOGE(TAG,"Failed to write header to SD");
         return false;
     }
     return true;
@@ -485,7 +486,7 @@ bool cycle_manager::finishCycle()
 
 void cycle_manager::logIntervalDataforDebug(const IntervalData &intervalData)
 {
-    Log.noticeln("ID: %d pH: %F Oxygen: %F Temp: %F Light: %d",
+    ESP_LOGI(TAG,"ID: %d pH: %F Oxygen: %F Temp: %F Light: %d",
                  intervalData.interval_id,
                  intervalData.ph,
                  intervalData.oxygen,
@@ -507,24 +508,28 @@ bool cycle_manager::evaluateAlarmStatus()
         // Do nothing
         break;
     case CYCLE_RUNNING:
+        ESP_LOGI(TAG, "Cycle running, setting alarm");
         cycleAlarm.setAlarm(cycleData.interval_time, cycle_manager::onAlarm);
         alarmFlag = true;
         break;
     case CYCLE_PAUSED:
         // Handle cycle paused
+        ESP_LOGI(TAG, "Cycle paused, pausing alarm");
         cycleAlarm.pauseAlarm();
         break;
     case CYCLE_COMPLETED:
+        ESP_LOGI(TAG, "Cycle completed, stop alarm");
         // Handle cycle completed
         cycleAlarm.stopAndDeleteAlarm();
         break;
     case CYCLE_ERROR:
+        ESP_LOGI(TAG, "Cycle in error, stop alarm");
         // Handle cycle error
         cycleAlarm.stopAndDeleteAlarm();
         break;
     default:
         // Handle unknown status
-        Log.errorln("Unknown cycle status: %d", cycleData.status);
+        ESP_LOGE(TAG,"Unknown cycle status: %d", cycleData.status);
         return false;
         break;
     }
@@ -555,18 +560,18 @@ bool cycle_manager::resetHeaderForDebug(uint8_t SD_CS_PIN)
 {
     if (!SD.begin(SD_CS_PIN))
     {
-        Log.errorln("SD Initialization failed!");
+        ESP_LOGE(TAG,"SD Initialization failed!");
         return false;
     }
     else
     {
-        Log.infoln("SD Initialization done.");
+        ESP_LOGI(TAG,"SD Initialization done.");
     }
 
     File file = SD.open("/input/header.csv", FILE_WRITE);
     if (!file)
     {
-        Log.errorln("Failed to open header file for writing 2");
+        ESP_LOGE(TAG,"Failed to open header file for writing 2");
         return INTERVAL_ERROR;
     }
     file.print("cycle_name,");
