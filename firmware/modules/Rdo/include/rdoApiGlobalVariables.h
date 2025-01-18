@@ -44,12 +44,17 @@
 -- RDO
 ---------------------------------------------------------------------------- */
 
-   extern esp32ModbusRTU modbus;
-   extern uint32_t lastMillisRDO;
-   extern volatile rdo_t   rdo;
-   extern bool initRDO;
+    extern esp32ModbusRTU modbus;
+    extern uint32_t lastMillisRDO;
+    extern volatile rdo_t   rdo;
+    extern bool initRDO;
 
-   uint8_t calModeOn [] = { 0xE0, 0x00 };    
+    extern uint8_t calModeOn [];    
+    extern uint8_t saturationBarometricPressure100  [];
+    extern uint8_t saturationSalinity100            [];
+    extern uint8_t defaultBarometricPressure        [];
+    //
+    extern uint8_t calUpdate [];
 
 
 

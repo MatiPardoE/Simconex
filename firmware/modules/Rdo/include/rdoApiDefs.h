@@ -234,6 +234,13 @@ typedef enum{
 
     WRITE_CALIBRATION_COMMAND   ,
 
+    SET_100_SAT_BAR_PRESSURE    ,
+    SET_100_SAT_SALINITY        ,
+    SET_DEFAULT_BAR_PRESSURE    ,
+    SET_100_SAT_CONCENTRATION   ,
+
+    UPDATE_CALIBRATION_COMMAND   ,
+
 } rdoStatus_t;
 
 typedef enum{

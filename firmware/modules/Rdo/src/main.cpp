@@ -14,7 +14,12 @@ esp32ModbusRTU modbus(&Serial1, RDO_DE_RE_GPIO);  // use Serial1 and GPIO11/27 a
 uint32_t lastMillisRDO = 0; //para que arranque de una
 volatile rdo_t rdo;
 bool initRDO = true;
+uint8_t calModeOn [] = { 0xE0, 0x00 };
+uint8_t saturationBarometricPressure100 [] = { 0x44, 0x7D, 0x50, 0x00 };
+uint8_t saturationSalinity100           [] = { 0x00, 0x00, 0x00, 0x00 };
+uint8_t defaultBarometricPressure       [] = { 0x40, 0xE7, 0x8D, 0x0B };
 
+uint8_t calUpdate [] = { 0xE0, 0x01 };
 
 void setup() {
   Serial.begin(9600);  // Serial output
