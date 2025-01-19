@@ -386,11 +386,10 @@ class MyPlot(ctk.CTkFrame):
             self.ax.clear()
             
             num_measurements = len(data_lists['id'])
-            print("update_plot num_measurements = " + str(num_measurements))
             self.datetime_axis = [self.initial_time + timedelta(seconds=i * ui_serial.cycle_interval) for i in range(num_measurements)]
 
-            self.line_expected, = self.ax.plot(self.datetime_axis, data_lists_expected[self.var][:num_measurements], label="Valores esperados")
-            self.line, = self.ax.plot(self.datetime_axis, data_lists[self.var], label="Valores medidos")
+            self.line_expected, = self.ax.plot(self.datetime_axis[:num_measurements], data_lists_expected[self.var][:num_measurements], label="Valores esperados")
+            self.line, = self.ax.plot(self.datetime_axis[:num_measurements], data_lists[self.var][:num_measurements], label="Valores medidos")
 
             self.fig.canvas.draw()
 
@@ -411,8 +410,8 @@ class MyPlot(ctk.CTkFrame):
 
             self.datetime_axis.append(new_time)
 
-            self.line.set_data(self.datetime_axis, data_lists[self.var])
-            self.line_expected.set_data(self.datetime_axis, data_lists_expected[self.var][:num_measurements])
+            self.line.set_data(self.datetime_axis[:num_measurements], data_lists[self.var][:num_measurements])
+            self.line_expected.set_data(self.datetime_axis[:num_measurements], data_lists_expected[self.var][:num_measurements])
 
             if self.resize_plot_flag:
                 self.ax.set_xlim(self.datetime_axis[0], self.datetime_axis[-1])

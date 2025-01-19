@@ -60,6 +60,10 @@ class SerialPublisher:
     def notify_sync(self):
         for callback in self.subscribers: 
             callback(MsgType.ESP_SYNCRONIZED)
+
+    def notify_disconnected(self):
+        for callback in self.subscribers: 
+            callback(MsgType.ESP_DISCONNECTED)
         
     def notify_connected(self):
         for callback in self.subscribers: callback(MsgType.ESP_CONNECTED)

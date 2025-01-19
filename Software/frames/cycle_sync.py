@@ -333,3 +333,4 @@ class CycleSync:
         self.loading_window.title("Error")
         self.label.configure(text="Se produjo un problema y la sincronización falló!")
         self.label.configure(image=fail_image)
+        ui_serial.publisher.notify_disconnected()   

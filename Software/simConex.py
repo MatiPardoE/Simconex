@@ -206,9 +206,13 @@ class App(ctk.CTk):
     def update_btn(self, data):        
         if data == MsgType.ESP_SYNCRONIZED or data == MsgType.NEW_CYCLE_SENT:
             self.connection_label.configure(image=self.link_image)  
+        if data == MsgType.ESP_DISCONNECTED:
+            self.connection_label.configure(image=self.unsync_image)  
 
 def backend(data):
     if data == MsgType.ESP_SYNCRONIZED or data == MsgType.NEW_CYCLE_SENT:
+        app.sync_button.configure(state="disabled")
+        app.sync_button.configure(text="Sincronizado")
         fname = os.path.join(os.getcwd(), "input_csv", ui_serial.cycle_id, "data_"+ui_serial.cycle_id+".csv")
         with open(fname, "r") as csvfile:
             reader = csv.reader(csvfile)
@@ -232,6 +236,9 @@ def backend(data):
                     ui_serial.cycle_id = row[1]
     
     if data == MsgType.ESP_DISCONNECTED:
+        app.sync_button.configure(state="disabled")
+        app.sync_button.configure(text="Sincronizar")
+
         data_lists['id'] = []
         data_lists['light'] = []
         data_lists['ph'] = []
