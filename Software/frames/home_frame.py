@@ -246,11 +246,12 @@ class ActualCycleFrame(ctk.CTkFrame):
                 self.reset_progressbar(total_time, elapsed_time, restant_time)  
                 self.label_actual.configure(text="Ciclo Actual: " + ui_serial.cycle_alias + " (en curso)")
             else:
-                self.update_progressbar(total_time, elapsed_time, restant_time)  
                 if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING:
                     self.label_actual.configure(text="Ciclo Actual: {} (en curso)".format(ui_serial.cycle_alias))
+                    self.update_progressbar(total_time, elapsed_time, restant_time)
                 else:
                     self.label_actual.configure(text="Ciclo Actual: {} (terminado)".format(ui_serial.cycle_alias))
+                    self.update_progressbar(total_time, total_time, 0)
 
         if data == MsgType.NEW_MEASUREMENT: 
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
