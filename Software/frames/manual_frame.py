@@ -75,7 +75,7 @@ class LogFrame(ctk.CTkFrame):
         self.scrollable_frame.pack(pady=10, padx=10, fill="both", expand=True)   
   
     def update_log_frame(self, data):
-        if data == MsgType.NEW_CYCLE_SENT:
+        if data == MsgType.NEW_CYCLE_SENT or data == MsgType.ESP_DISCONNECTED:
             for widget in self.scrollable_frame.winfo_children():
                 widget.destroy()
             return    

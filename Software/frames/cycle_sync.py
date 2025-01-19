@@ -68,7 +68,7 @@ class CycleSync:
             self.wait_message(HandshakeStatus.STA, timeout)
             ui_serial.publisher.send_data(b"#OK!\n")
 
-            if not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
+            if not self.esp_status_reported == CycleStatus.NOT_CYCLE:
                 self.wait_message(HandshakeStatus.ID0, timeout)
                 ui_serial.publisher.send_data(b"#OK!\n")
                 self.wait_message(HandshakeStatus.TIMESTAMP, timeout)

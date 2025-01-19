@@ -187,7 +187,7 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(4, weight=1)
 
-        self.label_actual = ctk.CTkLabel(self, text="Ciclo Actual", font=ctk.CTkFont(size=20, weight="bold"))
+        self.label_actual = ctk.CTkLabel(self, text="Ciclo Actual (desconectado)", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_actual.grid(row=0, column=0, padx=20, pady=(10, 0), sticky="w")
 
         self.label_actual_days = ctk.CTkLabel(self, text="", font=ctk.CTkFont(size=18))
@@ -228,6 +228,8 @@ class ActualCycleFrame(ctk.CTkFrame):
             self.esp_connected()
             
         if (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)) or data == MsgType.NEW_CYCLE_SENT:
+            self.progressbar_actual.configure(progress_color="blue")
+            
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
             elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
             restant_time = total_time - elapsed_time
@@ -239,6 +241,10 @@ class ActualCycleFrame(ctk.CTkFrame):
                 self.label_actual.configure(text="Ciclo Actual: " + ui_serial.cycle_alias + " (en curso)")
             else:
                 self.update_progressbar(total_time, elapsed_time, restant_time)  
+                if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING:
+                    self.label_actual.configure(text="Ciclo Actual: {} (en curso)".format(ui_serial.cycle_alias))
+                else:
+                    self.label_actual.configure(text="Ciclo Actual: {} (terminado)".format(ui_serial.cycle_alias))
 
         if data == MsgType.NEW_MEASUREMENT: 
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
@@ -258,6 +264,8 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="nsew")
         self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="nsew")
         self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")
+
+        self.label_actual.configure(text="Ciclo Actual (desincronizado)")   
 
     def format_seconds(self, seconds):
         if seconds >= 86400:  
@@ -289,6 +297,8 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.configure(text=self.format_seconds(restant_time))
     
     def esp_disconnected(self):
+        self.label_actual.configure(text="Ciclo Actual (desconectado)")
+        self.label_actual_days.configure(text="")
         self.label_actual_days.grid_forget()
         self.progressbar_actual.grid_forget()
         self.frame_actual.grid_forget()
@@ -296,6 +306,12 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_colour.grid_forget()
         self.label_done_text.grid_forget()
         self.label_left_text.grid_forget()
+
+        self.progressbar_actual.set(0)
+        self.progressbar_actual.configure(progress_color="blue")
+
+        self.label_done_text.configure(text="")
+        self.label_left_text.configure(text="")
     
 class MyPlot(ctk.CTkFrame):
     def __init__(self, master, var):
@@ -359,6 +375,7 @@ class MyPlot(ctk.CTkFrame):
             self.ax.clear()
             self.line_expected, = self.ax.plot(self.datetime_axis, [], label="Valores esperados")
             self.line, = self.ax.plot(self.datetime_axis, [], label="Valores medidos")
+            self.fig.canvas.draw()
             self.ax.legend()
             self.fig.canvas.mpl_connect("button_press_event", self.check_active_tool)
             self.resize_plot_flag = True
@@ -369,10 +386,13 @@ class MyPlot(ctk.CTkFrame):
             self.ax.clear()
             
             num_measurements = len(data_lists['id'])
+            print("update_plot num_measurements = " + str(num_measurements))
             self.datetime_axis = [self.initial_time + timedelta(seconds=i * ui_serial.cycle_interval) for i in range(num_measurements)]
 
             self.line_expected, = self.ax.plot(self.datetime_axis, data_lists_expected[self.var][:num_measurements], label="Valores esperados")
             self.line, = self.ax.plot(self.datetime_axis, data_lists[self.var], label="Valores medidos")
+
+            self.fig.canvas.draw()
 
             self.ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
             self.ax.xaxis.set_major_locator(MaxNLocator(nbins=10))
@@ -401,7 +421,14 @@ class MyPlot(ctk.CTkFrame):
                 y_max = max(max(data_lists[self.var]), max(data_lists_expected[self.var]))*1.1
                 self.ax.set_ylim(y_min, y_max)
 
-            self.fig.canvas.draw_idle()       
+            self.fig.canvas.draw_idle()    
+        
+        if data == MsgType.ESP_DISCONNECTED:
+            self.reset_data() 
+            self.ax.clear()
+            self.line_expected, = self.ax.plot(self.datetime_axis, [], label="Valores esperados")
+            self.line, = self.ax.plot(self.datetime_axis, [], label="Valores medidos")
+            self.fig.canvas.draw()
 
 class PlotFrame(ctk.CTkFrame):
     def __init__(self, master):

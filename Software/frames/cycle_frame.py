@@ -24,7 +24,7 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(4, weight=1)
 
-        self.label_actual = ctk.CTkLabel(self, text="Ciclo Actual", font=ctk.CTkFont(size=20, weight="bold"))
+        self.label_actual = ctk.CTkLabel(self, text="Ciclo Actual (desconectado)", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_actual.grid(row=0, column=0, padx=20, pady=(10, 0), sticky="w")
 
         self.label_actual_days = ctk.CTkLabel(self, text="", font=ctk.CTkFont(size=18))
@@ -65,6 +65,8 @@ class ActualCycleFrame(ctk.CTkFrame):
             self.esp_connected()
             
         if (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)) or data == MsgType.NEW_CYCLE_SENT:
+            self.progressbar_actual.configure(progress_color="blue")
+            
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
             elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
             restant_time = total_time - elapsed_time
@@ -76,6 +78,10 @@ class ActualCycleFrame(ctk.CTkFrame):
                 self.label_actual.configure(text="Ciclo Actual: {} (en curso)".format(ui_serial.cycle_alias))
             else:
                 self.update_progressbar(total_time, elapsed_time, restant_time) 
+                if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING:
+                    self.label_actual.configure(text="Ciclo Actual: {} (en curso)".format(ui_serial.cycle_alias))
+                else:
+                    self.label_actual.configure(text="Ciclo Actual: {} (terminado)".format(ui_serial.cycle_alias))
 
         if data == MsgType.NEW_MEASUREMENT:
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
@@ -94,7 +100,9 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_done_colour.grid(row=0, column=0, padx=20, pady=0, sticky="nsew")
         self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="nsew")
         self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="nsew")
-        self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")       
+        self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")    
+
+        self.label_actual.configure(text="Ciclo Actual (desincronizado)")   
     
     def format_seconds(self, seconds):
         if seconds >= 86400:  
@@ -127,6 +135,8 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.configure(text=self.format_seconds(restant_time))
     
     def esp_disconnected(self):
+        self.label_actual.configure(text="Ciclo Actual (desconectado)")
+        self.label_actual_days.configure(text="")
         self.label_actual_days.grid_forget()
         self.progressbar_actual.grid_forget()
         self.frame_actual.grid_forget()
@@ -135,6 +145,11 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_done_text.grid_forget()
         self.label_left_text.grid_forget()
 
+        self.progressbar_actual.set(0)
+        self.progressbar_actual.configure(progress_color="blue")
+
+        self.label_done_text.configure(text="")
+        self.label_left_text.configure(text="")
 
 class HandshakeStatus(Enum):
     OK = 1
@@ -690,6 +705,8 @@ class LogFrame(ctk.CTkFrame):
             self.label_export.bind("<Button-1>", self.export_event)
 
         if data == MsgType.ESP_DISCONNECTED:
+            for widget in self.scrollable_frame.winfo_children():
+                widget.destroy()
             self.label_export.unbind("<Enter>")
             self.label_export.unbind("<Leave>")
             self.label_export.unbind("<Button-1>")

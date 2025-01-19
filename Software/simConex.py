@@ -230,6 +230,25 @@ def backend(data):
                     ui_serial.cycle_interval = int(row[1])  
                 elif row[0] == 'cycle_id':
                     ui_serial.cycle_id = row[1]
+    
+    if data == MsgType.ESP_DISCONNECTED:
+        data_lists['id'] = []
+        data_lists['light'] = []
+        data_lists['ph'] = []
+        data_lists['od'] = []
+        data_lists['temperature'] = []
+        data_lists['co2'] = []
+        data_lists['o2'] = []
+        data_lists['n2'] = []
+        data_lists['air'] = []
+
+        data_lists_expected['id'] = []
+        data_lists_expected['light'] = []
+        data_lists_expected['ph'] = []
+        data_lists_expected['od'] = []
+        data_lists_expected['temperature'] = []
+
+        ui_serial.cycle_status = CycleStatus.NOT_CYCLE
 
 if __name__ == "__main__":
     ui_serial.publisher.subscribe(backend)
