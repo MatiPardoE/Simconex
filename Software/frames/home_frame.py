@@ -226,6 +226,12 @@ class ActualCycleFrame(ctk.CTkFrame):
     def process_data_actual_cycle(self, data):    
         if data == MsgType.ESP_CONNECTED:
             self.esp_connected()
+        
+        if data == MsgType.ESP_PAUSED:
+            self.label_actual.configure(text="Ciclo Actual: " + ui_serial.cycle_alias + " (pausado)")
+
+        if data == MsgType.ESP_PLAYED:
+            self.label_actual.configure(text="Ciclo Actual: " + ui_serial.cycle_alias + " (en curso)")
             
         if (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)) or data == MsgType.NEW_CYCLE_SENT:
             self.progressbar_actual.configure(progress_color="blue")
@@ -252,6 +258,23 @@ class ActualCycleFrame(ctk.CTkFrame):
             restant_time = total_time - elapsed_time
 
             self.update_progressbar(total_time, elapsed_time, restant_time)
+
+        if data == MsgType.CYCLE_DELETED:
+            self.label_actual.configure(text="Ciclo Actual")
+            self.label_actual_days.configure(text="")
+            self.label_actual_days.grid_forget()
+            self.progressbar_actual.grid_forget()
+            self.frame_actual.grid_forget()
+            self.label_done_colour.grid_forget()
+            self.label_left_colour.grid_forget()
+            self.label_done_text.grid_forget()
+            self.label_left_text.grid_forget()
+
+            self.progressbar_actual.set(0)
+            self.progressbar_actual.configure(progress_color="blue")
+
+            self.label_done_text.configure(text="")
+            self.label_left_text.configure(text="")
         
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
@@ -422,7 +445,7 @@ class MyPlot(ctk.CTkFrame):
 
             self.fig.canvas.draw_idle()    
         
-        if data == MsgType.ESP_DISCONNECTED:
+        if data == MsgType.ESP_DISCONNECTED or data == MsgType.CYCLE_DELETED:
             self.reset_data() 
             self.ax.clear()
             self.line_expected, = self.ax.plot(self.datetime_axis, [], label="Valores esperados")

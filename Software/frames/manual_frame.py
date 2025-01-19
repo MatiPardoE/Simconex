@@ -80,7 +80,6 @@ class LogFrame(ctk.CTkFrame):
                 widget.destroy()
             return    
         
-        # TODO: se tienen que cargar todas las mediciones en el log 
         if data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED):
             num_measurements = len(data_lists['id'])
             start_index = max(0, num_measurements - 50)
@@ -158,6 +157,10 @@ class LogFrame(ctk.CTkFrame):
                 children[0].destroy()  
 
             self.scrollable_frame._parent_canvas.yview_moveto(1.0)
+        
+        if data == MsgType.ESP_DISCONNECTED or data == MsgType.CYCLE_DELETED:
+            for widget in self.scrollable_frame.winfo_children():
+                widget.destroy()
 
     def calculate_datetime(self, intervals):
         initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
