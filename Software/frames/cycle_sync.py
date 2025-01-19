@@ -31,6 +31,7 @@ class CycleSync:
     def __init__(self):
         self.handshake_status = HandshakeStatus.NOT_YET
         self.start_validate_time = 0
+        self.esp_status_reported = CycleStatus.NOT_CYCLE
 
         # Listas temporales acumuladoras de toda la comunicacion
         self.id_list = []
@@ -67,7 +68,7 @@ class CycleSync:
             self.wait_message(HandshakeStatus.STA, timeout)
             ui_serial.publisher.send_data(b"#OK!\n")
 
-            if not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
+            if not self.esp_status_reported == CycleStatus.NOT_CYCLE:
                 self.wait_message(HandshakeStatus.ID0, timeout)
                 ui_serial.publisher.send_data(b"#OK!\n")
                 self.wait_message(HandshakeStatus.TIMESTAMP, timeout)
@@ -95,6 +96,7 @@ class CycleSync:
             if not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
                 self.generate_cycleout_file()
             self.success_loading_window()
+            ui_serial.cycle_status = self.esp_status_reported
             ui_serial.publisher.notify_sync()           
         
         except Exception as e:
@@ -219,13 +221,13 @@ class CycleSync:
         elif data.strip() == "#FAIL!":
             self.handshake_status = HandshakeStatus.DATA_FAIL
         elif data.strip() == "#STA0!":
-            ui_serial.cycle_status = CycleStatus.NOT_CYCLE
+            self.esp_status_reported = CycleStatus.NOT_CYCLE
             self.handshake_status = HandshakeStatus.STA
         elif data.strip() == "#STA1!":
-            ui_serial.cycle_status = CycleStatus.CYCLE_RUNNING
+            self.esp_status_reported = CycleStatus.CYCLE_RUNNING
             self.handshake_status = HandshakeStatus.STA
         elif data.strip() == "#STA2!":
-            ui_serial.cycle_status = CycleStatus.CYCLE_FINISHED
+            self.esp_status_reported = CycleStatus.CYCLE_FINISHED
             self.handshake_status = HandshakeStatus.STA
         elif data.strip() == "#ID0!":
             self.handshake_status = HandshakeStatus.ID0
@@ -331,3 +333,4 @@ class CycleSync:
         self.loading_window.title("Error")
         self.label.configure(text="Se produjo un problema y la sincronización falló!")
         self.label.configure(image=fail_image)
+        ui_serial.publisher.notify_disconnected()   

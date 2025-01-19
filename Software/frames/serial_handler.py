@@ -13,12 +13,16 @@ class MsgType(Enum):
     ESP_SYNCRONIZED = 2
     NEW_MEASUREMENT = 3
     NEW_CYCLE_SENT = 4
+    ESP_PAUSED = 5
+    ESP_PLAYED = 6
+    CYCLE_DELETED = 7
 
 class CycleStatus(Enum):
     NOT_CYCLE = 0 # No hay un ciclo corriendo
     CYCLE_RUNNING = 1 # Hay un ciclo corriendo
-    CYCLE_FINISHED = 2 # Hay un ciclo terminado
-    CYCLE_ERROR = 3 # El ciclo tuvo un error
+    CYCLE_PAUSED = 2 # Hay un ciclo corriendo
+    CYCLE_FINISHED = 3 # Hay un ciclo terminado
+    CYCLE_ERROR = 4 # El ciclo tuvo un error
 
 class SerialPublisher:
     def __init__(self):
@@ -59,6 +63,22 @@ class SerialPublisher:
     def notify_sync(self):
         for callback in self.subscribers: 
             callback(MsgType.ESP_SYNCRONIZED)
+
+    def notify_disconnected(self):
+        for callback in self.subscribers: 
+            callback(MsgType.ESP_DISCONNECTED)
+
+    def notify_paused(self):
+        for callback in self.subscribers: 
+            callback(MsgType.ESP_PAUSED)
+    
+    def notify_played(self):
+        for callback in self.subscribers: 
+            callback(MsgType.ESP_PLAYED)
+    
+    def notify_deleted(self):
+        for callback in self.subscribers: 
+            callback(MsgType.CYCLE_DELETED)
         
     def notify_connected(self):
         for callback in self.subscribers: callback(MsgType.ESP_CONNECTED)

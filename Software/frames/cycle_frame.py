@@ -24,7 +24,7 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(4, weight=1)
 
-        self.label_actual = ctk.CTkLabel(self, text="Ciclo Actual", font=ctk.CTkFont(size=20, weight="bold"))
+        self.label_actual = ctk.CTkLabel(self, text="Ciclo Actual (desconectado)", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_actual.grid(row=0, column=0, padx=20, pady=(10, 0), sticky="w")
 
         self.label_actual_days = ctk.CTkLabel(self, text="", font=ctk.CTkFont(size=18))
@@ -63,8 +63,16 @@ class ActualCycleFrame(ctk.CTkFrame):
     def process_data_cycle_frame(self, data):
         if data == MsgType.ESP_CONNECTED:
             self.esp_connected()
+
+        if data == MsgType.ESP_PAUSED:
+            self.label_actual.configure(text="Ciclo Actual: " + ui_serial.cycle_alias + " (pausado)")
+
+        if data == MsgType.ESP_PLAYED:
+            self.label_actual.configure(text="Ciclo Actual: " + ui_serial.cycle_alias + " (en curso)")
             
-        if (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE) or data == MsgType.NEW_CYCLE_SENT:
+        if (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)) or data == MsgType.NEW_CYCLE_SENT:
+            self.progressbar_actual.configure(progress_color="blue")
+            
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
             elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
             restant_time = total_time - elapsed_time
@@ -74,8 +82,13 @@ class ActualCycleFrame(ctk.CTkFrame):
             if data == MsgType.NEW_CYCLE_SENT:
                 self.reset_progressbar(total_time, elapsed_time, restant_time)
                 self.label_actual.configure(text="Ciclo Actual: {} (en curso)".format(ui_serial.cycle_alias))
-            else:
-                self.update_progressbar(total_time, elapsed_time, restant_time) 
+            else:    
+                if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING:
+                    self.label_actual.configure(text="Ciclo Actual: {} (en curso)".format(ui_serial.cycle_alias))
+                    self.update_progressbar(total_time, elapsed_time, restant_time)
+                else:
+                    self.label_actual.configure(text="Ciclo Actual: {} (terminado)".format(ui_serial.cycle_alias))
+                    self.update_progressbar(total_time, total_time, 0)
 
         if data == MsgType.NEW_MEASUREMENT:
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
@@ -86,6 +99,23 @@ class ActualCycleFrame(ctk.CTkFrame):
         
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
+        
+        if data == MsgType.CYCLE_DELETED:
+            self.label_actual.configure(text="Ciclo Actual")
+            self.label_actual_days.configure(text="")
+            self.label_actual_days.grid_forget()
+            self.progressbar_actual.grid_forget()
+            self.frame_actual.grid_forget()
+            self.label_done_colour.grid_forget()
+            self.label_left_colour.grid_forget()
+            self.label_done_text.grid_forget()
+            self.label_left_text.grid_forget()
+
+            self.progressbar_actual.set(0)
+            self.progressbar_actual.configure(progress_color="blue")
+
+            self.label_done_text.configure(text="")
+            self.label_left_text.configure(text="")
 
     def esp_connected(self):
         self.label_actual_days.grid(row=1, column=0, padx=20, pady=(10, 10), sticky="w")
@@ -94,7 +124,9 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_done_colour.grid(row=0, column=0, padx=20, pady=0, sticky="nsew")
         self.label_left_colour.grid(row=0, column=1, padx=20, pady=0, sticky="nsew")
         self.label_done_text.grid(row=1, column=0, padx=20, pady=0, sticky="nsew")
-        self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")       
+        self.label_left_text.grid(row=1, column=1, padx=20, pady=0, sticky="nsew")    
+
+        self.label_actual.configure(text="Ciclo Actual (desincronizado)")   
     
     def format_seconds(self, seconds):
         if seconds >= 86400:  
@@ -118,7 +150,7 @@ class ActualCycleFrame(ctk.CTkFrame):
         if(total_time == elapsed_time):
             self.label_actual.configure(text="Ciclo Actual: {} (terminado)".format(ui_serial.cycle_alias))
             self.progressbar_actual.configure(progress_color="green")
-            messagebox.showinfo("Ciclo terminado!")
+            messagebox.showinfo("Información", "Ciclo terminado!")
 
     def reset_progressbar(self, total_time, elapsed_time, restant_time):
         self.progressbar_actual.set(0)
@@ -127,6 +159,8 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_left_text.configure(text=self.format_seconds(restant_time))
     
     def esp_disconnected(self):
+        self.label_actual.configure(text="Ciclo Actual (desconectado)")
+        self.label_actual_days.configure(text="")
         self.label_actual_days.grid_forget()
         self.progressbar_actual.grid_forget()
         self.frame_actual.grid_forget()
@@ -135,6 +169,11 @@ class ActualCycleFrame(ctk.CTkFrame):
         self.label_done_text.grid_forget()
         self.label_left_text.grid_forget()
 
+        self.progressbar_actual.set(0)
+        self.progressbar_actual.configure(progress_color="blue")
+
+        self.label_done_text.configure(text="")
+        self.label_left_text.configure(text="")
 
 class HandshakeStatus(Enum):
     OK = 1
@@ -165,25 +204,20 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.frame_buttons.grid_columnconfigure(0, weight=1)
         self.frame_buttons.grid_columnconfigure(1, weight=1)
         self.frame_buttons.grid_columnconfigure(2, weight=1)
-        self.frame_buttons.grid_columnconfigure(3, weight=1)
         
         self.play_image = ctk.CTkImage(Image.open(os.path.join(image_path, "play.png")), size=(40, 40))
         self.pause_image = ctk.CTkImage(Image.open(os.path.join(image_path, "pause.png")), size=(40, 40))
 
         self.play_pause_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.play_image)
-        self.play_pause_image_label.grid(row=0, column=0, padx=15, pady=5, sticky="ns")        
-
-        self.stop_image = ctk.CTkImage(Image.open(os.path.join(image_path, "stop.png")), size=(40, 40))
-        self.stop_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.stop_image)
-        self.stop_image_label.grid(row=0, column=1, padx=15, pady=5, sticky="ns")    
+        self.play_pause_image_label.grid(row=0, column=0, padx=15, pady=5, sticky="ns")         
 
         self.bin_image = ctk.CTkImage(Image.open(os.path.join(image_path, "bin.png")), size=(40, 40))
         self.bin_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.bin_image)
-        self.bin_image_label.grid(row=0, column=2, padx=15, pady=5, sticky="ns")        
+        self.bin_image_label.grid(row=0, column=1, padx=15, pady=5, sticky="ns")        
 
         self.add_file_image = ctk.CTkImage(Image.open(os.path.join(image_path, "add-file.png")), size=(40, 40))
         self.add_file_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.add_file_image)
-        self.add_file_image_label.grid(row=0, column=3, padx=15, pady=5, sticky="ns")      
+        self.add_file_image_label.grid(row=0, column=2, padx=15, pady=5, sticky="ns")      
 
         self.frame_commands = ctk.CTkFrame(self)
         self.frame_commands.grid(row=2, column=0, padx=20, pady=(10, 0), sticky="ew")
@@ -195,11 +229,11 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.frame_commands.grid_columnconfigure(3, weight=1)
         self.frame_commands.grid_columnconfigure(4, weight=1)
 
-        self.entry_interval = ctk.CTkLabel(self.frame_commands, text="Intervalo:", justify="right")
-        self.entry_interval.grid(row=0, column=0, padx=(10,0), pady=5, sticky="ew")
+        self.interval_label = ctk.CTkLabel(self.frame_commands, text="Intervalo:", justify="right")
+        self.interval_label.grid(row=0, column=0, padx=(10,0), pady=5, sticky="ew")
 
-        self.entry_interval = ctk.CTkEntry(self.frame_commands, placeholder_text="15", width=60, state="disabled", validate="key", validatecommand=(self.validate, "%P"))
-        self.entry_interval.grid(row=0, column=1, padx=(0,10), pady=5, sticky="ew")
+        self.interval_entry = ctk.CTkEntry(self.frame_commands, placeholder_text="15", width=60, state="disabled", validate="key", validatecommand=(self.validate, "%P"))
+        self.interval_entry.grid(row=0, column=1, padx=(0,10), pady=5, sticky="ew")
 
         self.radio_var = tkinter.IntVar(value=0)
         self.radio_button_seg = ctk.CTkRadioButton(master=self.frame_commands, text="seg", variable=self.radio_var, value=0, width=60, state="disabled")
@@ -218,39 +252,62 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.info_label = ctk.CTkLabel(self.frame_info, text="Nombre del ciclo:", justify="right")
         self.info_label.grid(row=0, column=0, padx=(10,0), pady=5, sticky="ew")
 
-        self.entry_label = ctk.CTkEntry(self.frame_info, width=300, state="disabled")
-        self.entry_label.grid(row=0, column=1, padx=(0,10), pady=5, sticky="ew")
+        self.info_entry = ctk.CTkEntry(self.frame_info, width=300, state="disabled")
+        self.info_entry.grid(row=0, column=1, padx=(0,10), pady=5, sticky="ew")
 
         self.main_button_interval = ctk.CTkButton(master=self.frame_info, text="Enviar", command=self.send_button_event, width=80, state="disabled")
         self.main_button_interval.grid(row=0, column=2, padx=0, pady=5)
     
     def process_data_control_cycle(self, data):
         if data == MsgType.ESP_CONNECTED:
-            self.esp_connected()        
+            self.esp_connected() 
+
+        if data == MsgType.ESP_SYNCRONIZED or data == MsgType.NEW_CYCLE_SENT:
+            self.esp_syncronized() 
         
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
 
+        if data == MsgType.CYCLE_DELETED:
+            self.play_pause_image_label.unbind("<Enter>")
+            self.play_pause_image_label.unbind("<Leave>")
+            self.play_pause_image_label.unbind("<Button-1>")
+            self.is_playing = False
+
+            self.bin_image_label.unbind("<Enter>")
+            self.bin_image_label.unbind("<Leave>")
+            self.bin_image_label.unbind("<Button-1>")
+
     def esp_connected(self):
-        self.play_pause_image_label.bind("<Enter>", self.on_hover)
-        self.play_pause_image_label.bind("<Leave>", self.off_hover)
-        self.play_pause_image_label.bind("<Button-1>", self.play_pause_event)
-        self.is_playing = True
+        self.add_file_image_label.bind("<Enter>", self.on_hover)
+        self.add_file_image_label.bind("<Leave>", self.off_hover)
+        self.add_file_image_label.bind("<Button-1>", self.load_cycle_event)
 
-        self.stop_image_label.bind("<Enter>", self.on_hover)
-        self.stop_image_label.bind("<Leave>", self.off_hover)
+        self.main_button_interval.configure(state = "normal")
+        self.interval_entry.configure(state = "normal")
+        self.info_entry.configure(state = "normal")
+        self.radio_button_seg.configure(state = "normal")
+        self.radio_button_min.configure(state = "normal")
+    
+    def esp_syncronized(self):
+        if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING: # Si hay un ciclo corriendo, habilito play/pause y eliminar
+            self.play_pause_image_label.configure(image=self.pause_image)
+            self.play_pause_image_label.bind("<Enter>", self.on_hover)
+            self.play_pause_image_label.bind("<Leave>", self.off_hover)
+            self.play_pause_image_label.bind("<Button-1>", self.play_pause_event)
+            self.is_playing = True
 
-        self.bin_image_label.bind("<Enter>", self.on_hover)
-        self.bin_image_label.bind("<Leave>", self.off_hover)
-        self.bin_image_label.bind("<Button-1>", self.delete_cycle_event)
+            self.bin_image_label.bind("<Enter>", self.on_hover)
+            self.bin_image_label.bind("<Leave>", self.off_hover)
+            self.bin_image_label.bind("<Button-1>", self.delete_cycle_event)
 
         self.add_file_image_label.bind("<Enter>", self.on_hover)
         self.add_file_image_label.bind("<Leave>", self.off_hover)
         self.add_file_image_label.bind("<Button-1>", self.load_cycle_event)
 
         self.main_button_interval.configure(state = "normal")
-        self.entry_interval.configure(state = "normal")
-        self.entry_label.configure(state = "normal")
+        self.interval_entry.configure(state = "normal")
+        self.info_entry.configure(state = "normal")
         self.radio_button_seg.configure(state = "normal")
         self.radio_button_min.configure(state = "normal")
 
@@ -260,9 +317,6 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.play_pause_image_label.unbind("<Button-1>")
         self.is_playing = False
 
-        self.stop_image_label.unbind("<Enter>")
-        self.stop_image_label.unbind("<Leave>")
-
         self.bin_image_label.unbind("<Enter>")
         self.bin_image_label.unbind("<Leave>")
         self.bin_image_label.unbind("<Button-1>")
@@ -271,28 +325,40 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.add_file_image_label.unbind("<Leave>")
 
         self.main_button_interval.configure(state = "disabled")
-        self.entry_interval.configure(state = "disabled")
+        self.interval_entry.configure(state = "disabled")
+        self.info_entry.configure(state = "disabled")
         self.radio_button_seg.configure(state = "disabled")
         self.radio_button_min.configure(state = "disabled")
 
+        self.fname = ""
+        self.interval_entry.delete(0, "end")
+        self.interval_entry.insert(0,"")
+        self.info_entry.delete(0, "end")
+        self.info_entry.insert(0,"")
+
     def on_hover(self, event):
         self.play_pause_image_label.configure(cursor="hand2") 
-        self.stop_image_label.configure(cursor="hand2") 
         self.bin_image_label.configure(cursor="hand2")
         self.add_file_image_label.configure(cursor="hand2") 
 
     def off_hover(self, event):
         self.play_pause_image_label.configure(cursor="arrow") 
-        self.stop_image_label.configure(cursor="arrow") 
         self.bin_image_label.configure(cursor="arrow")
         self.add_file_image_label.configure(cursor="arrow") 
     
     def play_pause_event(self, event):
-        if self.is_playing:
-            self.play_pause_image_label.configure(image=self.pause_image)
-        else:
+        if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING:
             self.play_pause_image_label.configure(image=self.play_image)
-        self.is_playing = not self.is_playing
+            # TODO: enviar el comando de que se ponga en pausa
+            # ui_serial.cycle_status = CycleStatus.CYCLE_PAUSED
+            # ui_serial.publisher.notify_paused()
+
+        elif ui_serial.cycle_status == CycleStatus.CYCLE_PAUSED:
+            self.play_pause_image_label.configure(image=self.pause_image)
+            # TODO: enviar el comando de que ponga play
+            # ui_serial.cycle_status = CycleStatus.CYCLE_RUNNING
+            # ui_serial.publisher.notify_played()
+        
     
     def load_cycle_event(self, event):
         self.fname = filedialog.askopenfilename(title="Selecciona un archivo de ciclo", filetypes=[("Plantilla de ciclo", "*.xlsx")])
@@ -328,15 +394,24 @@ class ControlCycleFrame(ctk.CTkFrame):
     
     def delete_cycle_event(self, event):
         self.fname = ""
-        self.entry_interval.delete(0, "end")
-        self.entry_interval.insert(0,"")
-        self.entry_label.delete(0, "end")
-        self.entry_label.insert(0,"")
+        self.interval_entry.delete(0, "end")
+        self.interval_entry.insert(0,"")
+        self.info_entry.delete(0, "end")
+        self.info_entry.insert(0,"")
+
+        msg = "¿Esta seguro de que desea eliminar el ciclo " + os.path.basename(ui_serial.cycle_alias) + "?"
+
+        answer = messagebox.askquestion("Eliminar ciclo", msg)
+        if answer == "yes":
+            # TODO: enviar comando de que se elimina el ciclo
+            # ui_serial.cycle_status = CycleStatus.NOT_CYCLE
+            # ui_serial.publisher.notify_deleted()
+            print("Ciclo eliminado")        
     
     def send_button_event(self):
         try:
-            self.interval = int(self.entry_interval.get())
-            self.alias_cycle = self.entry_label.get().strip()
+            self.interval = int(self.interval_entry.get())
+            self.alias_cycle = self.info_entry.get().strip()
             if self.alias_cycle == "":
                 raise Exception("No se coloco un alias al ciclo")     
             if self.fname == "":
@@ -396,8 +471,8 @@ class ControlCycleFrame(ctk.CTkFrame):
             self.send_data_and_wait_hs(b"#TRANSFER1!\n")
             ui_serial.publisher.unsubscribe(self.wait_for_ok)
             self.load_expected_lists("input_csv/"+id+"/data_"+id+".csv")
-            ui_serial.cycle_status = CycleStatus.CYCLE_RUNNING
             ui_serial.publisher.notify_new_cycle_started()
+            ui_serial.cycle_status = CycleStatus.CYCLE_RUNNING
         except Exception as e:
             print(e)
             messagebox.showerror("Error", "Se produjo un error durante la transferencia del ciclo!")
@@ -588,9 +663,44 @@ class LogFrame(ctk.CTkFrame):
             for widget in self.scrollable_frame.winfo_children():
                 widget.destroy()
             return 
-           
-        # TODO: se tienen que cargar todas las mediciones en el log 
-        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and not ui_serial.cycle_status == CycleStatus.NOT_CYCLE):
+            
+        if data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED):
+            num_measurements = len(data_lists['id'])
+            start_index = max(0, num_measurements - 50)
+
+            for i in range(start_index, num_measurements):
+                self.frame_line = ctk.CTkFrame(self.scrollable_frame)
+                self.frame_line.pack(fill="x")
+
+                self.in_frame = ctk.CTkFrame(self.frame_line)
+                self.in_frame.pack(fill="x")
+
+                date, hour = self.calculate_datetime(i)
+                
+                self.label_time = ctk.CTkLabel(self.in_frame, text=hour, corner_radius=0, width=150) 
+                self.label_time.pack(side='left')
+
+                self.label_date = ctk.CTkLabel(self.in_frame, text=date, corner_radius=0, width=200) 
+                self.label_date.pack(side='left')
+
+                self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['od'][i]), corner_radius=0, width=150)
+                self.label_od.pack(side='left')
+
+                self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['ph'][i]), corner_radius=0, width=150)
+                self.label_ph.pack(side='left')
+
+                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light'][i]}", corner_radius=0, width=150)
+                self.label_light.pack(side='left')
+
+                self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][i]), corner_radius=0, width=200)
+                self.label_temp.pack(side='left')
+
+                self.label_cycle = ctk.CTkLabel(self.in_frame, text=ui_serial.cycle_alias, corner_radius=0, width=150) 
+                self.label_cycle.pack(side='left')
+
+            self.scrollable_frame._parent_canvas.yview_moveto(1.0)
+
+        if data == MsgType.NEW_MEASUREMENT:
             num_measurements = len(data_lists['id'])
             if num_measurements == 0:
                 return
@@ -637,7 +747,9 @@ class LogFrame(ctk.CTkFrame):
             self.label_export.bind("<Leave>", self.off_hover)
             self.label_export.bind("<Button-1>", self.export_event)
 
-        if data == MsgType.ESP_DISCONNECTED:
+        if data == MsgType.ESP_DISCONNECTED or data == MsgType.CYCLE_DELETED:
+            for widget in self.scrollable_frame.winfo_children():
+                widget.destroy()
             self.label_export.unbind("<Enter>")
             self.label_export.unbind("<Leave>")
             self.label_export.unbind("<Button-1>")
