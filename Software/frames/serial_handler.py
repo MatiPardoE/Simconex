@@ -16,6 +16,9 @@ class MsgType(Enum):
     ESP_PAUSED = 5
     ESP_PLAYED = 6
     CYCLE_DELETED = 7
+    TEMP_OUT_OF_RANGE = 8
+    OD_OUT_OF_RANGE = 9
+    PH_OUT_OF_RANGE = 10
 
 class CycleStatus(Enum):
     NOT_CYCLE = 0 # No hay un ciclo corriendo
@@ -83,6 +86,17 @@ class SerialPublisher:
     def notify_connected(self):
         for callback in self.subscribers: callback(MsgType.ESP_CONNECTED)
 
+    def notify_out_of_range(self, variable):
+        if variable == 'ph':
+            for callback in self.subscribers: 
+                callback(MsgType.PH_OUT_OF_RANGE)
+        elif variable == 'od':
+            for callback in self.subscribers: 
+                callback(MsgType.OD_OUT_OF_RANGE)
+        elif variable == 'temperature':
+            for callback in self.subscribers: 
+                callback(MsgType.TEMP_OUT_OF_RANGE)
+
     def notify_subscribers(self, data):
         if "#Z1!" in data:
             for callback in self.subscribers: callback(MsgType.ESP_DISCONNECTED)
@@ -102,6 +116,10 @@ class SerialPublisher:
             data_lists['n2'].append(int(match.group(8)))
             data_lists['air'].append(int(match.group(9)))
             self.send_data(b"#OK!\n")
+
+            self.in_range(data_lists['od'], data_lists_expected['od'], len(data_lists['od']), 'od')
+            self.in_range(data_lists['ph'], data_lists_expected['ph'], len(data_lists['ph']), 'ph')
+            self.in_range(data_lists['temperature'], data_lists_expected['temperature'], len(data_lists['temperature']), 'temperature')
 
             for callback in self.subscribers: callback(MsgType.NEW_MEASUREMENT)
         
@@ -233,6 +251,21 @@ class SerialPublisher:
 
     def force_sync(self):
         for callback in self.subscribers: callback(MsgType.ESP_SYNCRONIZED)
+
+    def in_range(self, list_1, list_2, index, variable):
+        if index-3 < 0:
+            return True
+        last_list_1 = list_1[-3:]
+        last_list_2 = list_2[index-3:index]
+
+        # Comparar los valores
+        for v1, v2 in zip(last_list_1, last_list_2):
+            if abs(v2 - v1) < 0.1 * v1:  
+                return True
+        
+        print("[" + variable + "] Fuera de rango!")
+        self.notify_out_of_range(variable)
+        return False
 
 publisher = SerialPublisher()
 cycle_id = "" 

@@ -53,6 +53,7 @@ class App(ctk.CTk):
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         self.geometry(f"{screen_width}x{screen_height}+0+0")
+        self.alert_counter = 0
 
         ui_serial.publisher.subscribe(self.update_btn)
 
@@ -256,6 +257,16 @@ def backend(data):
         data_lists_expected['temperature'] = []
 
         ui_serial.cycle_status = CycleStatus.NOT_CYCLE
+    
+    if data == MsgType.PH_OUT_OF_RANGE:
+        app.alert_counter += 1
+        app.alerts_button.configure(text="Alertas [" + str(app.alert_counter) +"]")
+    if data == MsgType.OD_OUT_OF_RANGE:
+        app.alert_counter += 1
+        app.alerts_button.configure(text="Alertas [" + str(app.alert_counter) +"]")
+    if data == MsgType.TEMP_OUT_OF_RANGE:
+        app.alert_counter += 1
+        app.alerts_button.configure(text="Alertas [" + str(app.alert_counter) +"]")
 
 if __name__ == "__main__":
     ui_serial.publisher.subscribe(backend)
