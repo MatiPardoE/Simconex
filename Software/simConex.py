@@ -214,6 +214,10 @@ def backend(data):
     if data == MsgType.ESP_SYNCRONIZED or data == MsgType.NEW_CYCLE_SENT:
         app.sync_button.configure(state="disabled")
         app.sync_button.configure(text="Sincronizado")
+
+        app.alerts_button.configure(text="Alertas")
+        app.alert_counter = 0
+        
         fname = os.path.join(os.getcwd(), "input_csv", ui_serial.cycle_id, "data_"+ui_serial.cycle_id+".csv")
         with open(fname, "r") as csvfile:
             reader = csv.reader(csvfile)
@@ -239,6 +243,9 @@ def backend(data):
     if data == MsgType.ESP_DISCONNECTED:
         app.sync_button.configure(state="disabled")
         app.sync_button.configure(text="Sincronizar")
+
+        app.alerts_button.configure(text="Alertas")
+        app.alert_counter = 0
 
         data_lists['id'] = []
         data_lists['light'] = []

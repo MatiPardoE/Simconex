@@ -50,7 +50,12 @@ class LogFrame(ctk.CTkScrollableFrame):
         self.scrollable_frame.pack(pady=10, padx=10, fill="both", expand=True)
     
     def update_log(self, data):
-        if data == MsgType.PH_OUT_OF_RANGE:
+        if data == MsgType.NEW_CYCLE_SENT or data == MsgType.ESP_DISCONNECTED or data == MsgType.CYCLE_DELETED:
+            for widget in self.scrollable_frame.winfo_children():
+                widget.destroy()
+            return 
+        
+        if data == MsgType.PH_OUT_OF_RANGE or data == MsgType.OD_OUT_OF_RANGE or data == MsgType.TEMP_OUT_OF_RANGE:
             self.frame_line = ctk.CTkFrame(self.scrollable_frame)
             self.frame_line.pack(fill="x")
 
@@ -63,50 +68,19 @@ class LogFrame(ctk.CTkScrollableFrame):
             self.label_date = ctk.CTkLabel(self.in_frame, text="date", corner_radius=0, width=200) 
             self.label_date.pack(side='left')
 
-            self.label_description = ctk.CTkLabel(self.in_frame, text="pH fuera de rango", corner_radius=0, width=150)
+            if data == MsgType.PH_OUT_OF_RANGE:
+                self.label_description = ctk.CTkLabel(self.in_frame, text="pH fuera de rango", corner_radius=0, width=150)
+            elif data == MsgType.OD_OUT_OF_RANGE:
+                self.label_description = ctk.CTkLabel(self.in_frame, text="OD fuera de rango", corner_radius=0, width=150)
+            elif data == MsgType.TEMP_OUT_OF_RANGE:
+                self.label_description = ctk.CTkLabel(self.in_frame, text="Temperatura fuera de rango", corner_radius=0, width=150)
+            
             self.label_description.pack(side='left')
 
             self.label_priority = ctk.CTkLabel(self.in_frame, text="Alta", corner_radius=0, width=150)
             self.label_priority.pack(side='left')
 
             self.scrollable_frame._parent_canvas.yview_moveto(1.0)
-        if data == MsgType.OD_OUT_OF_RANGE:
-            self.frame_line = ctk.CTkFrame(self.scrollable_frame)
-            self.frame_line.pack(fill="x")
-
-            self.in_frame = ctk.CTkFrame(self.frame_line)
-            self.in_frame.pack(fill="x")
-            
-            self.label_time = ctk.CTkLabel(self.in_frame, text="hour", corner_radius=0, width=150) 
-            self.label_time.pack(side='left')
-
-            self.label_date = ctk.CTkLabel(self.in_frame, text="date", corner_radius=0, width=200) 
-            self.label_date.pack(side='left')
-
-            self.label_description = ctk.CTkLabel(self.in_frame, text="OD fuera de rango", corner_radius=0, width=150)
-            self.label_description.pack(side='left')
-
-            self.label_priority = ctk.CTkLabel(self.in_frame, text="Alta", corner_radius=0, width=150)
-            self.label_priority.pack(side='left')
-        if data == MsgType.TEMP_OUT_OF_RANGE:
-            self.frame_line = ctk.CTkFrame(self.scrollable_frame)
-            self.frame_line.pack(fill="x")
-
-            self.in_frame = ctk.CTkFrame(self.frame_line)
-            self.in_frame.pack(fill="x")
-            
-            self.label_time = ctk.CTkLabel(self.in_frame, text="hour", corner_radius=0, width=150) 
-            self.label_time.pack(side='left')
-
-            self.label_date = ctk.CTkLabel(self.in_frame, text="date", corner_radius=0, width=200) 
-            self.label_date.pack(side='left')
-
-            self.label_description = ctk.CTkLabel(self.in_frame, text="Temperatura fuera de rango", corner_radius=0, width=150)
-            self.label_description.pack(side='left')
-
-            self.label_priority = ctk.CTkLabel(self.in_frame, text="Alta", corner_radius=0, width=150)
-            self.label_priority.pack(side='left')
-
 
 class AlertsFrame(ctk.CTkFrame):
     def __init__(self, master):
