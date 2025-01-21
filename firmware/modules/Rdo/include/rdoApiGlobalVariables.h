@@ -49,12 +49,13 @@
     extern volatile rdo_t   rdo;
     extern bool initRDO;
 
-    extern uint8_t calModeOn [];    
+    extern uint8_t calModeOn                        [];    
     extern uint8_t saturationBarometricPressure100  [];
     extern uint8_t saturationSalinity100            [];
     extern uint8_t defaultBarometricPressure        [];
     //
-    extern uint8_t calUpdate [];
+    extern uint8_t calUpdate    [];
+    extern uint8_t calModeOff   []; 
 
 
 

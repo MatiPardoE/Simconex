@@ -93,40 +93,69 @@ void requestRDO ( volatile rdo_t * rdo ){
 
     //ESTO SERIA LO NUEVO
     case WRITE_CALIBRATION_COMMAND:
+        Serial.print("\n\t<--- ESP -> RDO: ESTADO: WRITE_CALIBRATION_COMMAND --->\n");
         modbus.writeMultHoldingRegisters(RDO_SLAVE_ID,SENSOR_CMD_REG,CAL_NUM_REGS,calModeOn);
         rdo->requests++;
     break;
 
+    case SET_LIVE_BAR_PRESSURE:
+        Serial.print("\n\t<--- ESP -> RDO: ESTADO: SET_LIVE_BAR_PRESSURE --->\n");
+        rdo->calibration.liveBarometricPressure = *reinterpret_cast<float*>(defaultBarometricPressure);
+        modbus.writeMultHoldingRegisters(RDO_SLAVE_ID,_LIVE_BAROMETRIC_PRESS_,_LIVE_BAROMETRIC_PRESS_SIZE_,defaultBarometricPressure);
+        rdo->requests++;
+    break;
+    
     case SET_100_SAT_BAR_PRESSURE:
-         
+        Serial.print("\n\t<--- ESP -> RDO: ESTADO: SET_100_SAT_BAR_PRESSURE --->\n");
         rdo->calibration._100saturationBarometric = *reinterpret_cast<float*>(saturationBarometricPressure100);
         modbus.writeMultHoldingRegisters(RDO_SLAVE_ID,_SATURATION_BAR_PRESS_100_,_SATURATION_BAR_PRESS_100_SIZE_,saturationBarometricPressure100);
         rdo->requests++;
     break;
 
     case SET_100_SAT_SALINITY:
+        Serial.print("\n\t<--- ESP -> RDO: ESTADO: SET_100_SAT_SALINITY --->\n");
         rdo->calibration._100saturationSalinity = *reinterpret_cast<float*>(saturationSalinity100);
         modbus.writeMultHoldingRegisters(RDO_SLAVE_ID,_SATURATION_SALINITY_100_,_SATURATION_SALINITY_100_SIZE_,saturationSalinity100);
         rdo->requests++;
     break;
 
-    case SET_DEFAULT_BAR_PRESSURE:
-        rdo->calibration.defaultBarometricPressure = *reinterpret_cast<float*>(defaultBarometricPressure);
-        modbus.writeMultHoldingRegisters(RDO_SLAVE_ID,_DEFAULT_BAROMETRIC_PRESS_,_DEFAULT_BAROMETRIC_PRESS_SIZE_,defaultBarometricPressure);
+    case SET_100_SAT_CONCENTRATION:
+        Serial.print("\n\t<--- ESP -> RDO: ESTADO: SET_100_SAT_CONCENTRATION --->\n");
+        rdo->calibration._100saturationConcentration = rdo->doConcentration.measuredValue;
+
+        Serial.printf("\n\t<--- CALIBRE CON %f\n",rdo->doConcentration.measuredValue);
+        
+        memcpy( &tmpData, (void*) &(rdo->doConcentration.measuredValue), sizeof(float) );
+        std::reverse(tmpData, tmpData + 4);
+        modbus.writeMultHoldingRegisters(RDO_SLAVE_ID,_SATURATION_CONC_100_,_SATURATION_CONC_100_SIZE_,tmpData);
         rdo->requests++;
     break;
 
-    case SET_100_SAT_CONCENTRATION:
-        rdo->calibration._100saturationConcentration = rdo->doConcentration.measuredValue;
-        memcpy( &tmpData, (void*) &(rdo->doConcentration.measuredValue), sizeof(float) );
-        modbus.writeMultHoldingRegisters(RDO_SLAVE_ID,_SATURATION_CONC_100_,_SATURATION_CONC_100_SIZE_, tmpData );
+    case SET_100_SAT_TEMPERATURE:
+        Serial.print("\n\t<--- ESP -> RDO: ESTADO: SET_100_SAT_TEMPERATURE --->\n");
+        rdo->calibration._100saturationTemperature = rdo->temperature.measuredValue;
+
+        Serial.printf("\n\t<--- CALIBRE CON %f\n",rdo->temperature.measuredValue);
+        
+        memcpy( &tmpData, (void*) &(rdo->temperature.measuredValue), sizeof(float) );
+        std::reverse(tmpData, tmpData + 4);
+        modbus.writeMultHoldingRegisters(RDO_SLAVE_ID,_SATURATION_TEMP_100_,_SATURATION_TEMP_100_SIZE_, tmpData );
         rdo->requests++;
     break;
 
     case UPDATE_CALIBRATION_COMMAND:
+        Serial.print("\n\t<--- ESP -> RDO: ESTADO: UPDATE_CALIBRATION_COMMAND --->\n");
         modbus.writeMultHoldingRegisters(RDO_SLAVE_ID,SENSOR_CMD_REG,CAL_NUM_REGS,calUpdate);
         rdo->requests++;
     break;
+
+    case WRITE_CALIBRATION_COMMAND_OFF:
+        Serial.print("\n\t<--- ESP -> RDO: ESTADO: WRITE_CALIBRATION_COMMAND_OFF --->\n");
+        modbus.writeMultHoldingRegisters(RDO_SLAVE_ID,SENSOR_CMD_REG,CAL_NUM_REGS,calModeOff);
+        rdo->requests++;
+    break;
+
+
 
 
     default:
@@ -191,6 +220,7 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
         case esp32Modbus::FunctionCode::READ_HOLD_REGISTER:
 
             id = data[DATA_BYTE_ID];
+
             switch (id)
             {
                 case DO_CONCENTRATION_ID:
@@ -198,10 +228,10 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
                     tmpMeasure = *reinterpret_cast<float*>(data);
 
                     if( evaluateEquilibrium(&rdo,id,tmpMeasure) == true ){
-                        rdo.onCalibration = false;
+                        //rdo.onCalibration = false;
                         rdo.doConcentration.measuredValue = tmpMeasure;
                         rdo.replies++;
-                        rdo.status = SET_100_SAT_BAR_PRESSURE;
+                        rdo.status = SET_LIVE_BAR_PRESSURE;
                         return;
                     }
 
@@ -215,10 +245,10 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
                     tmpMeasure = *reinterpret_cast<float*>(data); 
 
                     if( evaluateEquilibrium(&rdo,id,tmpMeasure) == true ){
-                        rdo.onCalibration = false;
+                        //rdo.onCalibration = false;
                         rdo.temperature.measuredValue = tmpMeasure;
                         rdo.replies++;
-                        rdo.status = SET_100_SAT_BAR_PRESSURE;
+                        rdo.status = SET_LIVE_BAR_PRESSURE;
                         return;
                     }
 
@@ -232,10 +262,10 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
                     tmpMeasure = *reinterpret_cast<float*>(data); 
 
                     if( evaluateEquilibrium(&rdo,id,tmpMeasure) == true ){
-                        rdo.onCalibration = false;
+                        //rdo.onCalibration = false;
                         rdo.doSaturation.measuredValue = tmpMeasure;
                         rdo.replies++;
-                        rdo.status = SET_100_SAT_BAR_PRESSURE;
+                        rdo.status = SET_LIVE_BAR_PRESSURE;
                         return;
                     }
 
@@ -249,53 +279,88 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
             }
 
             Serial.printf("\n\t\t<--- %d --->\n",id);
-            Serial.printf("DO CONC [mg/L]: %.2f\n", rdo.doConcentration.measuredValue);
-            Serial.printf("TEMP [°c]: %.2f\n"     , rdo.temperature.measuredValue);
-            Serial.printf("DO SAT [%]: %.2f\n"    , rdo.doSaturation.measuredValue);
+            Serial.printf("DO CONC [mg/L]: %.2f\t", rdo.doConcentration.measuredValue);
+            Serial.printf("TEMP [°c]: %.2f\t"     , rdo.temperature.measuredValue);
+            Serial.printf("DO SAT [%]: %.2f\t"    , rdo.doSaturation.measuredValue);
 
             break;
 
         case esp32Modbus::FunctionCode::WRITE_MULT_REGISTERS:
 
             //TODO: CHEQUEAR SI ESTA BIEN!
-            dataAddress = data[0]<<8 | data[1];
-            Serial.printf("\n\t DATA ADDRESS : %d - %d \n",data[0],data[1]);
+            //dataAddress =  data[3]<<24 | data[2]<<16 | data[1]<<8 | data[0];
+            //Serial.printf("\n\t DATA ADDRESS : %d \n", dataAddress );
 
 
-            switch(dataAddress){
+            /*
+            Serial.printf("received data: id: %u, fc %u\ndata[%d]: 0x", serverAddress, fc , length);
+            for (uint8_t i = 0; i < length; ++i) {
+                Serial.printf("%02x", data[i]);
+            }
+            */
+            
 
-                case SENSOR_CMD_REG:
+
+            //switch(dataAddress){
+            switch(rdo.status){
+
+                //case SENSOR_CMD_REG:
+                case WRITE_CALIBRATION_COMMAND:
+                    Serial.print("RDO -> ESP :WRITE_CALIBRATION_COMMAND");
                     rdo.replies++;
                     rdo.status = GET_DO;
-                    if( rdo.status == UPDATE_CALIBRATION_COMMAND )
-                        rdo.onCalibration = false;
                 break;
 
-                case _SATURATION_BAR_PRESS_100_:
+                case SET_LIVE_BAR_PRESSURE:
+                    Serial.print("RDO -> ESP :SET_LIVE_BAR_PRESSURE");
+                    rdo.replies++;
+                    rdo.status = SET_100_SAT_BAR_PRESSURE;
+                break;
+
+                case SET_100_SAT_BAR_PRESSURE:
+                    Serial.print("RDO -> ESP :SET_100_SAT_BAR_PRESSURE");
                     rdo.replies++;
                     rdo.status = SET_100_SAT_SALINITY;
                 break;
 
-                case _SATURATION_SALINITY_100_:
-                    rdo.replies++;
-                    rdo.status = SET_DEFAULT_BAR_PRESSURE;
-                break;
-
-                case _DEFAULT_BAROMETRIC_PRESS_:
+                //case _SATURATION_SALINITY_100_:
+                case SET_100_SAT_SALINITY:
+                    Serial.print("RDO -> ESP :SET_100_SAT_SALINITY");
                     rdo.replies++;
                     rdo.status = SET_100_SAT_CONCENTRATION;
                 break;
 
-                case _SATURATION_CONC_100_:
+                //case _DEFAULT_BAROMETRIC_PRESS_:
+                case SET_100_SAT_CONCENTRATION:    
+                    Serial.print("RDO -> ESP :SET_100_SAT_CONCENTRATION");
+                    rdo.replies++;
+                    rdo.status = SET_100_SAT_TEMPERATURE;
+                break;
+
+                //case _SATURATION_CONC_100_:
+                case SET_100_SAT_TEMPERATURE:
+                    Serial.print("RDO -> ESP :SET_100_SAT_TEMPERATURE");
                     rdo.replies++;
                     rdo.status = UPDATE_CALIBRATION_COMMAND;
+                    break;
+
+                case UPDATE_CALIBRATION_COMMAND:
+                    Serial.print("RDO -> ESP :UPDATE_CALIBRATION_COMMAND");
+                    rdo.replies++;
+                    rdo.status = WRITE_CALIBRATION_COMMAND_OFF;
+                    break;
+
+                case WRITE_CALIBRATION_COMMAND_OFF:
+                    Serial.print("RDO -> ESP :WRITE_CALIBRATION_COMMAND_OFF");
+                    rdo.replies++;
+                    rdo.status = GET_DO;
+                    rdo.onCalibration = false;
                     break;
 
                 default:
                     break;
             }
             
-
             break;
 
     }
@@ -388,8 +453,14 @@ bool evaluateEquilibrium ( volatile rdo_t * rdo , uint8_t id , float newMeasure 
             break;
         }
 
-        if( rdo->equilibrium == EQUILIBRIUM_ACHIEVED )
+
+        Serial.printf("\tEQUILIBRIO : %d \n",rdo->equilibrium);
+
+
+        if( rdo->equilibrium == EQUILIBRIUM_ACHIEVED ){
+            rdo->equilibrium = 0;
             return true;
+        }
         else
             return false;
     }
