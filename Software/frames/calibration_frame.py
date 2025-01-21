@@ -4,6 +4,9 @@ import time
 import threading
 from PIL import Image
 import frames.serial_handler as ui_serial
+import csv
+from datetime import datetime, timedelta
+
 
 class CalibPhWindow(ctk.CTkToplevel):
     def __init__(self, master = None):
@@ -277,45 +280,88 @@ class SensorCalibrateFrame(ctk.CTkFrame):
         self.grid_rowconfigure(2, weight=1)
         self.grid_rowconfigure(3, weight=1)
 
-        self.label_sensor = ctk.CTkLabel(self, text=f"Calibracion Sensor {sensor_name}", font=ctk.CTkFont(size=20, weight="bold"))
+        self.calib_dates = {}
+        self.read_calib_file()
+
+        if sensor_name == "ph":
+            sensor_alias = "pH"
+        else:
+            sensor_alias = "OD/Temperatura"
+
+        self.label_sensor = ctk.CTkLabel(self, text=f"Calibracion Sensor {sensor_alias}", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_sensor.grid(row=0, column=0, padx=10, pady=(10,0), sticky="nsew")
 
-        if sensor_name == "pH":
+        if sensor_name == "ph":
             self.sensor_img = ctk.CTkImage(Image.open(os.path.join(image_path, "ph_probe_edited.png")), size=(150, 300))
-        elif sensor_name == "OD/Temperatura":
+        else:
             self.sensor_img = ctk.CTkImage(Image.open(os.path.join(image_path, "rdo_probe_edited.png")), size=(150, 300))
         self.sensor_img_label = ctk.CTkLabel(self, text="", image=self.sensor_img)
         self.sensor_img_label.grid(row=1, column=0, padx=0, pady=0, sticky="nsew")
 
-        self.label_last_cal = ctk.CTkLabel(self, text=f"Ultima calibracion realizada hace {last_calibration} meses", font=ctk.CTkFont(size=12))
+        self.label_last_cal = ctk.CTkLabel(self, text=f"Ultima calibracion realizada el " + str(self.calib_dates.get(sensor_name).strftime('%d/%m/%Y')), font=ctk.CTkFont(size=12))
         self.label_last_cal.grid(row=2, column=0, padx=10, pady=0, sticky="nsew")
 
         self.cal_button = ctk.CTkButton(self, text="Calibrar sensor", height=40)
-        if sensor_name == "pH":
+        if sensor_name == "ph":
             self.cal_button.configure(command=self.cal_ph_button_event)
-        elif sensor_name == "OD/Temperatura":
+        else:
             self.cal_button.configure(command=self.cal_od_button_event)
         self.cal_button.grid(row=3, column=0, padx=10, pady=(0,15))
     
     def cal_ph_button_event(self):
         self.calib_window = CalibPhWindow(self)
+        self.update_date("ph") # TODO: hacer que se actualice la fecha que se muestra
 
         self.calib_window.lift()  
         self.calib_window.attributes("-topmost", True) 
         self.calib_window.after(100, lambda: self.loading_window.attributes("-topmost", False)) 
 
         self.calib_window.focus() 
-        self.calib_window.mainloop()
+        self.calib_window.mainloop()        
     
     def cal_od_button_event(self):
         self.calib_window = CalibOdWindow(self)
+        self.update_date("od") # TODO: hacer que se actualice la fecha que se muestra
 
         self.calib_window.lift()  
         self.calib_window.attributes("-topmost", True) 
         self.calib_window.after(100, lambda: self.loading_window.attributes("-topmost", False)) 
 
         self.calib_window.focus() 
-        self.calib_window.mainloop()
+        self.calib_window.mainloop()       
+    
+    def read_calib_file(self):
+        with open("calib/calib_data.csv", mode="r", encoding="utf-8") as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                if len(row) == 2: 
+                    key, date_str = row
+                    date_obj = datetime.strptime(date_str, "%d/%m/%Y")
+                    self.check_date(date_obj)
+                    self.calib_dates[key] = date_obj
+    
+    def check_date(self, date):
+        if date:
+            three_months_ago = datetime.now() - timedelta(days=90)
+            if date < three_months_ago:
+                # TODO: enviar mensaje de que se debe calibrar el sensor
+                print("sensor descalibrado")
+    
+    def update_date(self, sensor_name):
+        data = []
+        with open("calib/calib_data.csv", mode="r", encoding="utf-8") as csvfile:
+            reader = csv.reader(csvfile)
+            data = list(reader)
+        
+        today_date = datetime.now().strftime("%d/%m/%Y")
+        
+        for row in data:
+            if len(row) == 2 and row[0] == sensor_name:
+                row[1] = today_date
+        
+        with open("calib/calib_data.csv", mode="w", encoding="utf-8", newline="") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(data)
 
 
 class RecommendationsFrame(ctk.CTkFrame):
@@ -352,10 +398,10 @@ class CalibrationFrame(ctk.CTkFrame):
         self.grid_rowconfigure(0, weight=2)
         self.grid_rowconfigure(1, weight=1)
 
-        self.instant_values_frame = SensorCalibrateFrame(self, "pH", 6)
+        self.instant_values_frame = SensorCalibrateFrame(self, "ph", 6)
         self.instant_values_frame.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsew")
 
-        self.actual_cycle_frame = SensorCalibrateFrame(self, "OD/Temperatura", 2)
+        self.actual_cycle_frame = SensorCalibrateFrame(self, "od", 2)
         self.actual_cycle_frame.grid(row=0, column=1, padx=10, pady=(10, 0), sticky="nsew")
 
         self.plot1_frame = RecommendationsFrame(self, ["Limpiar cabezal del sensor"])
