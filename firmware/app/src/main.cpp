@@ -25,12 +25,12 @@ void setup()
 {
     commUI.begin(230400); // Solo define el puerto y velocidad de comunicación
     Log.begin(LOG_LEVEL_VERBOSE, &Serial, true);
-    ESP_LOGI(TAG,"Starting...\n");
+    ESP_LOGI(TAG, "Starting...\n");
     sensorControl.init();
     delay(350);
     if (!cm.begin(SD_CS_PIN)) // Inicializa la SD y lee el header
     {
-        ESP_LOGE(TAG,"Cycle manager failed to initialize\n");
+        ESP_LOGE(TAG, "Cycle manager failed to initialize\n");
     }
 }
 
@@ -64,7 +64,7 @@ void loop()
         }
         else
         {
-            ESP_LOGE(TAG,"Cycle manager failed to initialize\n");
+            ESP_LOGE(TAG, "Cycle manager failed to initialize\n");
         }
         break;
     case CommUI::UNKNOWN_COMMAND:
@@ -90,8 +90,25 @@ void loop()
             fileTransfer.transferCycle(cm.headerPath.c_str(), cm.dataOutPath.c_str(), 10000);
         }
         break;
+    case CommUI::PAUSE_CYCLE:
+        if (cm.cycleData.status == cycle_manager::NO_CYCLE_IN_SD)
+        {
+            Serial.println("#FAIL!");
+            ESP_LOGE(TAG, "No cycle in SD, imposible pausar");
+        }
+        else if (cm.cycleData.status == cycle_manager::CYCLE_RUNNING)
+        {
+            Serial.println("#OK!");
+            cm.pauseCycle();            
+        }
+        else if (cm.cycleData.status == cycle_manager::CYCLE_COMPLETED)
+        {
+            Serial.println("#FAIL!");
+            ESP_LOGE(TAG, "Ciclo completado, imposible pausar");
+        }
+        break;
     default:
-        ESP_LOGE(TAG,"Unknown command\n");
+        ESP_LOGE(TAG, "Unknown command\n");
         break;
     }
 
@@ -102,9 +119,9 @@ void loop()
         break;
     case cycle_manager::FINISH_CYCLE:
         // Termino el ciclo por lo que debo enviar el ultimo intervalo y finalizar el ciclo
-        new_measure_outputs = sensorControl.takeMeasuresAndOutputs();                      // No deberia tardar mucho
-        cm.writeMeasuresToSD(new_measure_outputs, (cycleBundle.intervalData.interval_id-1)); // Envio el ID-1 porque el ID es el siguiente intervalo
-        ESP_LOGI(TAG,"Cycle FINISIHED");
+        new_measure_outputs = sensorControl.takeMeasuresAndOutputs();                          // No deberia tardar mucho
+        cm.writeMeasuresToSD(new_measure_outputs, (cycleBundle.intervalData.interval_id - 1)); // Envio el ID-1 porque el ID es el siguiente intervalo
+        ESP_LOGI(TAG, "Cycle FINISIHED");
         break;
     case cycle_manager::NEW_INTERVAL:
         sensorControl.set_control_var(cycleBundle.intervalData);
@@ -113,8 +130,8 @@ void loop()
             first_interval = false;
             break;
         }
-        new_measure_outputs = sensorControl.takeMeasuresAndOutputs();                      // No deberia tardar mucho
-        cm.writeMeasuresToSD(new_measure_outputs, (cycleBundle.intervalData.interval_id-1)); // Envio el ID-1 porque el ID es el siguiente intervalo
+        new_measure_outputs = sensorControl.takeMeasuresAndOutputs();                          // No deberia tardar mucho
+        cm.writeMeasuresToSD(new_measure_outputs, (cycleBundle.intervalData.interval_id - 1)); // Envio el ID-1 porque el ID es el siguiente intervalo
         break;
     default:
         break;

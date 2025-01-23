@@ -69,6 +69,7 @@ public:
     bool begin(u_int8_t SD_CS_PIN);
     CycleBundle run();
     CycleBundle firstIntervalAtRunning();
+    bool pauseCycle();
     bool readNextInterval();
     bool readInterval();
     bool resetHeaderForDebug(u_int8_t SD_CS_PIN);
