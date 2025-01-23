@@ -24,13 +24,13 @@ class ControlAPI
 public:
     // Constructor
     ControlAPI();
-    bool run();
+    bool run(cycle_manager::CycleStatus cycleStatus);
     bool init();
 
     // Function to take measures
     // TODO: Implement the function to take measures
     cycle_manager::MeasuresAndOutputs takeMeasuresAndOutputs();
-
+    bool turnOffOutputs();
     bool set_control_var(cycle_manager::IntervalData intervalData);
 
 private:

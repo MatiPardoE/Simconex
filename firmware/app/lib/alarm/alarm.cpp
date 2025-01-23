@@ -59,7 +59,7 @@ void Alarm::resumeAlarm()
     {
         Log.info("Alarma reanudada.\n");
         alarmActive = true;
-        esp_timer_start_periodic(periodic_timer, alarmIntrevalSeconds * 1000000); // Intervalo en microsegundos
+        esp_timer_start_periodic(periodic_timer, alarmIntrevalSeconds * 1000000); // Intervalo en microsegundos , si se pausa
     }
     else
     {

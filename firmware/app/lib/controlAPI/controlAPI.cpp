@@ -7,46 +7,64 @@ ControlAPI::ControlAPI()
     goalValues = {0, 0, 0, 0};
 }
 
-bool ControlAPI::run()
+bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
 {
+    // Medicion de ph
     float ph_response = get_ph();
-    if(ph_response != -1)
+    if (ph_response != -1)
     {
         measuresAndOutputs.ph = ph_response;
-        //Serial.printf("pH: %02.2f \n", ph_response);
+        // Serial.printf("pH: %02.2f \n", ph_response);
     }
 
-    //Umbrales de control
-    if (measuresAndOutputs.ph < goalValues.ph + 0.1)
+    switch (cycleStatus)
     {
-        shiftRegister.setOutput(0, HIGH);
-        shiftRegister.setOutput(1, LOW);
-        shiftRegister.setOutput(2, LOW);
-        shiftRegister.setOutput(3, LOW);
-    }
-    else if (measuresAndOutputs.ph > goalValues.ph - 0.1)
-    {
-        shiftRegister.setOutput(0, LOW);
-        shiftRegister.setOutput(1, HIGH);
-        shiftRegister.setOutput(2, LOW);
-        shiftRegister.setOutput(3, LOW);
+    case cycle_manager::CycleStatus::CYCLE_RUNNING:
+        // TODO pasar a funcion
+        // Umbrales de control
+        if (measuresAndOutputs.ph < goalValues.ph + 0.1)
+        {
+            shiftRegister.setOutput(0, HIGH);
+            shiftRegister.setOutput(1, LOW);
+            shiftRegister.setOutput(2, LOW);
+            shiftRegister.setOutput(3, LOW);
+        }
+        else if (measuresAndOutputs.ph > goalValues.ph - 0.1)
+        {
+            shiftRegister.setOutput(0, LOW);
+            shiftRegister.setOutput(1, HIGH);
+            shiftRegister.setOutput(2, LOW);
+            shiftRegister.setOutput(3, LOW);
+        }
+
+        if (ledStrip1.getDuty() != goalValues.light)
+        {
+            ledStrip1.setDuty(goalValues.light);
+            ledStrip2.setDuty(goalValues.light);
+            ledStrip3.setDuty(goalValues.light);
+            ledStrip4.setDuty(goalValues.light);
+            ledStrip5.setDuty(goalValues.light);
+        }
+        break;
+    default:
+        break;
     }
 
-    if(ledStrip1.getDuty() != goalValues.light)
-    {
-        ledStrip1.setDuty(goalValues.light);
-        ledStrip2.setDuty(goalValues.light);
-        ledStrip3.setDuty(goalValues.light);
-        ledStrip4.setDuty(goalValues.light);
-        ledStrip5.setDuty(goalValues.light);
-    }
-    
+    return true;
+}
+
+bool ControlAPI::turnOffOutputs()
+{
+    shiftRegister.setOutput(0, LOW);
+    shiftRegister.setOutput(1, LOW);
+    shiftRegister.setOutput(2, LOW);
+    shiftRegister.setOutput(3, LOW);
     return true;
 }
 
 bool ControlAPI::init()
 {
-    Wire.begin(I2C_SDA, I2C_SCL); //start the I2C
+    Wire.begin(I2C_SDA, I2C_SCL); // start the I2C
     init_pH_probe();
     ledStrip1.begin(PIN_LED_STRIP_1, 0, 5000, 8); // Configura el pin 5, canal 0, frecuencia de 5000 Hz, resolución de 8 bits
     ledStrip2.begin(PIN_LED_STRIP_2, 1, 5000, 8); // Configura el pin 18, canal 1, frecuencia de 5000 Hz, resolución de 8 bits
@@ -54,7 +72,8 @@ bool ControlAPI::init()
     ledStrip4.begin(PIN_LED_STRIP_4, 3, 5000, 8); // Configura el pin 21, canal 3, frecuencia de 5000 Hz, resolución de 8 bits
     ledStrip5.begin(PIN_LED_STRIP_5, 4, 5000, 8); // Configura el pin 22, canal 4, frecuencia de 5000 Hz, resolución de 8 bits
 
-    for (int i = 100; i >= 0; i--) {
+    for (int i = 100; i >= 0; i--)
+    {
         ledStrip1.setDuty(i);
         ledStrip2.setDuty(i);
         ledStrip3.setDuty(i);
@@ -88,7 +107,6 @@ cycle_manager::MeasuresAndOutputs ControlAPI::takeMeasuresAndOutputs()
     measuresAndOutputs.oxygen = 100.42;
     measuresAndOutputs.light = 20;
     // la medicion de ph se actualiza en el .run()
-
 
     return measuresAndOutputs;
 }
