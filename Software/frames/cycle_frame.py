@@ -151,6 +151,7 @@ class ActualCycleFrame(ctk.CTkFrame):
             self.label_actual.configure(text="Ciclo Actual: {} (terminado)".format(ui_serial.cycle_alias))
             self.progressbar_actual.configure(progress_color="green")
             messagebox.showinfo("Información", "Ciclo terminado!")
+            ui_serial.publisher.notify_cycle_finished()
 
     def reset_progressbar(self, total_time, elapsed_time, restant_time):
         self.progressbar_actual.set(0)
@@ -268,20 +269,49 @@ class ControlCycleFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
 
-        if data == MsgType.CYCLE_DELETED:
+        if data == MsgType.NEW_CYCLE_SENT:
+            self.play_pause_image_label.configure(image=self.pause_image)
+            self.enable_play_pause(True)
+
+        if data == MsgType.CYCLE_DELETED or data == MsgType.CYCLE_FINISHED:
+            self.play_pause_image_label.configure(image=self.play_image)
+            self.enable_play_pause(False)
+            self.enable_bin(False)
+
+    def enable_load_file(self, bool):
+        if bool:
+            self.add_file_image_label.bind("<Enter>", self.on_hover)
+            self.add_file_image_label.bind("<Leave>", self.off_hover)
+            self.add_file_image_label.bind("<Button-1>", self.load_cycle_event)
+        else:
+            self.add_file_image_label.unbind("<Enter>")
+            self.add_file_image_label.unbind("<Leave>")
+            self.add_file_image_label.unbind("<Button-1>")
+
+    def enable_play_pause(self, bool):
+        if bool:
+            self.play_pause_image_label.bind("<Enter>", self.on_hover)
+            self.play_pause_image_label.bind("<Leave>", self.off_hover)
+            self.play_pause_image_label.bind("<Button-1>", self.play_pause_event)
+            self.is_playing = True
+        else:
             self.play_pause_image_label.unbind("<Enter>")
             self.play_pause_image_label.unbind("<Leave>")
             self.play_pause_image_label.unbind("<Button-1>")
             self.is_playing = False
 
+    def enable_bin(self, bool):
+        if bool:
+            self.bin_image_label.bind("<Enter>", self.on_hover)
+            self.bin_image_label.bind("<Leave>", self.off_hover)
+            self.bin_image_label.bind("<Button-1>", self.delete_cycle_event)
+        else:
             self.bin_image_label.unbind("<Enter>")
             self.bin_image_label.unbind("<Leave>")
             self.bin_image_label.unbind("<Button-1>")
 
     def esp_connected(self):
-        self.add_file_image_label.bind("<Enter>", self.on_hover)
-        self.add_file_image_label.bind("<Leave>", self.off_hover)
-        self.add_file_image_label.bind("<Button-1>", self.load_cycle_event)
+        self.enable_load_file(True)
 
         self.main_button_interval.configure(state = "normal")
         self.interval_entry.configure(state = "normal")
@@ -290,20 +320,13 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.radio_button_min.configure(state = "normal")
     
     def esp_syncronized(self):
+        self.enable_load_file(True)
+
         if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING: # Si hay un ciclo corriendo, habilito play/pause y eliminar
             self.play_pause_image_label.configure(image=self.pause_image)
-            self.play_pause_image_label.bind("<Enter>", self.on_hover)
-            self.play_pause_image_label.bind("<Leave>", self.off_hover)
-            self.play_pause_image_label.bind("<Button-1>", self.play_pause_event)
-            self.is_playing = True
-
-            self.bin_image_label.bind("<Enter>", self.on_hover)
-            self.bin_image_label.bind("<Leave>", self.off_hover)
-            self.bin_image_label.bind("<Button-1>", self.delete_cycle_event)
-
-        self.add_file_image_label.bind("<Enter>", self.on_hover)
-        self.add_file_image_label.bind("<Leave>", self.off_hover)
-        self.add_file_image_label.bind("<Button-1>", self.load_cycle_event)
+            self.enable_play_pause(True)
+            self.enable_bin(True)
+            self.enable_load_file(False)        
 
         self.main_button_interval.configure(state = "normal")
         self.interval_entry.configure(state = "normal")
@@ -312,17 +335,9 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.radio_button_min.configure(state = "normal")
 
     def esp_disconnected(self):
-        self.play_pause_image_label.unbind("<Enter>")
-        self.play_pause_image_label.unbind("<Leave>")
-        self.play_pause_image_label.unbind("<Button-1>")
-        self.is_playing = False
-
-        self.bin_image_label.unbind("<Enter>")
-        self.bin_image_label.unbind("<Leave>")
-        self.bin_image_label.unbind("<Button-1>")
-
-        self.add_file_image_label.unbind("<Enter>")
-        self.add_file_image_label.unbind("<Leave>")
+        self.enable_play_pause(False)
+        self.enable_bin(False)
+        self.enable_load_file(False)
 
         self.main_button_interval.configure(state = "disabled")
         self.interval_entry.configure(state = "disabled")
@@ -349,15 +364,19 @@ class ControlCycleFrame(ctk.CTkFrame):
     def play_pause_event(self, event):
         if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING:
             self.play_pause_image_label.configure(image=self.play_image)
-            # TODO: enviar el comando de que se ponga en pausa
-            # ui_serial.cycle_status = CycleStatus.CYCLE_PAUSED
-            # ui_serial.publisher.notify_paused()
+            self.enable_bin(True)
+
+            ui_serial.publisher.send_data(b"#PAUSE!\n")
+            ui_serial.cycle_status = CycleStatus.CYCLE_PAUSED
+            ui_serial.publisher.notify_paused()
 
         elif ui_serial.cycle_status == CycleStatus.CYCLE_PAUSED:
             self.play_pause_image_label.configure(image=self.pause_image)
-            # TODO: enviar el comando de que ponga play
-            # ui_serial.cycle_status = CycleStatus.CYCLE_RUNNING
-            # ui_serial.publisher.notify_played()
+            self.enable_bin(False)
+
+            ui_serial.publisher.send_data(b"#PLAY!\n")
+            ui_serial.cycle_status = CycleStatus.CYCLE_RUNNING
+            ui_serial.publisher.notify_played()
         
     
     def load_cycle_event(self, event):
@@ -403,9 +422,9 @@ class ControlCycleFrame(ctk.CTkFrame):
 
         answer = messagebox.askquestion("Eliminar ciclo", msg)
         if answer == "yes":
-            # TODO: enviar comando de que se elimina el ciclo
-            # ui_serial.cycle_status = CycleStatus.NOT_CYCLE
-            # ui_serial.publisher.notify_deleted()
+            # TODO: implementar que todo se elimina en el ciclo de la UI (al ESP no le importa)
+            ui_serial.cycle_status = CycleStatus.NOT_CYCLE
+            ui_serial.publisher.notify_deleted()
             print("Ciclo eliminado")        
     
     def send_button_event(self):

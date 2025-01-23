@@ -16,6 +16,7 @@ class MsgType(Enum):
     ESP_PAUSED = 5
     ESP_PLAYED = 6
     CYCLE_DELETED = 7
+    CYCLE_FINISHED = 8
 
 class CycleStatus(Enum):
     NOT_CYCLE = 0 # No hay un ciclo corriendo
@@ -75,6 +76,10 @@ class SerialPublisher:
     def notify_played(self):
         for callback in self.subscribers: 
             callback(MsgType.ESP_PLAYED)
+        
+    def notify_cycle_finished(self):
+        for callback in self.subscribers: 
+            callback(MsgType.CYCLE_FINISHED)
     
     def notify_deleted(self):
         for callback in self.subscribers: 
@@ -121,7 +126,7 @@ class SerialPublisher:
     def read_port(self):
         buffer = bytearray()
         last_received_time = time.time()
-        self.notify_connected()
+        self.notify_connected()  
         print("Starting read_port")
 
         while True:
