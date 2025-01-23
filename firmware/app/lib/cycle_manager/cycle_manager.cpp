@@ -330,6 +330,16 @@ cycle_manager::CycleBundle cycle_manager::run()
     return bundle;
 }
 
+bool cycle_manager::pauseCycle(){
+    cycleAlarm.pauseAlarm();
+    cycleData.status = CYCLE_PAUSED;
+}
+
+bool cycle_manager::resumeCycle(){
+    cycleAlarm.resumeAlarm();
+    cycleData.status = CYCLE_RUNNING;
+}
+
 /**
  * @brief Reads the next interval from a CSV file and updates the cycle status accordingly.
  *

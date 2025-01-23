@@ -70,6 +70,7 @@ public:
     CycleBundle run();
     CycleBundle firstIntervalAtRunning();
     bool pauseCycle();
+    bool resumeCycle();
     bool readNextInterval();
     bool readInterval();
     bool resetHeaderForDebug(u_int8_t SD_CS_PIN);

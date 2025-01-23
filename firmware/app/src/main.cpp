@@ -43,7 +43,7 @@ void loop()
     // .run
     commandUI = commUI.run();
     cycleBundle = cm.run();
-    sensorControl.run();
+    sensorControl.run(cm.cycleData.status);
     switch (commandUI)
     {
     case CommUI::TRANSFER_FILE_START:
@@ -99,12 +99,40 @@ void loop()
         else if (cm.cycleData.status == cycle_manager::CYCLE_RUNNING)
         {
             Serial.println("#OK!");
-            cm.pauseCycle();            
+            cm.pauseCycle();
+            sensorControl.turnOffOutputs();            
         }
         else if (cm.cycleData.status == cycle_manager::CYCLE_COMPLETED)
         {
             Serial.println("#FAIL!");
             ESP_LOGE(TAG, "Ciclo completado, imposible pausar");
+        }
+        else if (cm.cycleData.status == cycle_manager::CYCLE_PAUSED)
+        {
+            Serial.println("#FAIL!");
+            ESP_LOGE(TAG, "Ciclo pausado, imposible pausar");
+        }
+        break;
+    case CommUI::RESUME_CYCLE:
+        if (cm.cycleData.status == cycle_manager::NO_CYCLE_IN_SD)
+        {
+            Serial.println("#FAIL!");
+            ESP_LOGE(TAG, "No cycle in SD, imposible play");
+        }
+        else if (cm.cycleData.status == cycle_manager::CYCLE_RUNNING)
+        {
+            Serial.println("#FAIL!");
+            ESP_LOGE(TAG, "Ciclo corriendo, imposible play");        
+        }
+        else if (cm.cycleData.status == cycle_manager::CYCLE_COMPLETED)
+        {
+            Serial.println("#FAIL!");
+            ESP_LOGE(TAG, "Ciclo completado, imposible play");   
+        }
+        else if (cm.cycleData.status == cycle_manager::CYCLE_PAUSED)
+        {
+            Serial.println("#OK!");
+            cm.resumeCycle();   
         }
         break;
     default:
