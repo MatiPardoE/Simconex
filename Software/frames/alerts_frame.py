@@ -55,6 +55,31 @@ class LogFrame(ctk.CTkScrollableFrame):
                 widget.destroy()
             return 
         
+        if data == MsgType.PH_OUT_OF_CALIB or data == MsgType.OD_OUT_OF_CALIB:
+            self.frame_line = ctk.CTkFrame(self.scrollable_frame)
+            self.frame_line.pack(fill="x")
+
+            self.in_frame = ctk.CTkFrame(self.frame_line)
+            self.in_frame.pack(fill="x")
+            
+            self.label_time = ctk.CTkLabel(self.in_frame, text="hour", corner_radius=0, width=150) 
+            self.label_time.pack(side='left')
+
+            self.label_date = ctk.CTkLabel(self.in_frame, text="date", corner_radius=0, width=200) 
+            self.label_date.pack(side='left')
+
+            if data == MsgType.PH_OUT_OF_CALIB:
+                self.label_description = ctk.CTkLabel(self.in_frame, text="El sensor de pH requiere calibracion", corner_radius=0, width=150)
+            elif data == MsgType.OD_OUT_OF_CALIB:
+                self.label_description = ctk.CTkLabel(self.in_frame, text="El sensor de OD requiere calibracion", corner_radius=0, width=150)
+            
+            self.label_description.pack(side='left')
+
+            self.label_priority = ctk.CTkLabel(self.in_frame, text="Alta", corner_radius=0, width=150)
+            self.label_priority.pack(side='left')
+
+            self.scrollable_frame._parent_canvas.yview_moveto(1.0)
+        
         if data == MsgType.PH_OUT_OF_RANGE or data == MsgType.OD_OUT_OF_RANGE or data == MsgType.TEMP_OUT_OF_RANGE:
             self.frame_line = ctk.CTkFrame(self.scrollable_frame)
             self.frame_line.pack(fill="x")

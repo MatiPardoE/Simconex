@@ -210,6 +210,9 @@ class App(ctk.CTk):
         if data == MsgType.ESP_DISCONNECTED:
             self.connection_label.configure(image=self.unsync_image)  
 
+    def check_calib(self):
+        self.calibration_frame.instant_values_frame.read_calib_file()
+
 def backend(data):
     if data == MsgType.ESP_SYNCRONIZED or data == MsgType.NEW_CYCLE_SENT:
         app.sync_button.configure(state="disabled")
@@ -274,9 +277,17 @@ def backend(data):
     if data == MsgType.TEMP_OUT_OF_RANGE:
         app.alert_counter += 1
         app.alerts_button.configure(text="Alertas [" + str(app.alert_counter) +"]")
+    
+    if data == MsgType.PH_OUT_OF_CALIB:
+        app.alert_counter += 1 # TODO: tengo que corregir esto porque app todavia no existe
+        app.alerts_button.configure(text="Alertas [" + str(app.alert_counter) +"]")
+    if data == MsgType.OD_OUT_OF_CALIB:
+        app.alert_counter += 1
+        app.alerts_button.configure(text="Alertas [" + str(app.alert_counter) +"]")
 
 if __name__ == "__main__":
     ui_serial.publisher.subscribe(backend)
 
     app = App()
+    app.check_calib()
     app.mainloop()

@@ -6,6 +6,7 @@ from PIL import Image
 import frames.serial_handler as ui_serial
 import csv
 from datetime import datetime, timedelta
+from tkinter import messagebox
 
 
 class CalibPhWindow(ctk.CTkToplevel):
@@ -281,7 +282,7 @@ class SensorCalibrateFrame(ctk.CTkFrame):
         self.grid_rowconfigure(3, weight=1)
 
         self.calib_dates = {}
-        self.read_calib_file()
+        #self.read_calib_file()
 
         if sensor_name == "ph":
             sensor_alias = "pH"
@@ -298,7 +299,7 @@ class SensorCalibrateFrame(ctk.CTkFrame):
         self.sensor_img_label = ctk.CTkLabel(self, text="", image=self.sensor_img)
         self.sensor_img_label.grid(row=1, column=0, padx=0, pady=0, sticky="nsew")
 
-        self.label_last_cal = ctk.CTkLabel(self, text=f"Ultima calibracion realizada el " + str(self.calib_dates.get(sensor_name).strftime('%d/%m/%Y')), font=ctk.CTkFont(size=12))
+        self.label_last_cal = ctk.CTkLabel(self, text=f"Ultima calibracion realizada el ", font=ctk.CTkFont(size=12))
         self.label_last_cal.grid(row=2, column=0, padx=10, pady=0, sticky="nsew")
 
         self.cal_button = ctk.CTkButton(self, text="Calibrar sensor", height=40)
@@ -310,7 +311,7 @@ class SensorCalibrateFrame(ctk.CTkFrame):
     
     def cal_ph_button_event(self):
         self.calib_window = CalibPhWindow(self)
-        self.update_date("ph") # TODO: hacer que se actualice la fecha que se muestra
+        self.update_date("ph") # TODO: hacer que esto ocurra al finalizar la calibracion con exito
 
         self.calib_window.lift()  
         self.calib_window.attributes("-topmost", True) 
@@ -321,7 +322,7 @@ class SensorCalibrateFrame(ctk.CTkFrame):
     
     def cal_od_button_event(self):
         self.calib_window = CalibOdWindow(self)
-        self.update_date("od") # TODO: hacer que se actualice la fecha que se muestra
+        self.update_date("od") # TODO: hacer que esto ocurra al finalizar la calibracion con exito
 
         self.calib_window.lift()  
         self.calib_window.attributes("-topmost", True) 
@@ -337,15 +338,19 @@ class SensorCalibrateFrame(ctk.CTkFrame):
                 if len(row) == 2: 
                     key, date_str = row
                     date_obj = datetime.strptime(date_str, "%d/%m/%Y")
-                    self.check_date(date_obj)
+                    self.check_date(date_obj, key)
                     self.calib_dates[key] = date_obj
     
-    def check_date(self, date):
+    def check_date(self, date, key):
         if date:
             three_months_ago = datetime.now() - timedelta(days=90)
             if date < three_months_ago:
-                # TODO: enviar mensaje de que se debe calibrar el sensor
-                print("sensor descalibrado")
+                ui_serial.publisher.notify_out_of_calib(key)
+                name = "OD"
+                if key == "ph":
+                    name = "pH"
+                messagebox.showwarning("Advertencia", "El sensor de " + name + " requiere calibración") # TODO: corregir, se muestra 2 veces
+                print("Advertencia", "El sensor de " + name + " requiere calibración")
     
     def update_date(self, sensor_name):
         data = []
@@ -362,6 +367,8 @@ class SensorCalibrateFrame(ctk.CTkFrame):
         with open("calib/calib_data.csv", mode="w", encoding="utf-8", newline="") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerows(data)
+        
+        self.label_last_cal.configure(text=f"Ultima calibracion realizada el " + str(datetime.now().strftime('%d/%m/%Y')))
 
 
 class RecommendationsFrame(ctk.CTkFrame):

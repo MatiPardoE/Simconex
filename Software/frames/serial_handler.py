@@ -19,6 +19,8 @@ class MsgType(Enum):
     TEMP_OUT_OF_RANGE = 8
     OD_OUT_OF_RANGE = 9
     PH_OUT_OF_RANGE = 10
+    OD_OUT_OF_CALIB = 11
+    PH_OUT_OF_CALIB = 12
 
 class CycleStatus(Enum):
     NOT_CYCLE = 0 # No hay un ciclo corriendo
@@ -89,6 +91,14 @@ class SerialPublisher:
     def notify_deleted(self):
         for callback in self.subscribers: 
             callback(MsgType.CYCLE_DELETED)
+
+    def notify_out_of_calib(self, variable):
+        if variable == 'ph':
+            for callback in self.subscribers: 
+                callback(MsgType.PH_OUT_OF_CALIB)
+        elif variable == 'od':
+            for callback in self.subscribers: 
+                callback(MsgType.OD_OUT_OF_CALIB)
         
     def notify_connected(self):
         for callback in self.subscribers: callback(MsgType.ESP_CONNECTED)
