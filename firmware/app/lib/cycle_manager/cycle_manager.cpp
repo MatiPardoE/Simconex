@@ -308,7 +308,7 @@ cycle_manager::CycleBundle cycle_manager::run()
     if (alarmFlag) // la alarma solo se va a activar si el ciclo esta corriendo
     {
         alarmFlag = false;
-        ESP_LOGE(TAG, "SE ACTIVO LA ALARMA");
+        ESP_LOGI(TAG, "SE ACTIVO LA ALARMA");
         if (readNextInterval())
         {
             // ESP_LOGI(TAG,"New interval available");
@@ -333,11 +333,14 @@ cycle_manager::CycleBundle cycle_manager::run()
 bool cycle_manager::pauseCycle(){
     cycleAlarm.pauseAlarm();
     cycleData.status = CYCLE_PAUSED;
+    alarmFlag = false;
+    return true;
 }
 
 bool cycle_manager::resumeCycle(){
     cycleAlarm.resumeAlarm();
     cycleData.status = CYCLE_RUNNING;
+    return true;
 }
 
 /**

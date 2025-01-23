@@ -100,7 +100,7 @@ void loop()
         {
             Serial.println("#OK!");
             cm.pauseCycle();
-            sensorControl.turnOffOutputs();            
+            sensorControl.turnOffOutputs();
         }
         else if (cm.cycleData.status == cycle_manager::CYCLE_COMPLETED)
         {
@@ -122,17 +122,17 @@ void loop()
         else if (cm.cycleData.status == cycle_manager::CYCLE_RUNNING)
         {
             Serial.println("#FAIL!");
-            ESP_LOGE(TAG, "Ciclo corriendo, imposible play");        
+            ESP_LOGE(TAG, "Ciclo corriendo, imposible play");
         }
         else if (cm.cycleData.status == cycle_manager::CYCLE_COMPLETED)
         {
             Serial.println("#FAIL!");
-            ESP_LOGE(TAG, "Ciclo completado, imposible play");   
+            ESP_LOGE(TAG, "Ciclo completado, imposible play");
         }
         else if (cm.cycleData.status == cycle_manager::CYCLE_PAUSED)
         {
             Serial.println("#OK!");
-            cm.resumeCycle();   
+            cm.resumeCycle();
         }
         break;
     default:
