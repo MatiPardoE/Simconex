@@ -13,7 +13,7 @@ public:
     const String headerPath = "/input/header.csv";
     const String dataPath = "/input/data.csv";
     const String dataOutPath = "/output/cycle_out.csv";
-    
+
     struct MeasuresAndOutputs
     {
         float ph;
@@ -41,7 +41,7 @@ public:
         RESUME_CYCLE,
         FINISH_CYCLE,
         NEW_INTERVAL,
-        FIRST_INTERVAL_RUNNING
+        FIRST_INTERVAL_RUNNING,
     };
     struct CycleBundle
     {
@@ -75,7 +75,8 @@ public:
     bool readInterval();
     bool resetHeaderForDebug(u_int8_t SD_CS_PIN);
     bool analyzeHeaderandEvalAlarm();
-    bool writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs,uint32_t interval_id_measure); //TODO? Implementar
+    bool writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uint32_t interval_id_measure); // TODO? Implementar
+    bool sendDataToUI(MeasuresAndOutputs measuresAndOutputs, uint32_t interval_id_measure);
 
 private:
     // Private variables
@@ -107,7 +108,6 @@ private:
     String cycleStatusToString(CycleStatus status);
     bool finishCycle();
     bool writeHeaderToSD();
-    bool sendDataToUI(MeasuresAndOutputs measuresAndOutputs,uint32_t interval_id_measure);
 };
 
 #endif // CYCLE_MANAGER_H
