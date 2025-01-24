@@ -24,17 +24,23 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
         // Umbrales de control
         if (measuresAndOutputs.ph < goalValues.ph + 0.1)
         {
-            shiftRegister.setOutput(0, HIGH);
-            shiftRegister.setOutput(1, LOW);
-            shiftRegister.setOutput(2, LOW);
-            shiftRegister.setOutput(3, LOW);
+            shiftRegister.setOutput(CO2, HIGH);
+            shiftRegister.setOutput(N2, LOW);
+            shiftRegister.setOutput(AIR, LOW);
+            shiftRegister.setOutput(HEATER, LOW);
+            shiftRegister.setOutput(COOLER, LOW);
+            shiftRegister.setOutput(EV_1, LOW);
+            shiftRegister.setOutput(EV_2, LOW);
         }
         else if (measuresAndOutputs.ph > goalValues.ph - 0.1)
         {
-            shiftRegister.setOutput(0, LOW);
-            shiftRegister.setOutput(1, HIGH);
-            shiftRegister.setOutput(2, LOW);
-            shiftRegister.setOutput(3, LOW);
+            shiftRegister.setOutput(CO2, LOW);
+            shiftRegister.setOutput(N2, HIGH);
+            shiftRegister.setOutput(AIR, LOW);
+            shiftRegister.setOutput(HEATER, LOW);
+            shiftRegister.setOutput(COOLER, LOW);
+            shiftRegister.setOutput(EV_1, LOW);
+            shiftRegister.setOutput(EV_2, LOW);
         }
 
         if (ledStrip1.getDuty() != goalValues.light)
@@ -50,6 +56,81 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
         break;
     }
 
+    return true;
+}
+
+bool ControlAPI::modeManualsetOutputs(String command)
+{
+    if (command.startsWith("#C0"))
+    {
+        shiftRegister.setOutput(CO2, LOW);
+        ESP_LOGI("Manual", "Set EV_co2 to 0");
+    }
+    else if (command.startsWith("#C1"))
+    {
+        shiftRegister.setOutput(CO2, HIGH);
+        ESP_LOGI("Manual", "Set EV_co2 to 1");
+    }
+    else if (command.startsWith("#O0"))
+    {
+        shiftRegister.setOutput(O2, LOW);
+        ESP_LOGI("Manual", "Set EV_o2 to 0");
+    }
+    else if (command.startsWith("#O1"))
+    {
+        shiftRegister.setOutput(O2, HIGH);
+        ESP_LOGI("Manual", "Set EV_o2 to 1");
+    }
+    else if (command.startsWith("#N0"))
+    {
+        shiftRegister.setOutput(N2, LOW);
+        ESP_LOGI("Manual", "Set EV_n2 to 0");
+    }
+    else if (command.startsWith("#N1"))
+    {
+        shiftRegister.setOutput(N2, HIGH);
+        ESP_LOGI("Manual", "Set EV_n2 to 1");
+    }
+    else if (command.startsWith("#A0"))
+    {
+        shiftRegister.setOutput(AIR, LOW);
+        ESP_LOGI("Manual", "Set EV_air to 0");
+    }
+    else if (command.startsWith("#A1"))
+    {
+        shiftRegister.setOutput(AIR, HIGH);
+        ESP_LOGI("Manual", "Set EV_air to 1");
+    }
+    else if (command.startsWith("#COLD0"))
+    {
+        shiftRegister.setOutput(COOLER, LOW);
+        ESP_LOGI("Manual", "Set CoolerBomb to 0");
+    }
+    else if (command.startsWith("#COLD1"))
+    {
+        shiftRegister.setOutput(COOLER, HIGH);
+        ESP_LOGI("Manual", "Set CoolerBomb to 1");
+    }
+    else if (command.startsWith("#HOT0"))
+    {
+        shiftRegister.setOutput(HEATER, LOW);
+        ESP_LOGI("Manual", "Set HeaterBomb to 0");
+    }
+    else if (command.startsWith("#HOT1"))
+    {
+        shiftRegister.setOutput(HEATER, HIGH);
+        ESP_LOGI("Manual", "Set HeaterBomb to 1");
+    }
+    else if (command.startsWith("#L"))
+    {
+        int value = command.substring(2).toInt();
+        ledStrip1.setDuty(value);
+        ledStrip2.setDuty(value);
+        ledStrip3.setDuty(value);
+        ledStrip4.setDuty(value);
+        ledStrip5.setDuty(value);
+        ESP_LOGI("Manual", "Set light to: %d", value);
+    }
     return true;
 }
 
@@ -105,7 +186,6 @@ cycle_manager::MeasuresAndOutputs ControlAPI::takeMeasuresAndOutputs()
     measuresAndOutputs.light = ledStrip1.getDuty();
     measuresAndOutputs.temperature = 24;
     measuresAndOutputs.oxygen = 100.42;
-    measuresAndOutputs.light = 20;
     // la medicion de ph se actualiza en el .run()
 
     return measuresAndOutputs;
