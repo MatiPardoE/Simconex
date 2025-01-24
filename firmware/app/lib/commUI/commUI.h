@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <ArduinoLog.h>
+#include <esp_log.h>
 class CommUI
 {
 public:
@@ -13,15 +14,15 @@ public:
         INIT_COMM_UI,
         SYNC_CYCLE_START,
         PAUSE_CYCLE,
-        RESUME_CYCLE
-        // Add other commands as needed
+        RESUME_CYCLE,
+        MANUAL_MODE // Add other commands as needed
     };
     CommUI();
     ~CommUI();
 
     void begin(unsigned long baudRate);
     bool isConnected();
-    CommandFromUI run();
+    CommandFromUI run(String &input);
 
 private:
     bool connectionStatus;
@@ -29,6 +30,7 @@ private:
 
     void checkConnection();
     CommandFromUI parseCommand(const String &input);
+    CommandFromUI parseCommandManual(const String &input);
 };
 
 #endif // COMM_UI_H
