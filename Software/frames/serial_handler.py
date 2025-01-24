@@ -16,6 +16,7 @@ class MsgType(Enum):
     ESP_PAUSED = 5
     ESP_PLAYED = 6
     CYCLE_DELETED = 7
+    CYCLE_FINISHED = 8
 
 class CycleStatus(Enum):
     NOT_CYCLE = 0 # No hay un ciclo corriendo
@@ -75,6 +76,10 @@ class SerialPublisher:
     def notify_played(self):
         for callback in self.subscribers: 
             callback(MsgType.ESP_PLAYED)
+        
+    def notify_cycle_finished(self):
+        for callback in self.subscribers: 
+            callback(MsgType.CYCLE_FINISHED)
     
     def notify_deleted(self):
         for callback in self.subscribers: 
@@ -90,7 +95,7 @@ class SerialPublisher:
         pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(0|1),(0|1),(0|1),(0|1)$"
         match = re.match(pattern, data)
 
-        if match and cycle_status == CycleStatus.CYCLE_RUNNING: 
+        if match and cycle_status == CycleStatus.CYCLE_RUNNING: # TODO: tengo que corregir que esto no vaya a estas listas cuando el ciclo no esta corriendo (listas distintas para modo manual?)
             print("Valid measurement and cycle running!")
             data_lists['id'].append(int(match.group(1)))
             data_lists['light'].append(int(match.group(5)))
@@ -101,6 +106,21 @@ class SerialPublisher:
             data_lists['o2'].append(int(match.group(7)))
             data_lists['n2'].append(int(match.group(8)))
             data_lists['air'].append(int(match.group(9)))
+            self.send_data(b"#OK!\n")
+
+            for callback in self.subscribers: callback(MsgType.NEW_MEASUREMENT)
+        
+        elif match:
+            print("Valid measurement!")
+            data_lists_manual['id'].append(int(match.group(1)))
+            data_lists_manual['light'].append(int(match.group(5)))
+            data_lists_manual['ph'].append(float(match.group(2)))
+            data_lists_manual['od'].append(float(match.group(3)))
+            data_lists_manual['temperature'].append(float(match.group(4)))
+            data_lists_manual['co2'].append(int(match.group(6)))
+            data_lists_manual['o2'].append(int(match.group(7)))
+            data_lists_manual['n2'].append(int(match.group(8)))
+            data_lists_manual['air'].append(int(match.group(9)))
             self.send_data(b"#OK!\n")
 
             for callback in self.subscribers: callback(MsgType.NEW_MEASUREMENT)
@@ -121,7 +141,7 @@ class SerialPublisher:
     def read_port(self):
         buffer = bytearray()
         last_received_time = time.time()
-        self.notify_connected()
+        self.notify_connected()  
         print("Starting read_port")
 
         while True:
@@ -241,6 +261,18 @@ cycle_interval = 0
 cycle_status = CycleStatus.NOT_CYCLE
 
 data_lists = {
+    "id": [],
+    "ph": [],
+    "od": [],
+    "temperature": [],
+    "light": [],
+    "co2": [],
+    "o2": [],
+    "n2": [],
+    "air": []
+}
+
+data_lists_manual = {
     "id": [],
     "ph": [],
     "od": [],
