@@ -9,7 +9,9 @@ import re
 from frames.serial_handler import MsgType 
 from frames.serial_handler import CycleStatus 
 from frames.serial_handler import data_lists 
+from frames.serial_handler import data_lists_manual
 from tkinter import messagebox
+import datetime
 
 class LogFrame(ctk.CTkFrame):
 
@@ -82,7 +84,7 @@ class LogFrame(ctk.CTkFrame):
             return    
         
         if data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED):
-            num_measurements = len(data_lists['id'])
+            num_measurements = len(data_lists_manual['id'])
             start_index = max(0, num_measurements - 50)
 
             for i in range(start_index, num_measurements):
@@ -100,16 +102,16 @@ class LogFrame(ctk.CTkFrame):
                 self.label_date = ctk.CTkLabel(self.in_frame, text=date, corner_radius=0, width=200) 
                 self.label_date.pack(side='left')
 
-                self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['od'][i]), corner_radius=0, width=150)
+                self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['od'][i]), corner_radius=0, width=150)
                 self.label_od.pack(side='left')
 
-                self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['ph'][i]), corner_radius=0, width=150)
+                self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['ph'][i]), corner_radius=0, width=150)
                 self.label_ph.pack(side='left')
 
-                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light'][i]}", corner_radius=0, width=150)
+                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists_manual['light'][i]}", corner_radius=0, width=150)
                 self.label_light.pack(side='left')
 
-                self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][i]), corner_radius=0, width=200)
+                self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['temperature'][i]), corner_radius=0, width=200)
                 self.label_temp.pack(side='left')
 
                 self.label_cycle = ctk.CTkLabel(self.in_frame, text=ui_serial.cycle_alias, corner_radius=0, width=150) 
@@ -118,7 +120,7 @@ class LogFrame(ctk.CTkFrame):
             self.scrollable_frame._parent_canvas.yview_moveto(1.0)
          
         if data == MsgType.NEW_MEASUREMENT: 
-            num_measurements = len(data_lists['id'])
+            num_measurements = len(data_lists_manual['id'])
             if num_measurements == 0:
                 return
 
@@ -130,24 +132,22 @@ class LogFrame(ctk.CTkFrame):
             self.in_frame = ctk.CTkFrame(self.frame_line)
             self.in_frame.pack(fill="x")
 
-            date, hour = self.calculate_datetime(last_index)
-
-            self.label_time = ctk.CTkLabel(self.in_frame, text=hour, corner_radius=0, width=150)
+            self.label_time = ctk.CTkLabel(self.in_frame, text=datetime.datetime.now().strftime("%H:%M:%S"), corner_radius=0, width=150)
             self.label_time.pack(side='left')
 
-            self.label_date = ctk.CTkLabel(self.in_frame, text=date, corner_radius=0, width=200)
+            self.label_date = ctk.CTkLabel(self.in_frame, text=datetime.datetime.now().strftime("%d/%m/%Y"), corner_radius=0, width=200)
             self.label_date.pack(side='left')
 
-            self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['od'][last_index]), corner_radius=0, width=150)
+            self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['od'][last_index]), corner_radius=0, width=150)
             self.label_od.pack(side='left')
 
-            self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['ph'][last_index]), corner_radius=0, width=150)
+            self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['ph'][last_index]), corner_radius=0, width=150)
             self.label_ph.pack(side='left')
 
-            self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light'][last_index]}", corner_radius=0, width=150)
+            self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists_manual['light'][last_index]}", corner_radius=0, width=150)
             self.label_light.pack(side='left')
 
-            self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][last_index]), corner_radius=0, width=200)
+            self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['temperature'][last_index]), corner_radius=0, width=200)
             self.label_temp.pack(side='left')
 
             if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING:
@@ -239,10 +239,10 @@ class InstantValuesFrame(ctk.CTkFrame):
             self.esp_disconnected() 
 
         if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)): 
-            self.light_button.configure(text = f"{data_lists['light'][-1]}")
-            self.ph_button.configure(text = "{0:.2f}".format(data_lists['ph'][-1]))
-            self.do_button.configure(text = "{0:.2f}".format(data_lists['od'][-1]))
-            self.temp_button.configure(text = "{0:.2f}".format(data_lists['temperature'][-1]))             
+            self.light_button.configure(text = f"{data_lists_manual['light'][-1]}")
+            self.ph_button.configure(text = "{0:.2f}".format(data_lists_manual['ph'][-1]))
+            self.do_button.configure(text = "{0:.2f}".format(data_lists_manual['od'][-1]))
+            self.temp_button.configure(text = "{0:.2f}".format(data_lists_manual['temperature'][-1]))             
 
     def esp_disconnected(self):
         self.light_button.configure(text = "--")
@@ -395,25 +395,25 @@ class SetPointsFrame(ctk.CTkFrame):
         self.n2_button.configure(fg_color="orange")    
 
     def update_data(self):
-        if data_lists['co2'][-1] == 0:
+        if data_lists_manual['co2'][-1] == 0:
             self.co2_button.configure(text="Apagado")
             self.co2_button.configure(fg_color="red")
         else:
             self.co2_button.configure(text="Encendido")
             self.co2_button.configure(fg_color="green")
-        if data_lists['o2'][-1] == 0:
+        if data_lists_manual['o2'][-1] == 0:
             self.o2_button.configure(text="Apagado")
             self.o2_button.configure(fg_color="red")
         else:
             self.o2_button.configure(text="Encendido")
             self.o2_button.configure(fg_color="green")
-        if data_lists['air'][-1] == 0:
+        if data_lists_manual['air'][-1] == 0:
             self.air_button.configure(text="Apagado")
             self.air_button.configure(fg_color="red")
         else:
             self.air_button.configure(text="Encendido")
             self.air_button.configure(fg_color="green")
-        if data_lists['n2'][-1] == 0:
+        if data_lists_manual['n2'][-1] == 0:
             self.n2_button.configure(text="Apagado")
             self.n2_button.configure(fg_color="red")
         else:

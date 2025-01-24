@@ -134,7 +134,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected()
 
-        if (data == MsgType.NEW_MEASUREMENT and CycleStatus.CYCLE_RUNNING) or (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)): 
+        if (data == MsgType.NEW_MEASUREMENT and  ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING) or (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)): 
             self.light_button.configure(text = f"{data_lists['light'][-1]}")
             self.ph_button.configure(text = "{0:.2f}".format(data_lists['ph'][-1]))
             self.do_button.configure(text = "{0:.2f}".format(data_lists['od'][-1]))
@@ -253,7 +253,7 @@ class ActualCycleFrame(ctk.CTkFrame):
                     self.label_actual.configure(text="Ciclo Actual: {} (terminado)".format(ui_serial.cycle_alias))
                     self.update_progressbar(total_time, total_time, 0)
 
-        if data == MsgType.NEW_MEASUREMENT and CycleStatus.CYCLE_RUNNING: 
+        if data == MsgType.NEW_MEASUREMENT and  ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING: 
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
             elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
             restant_time = total_time - elapsed_time
@@ -425,7 +425,7 @@ class MyPlot(ctk.CTkFrame):
             self.fig.canvas.mpl_connect("button_press_event", self.check_active_tool)
             self.resize_plot_flag = True
 
-        if data == MsgType.NEW_MEASUREMENT and CycleStatus.CYCLE_RUNNING:
+        if data == MsgType.NEW_MEASUREMENT and ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING:
             num_measurements = len(data_lists['id'])
             if num_measurements == 1:
                 new_time = self.initial_time + timedelta(seconds=ui_serial.cycle_interval)
