@@ -117,7 +117,7 @@ class LogFrame(ctk.CTkFrame):
 
             self.scrollable_frame._parent_canvas.yview_moveto(1.0)
          
-        if data == MsgType.NEW_MEASUREMENT: # TODO: distinguir si viene o no de un ciclo
+        if data == MsgType.NEW_MEASUREMENT: 
             num_measurements = len(data_lists['id'])
             if num_measurements == 0:
                 return
@@ -150,7 +150,10 @@ class LogFrame(ctk.CTkFrame):
             self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][last_index]), corner_radius=0, width=200)
             self.label_temp.pack(side='left')
 
-            self.label_cycle = ctk.CTkLabel(self.in_frame, text=ui_serial.cycle_alias, corner_radius=0, width=150)
+            if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING:
+                self.label_cycle = ctk.CTkLabel(self.in_frame, text=ui_serial.cycle_alias, corner_radius=0, width=150)
+            else:
+                self.label_cycle = ctk.CTkLabel(self.in_frame, "-", corner_radius=0, width=150)
             self.label_cycle.pack(side='left')
 
             children = self.scrollable_frame.winfo_children()
@@ -514,129 +517,6 @@ class SetPointsFrame(ctk.CTkFrame):
     def only_numbers(self, text):
         return text.isdigit() or text == ""
 
-class ManualRecordFrame(ctk.CTkFrame):
-    def __init__(self, master):
-        super().__init__(master) 
-        ui_serial.publisher.subscribe(self.process_data_manual_record)
-
-        image_path = os.path.join(os.getcwd(), "images")
-
-        self.grid_columnconfigure(0, weight=1)
-
-        self.label_control = ctk.CTkLabel(self, text="Control manual", font=ctk.CTkFont(size=20, weight="bold"))
-        self.label_control.grid(row=0, column=0, padx=20, pady=(10, 0), sticky="w")
-
-        self.frame_buttons = ctk.CTkFrame(self, width=100)
-        self.frame_buttons.grid(row=1, column=0, padx=20, pady=(10, 0))#, sticky="ew")
-
-        self.frame_buttons.grid_rowconfigure(0, weight=1)
-        self.frame_buttons.grid_columnconfigure(0, weight=1)
-        self.frame_buttons.grid_columnconfigure(1, weight=1)
-        self.frame_buttons.grid_columnconfigure(2, weight=1)
-
-        self.play_image = ctk.CTkImage(Image.open(os.path.join(image_path, "play.png")), size=(40, 40))
-        self.pause_image = ctk.CTkImage(Image.open(os.path.join(image_path, "pause.png")), size=(40, 40))
-
-        self.play_pause_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.play_image)
-        self.play_pause_image_label.grid(row=0, column=0, padx=15, pady=5, sticky="ew")
-
-        self.is_playing = True
-
-        self.stop_image = ctk.CTkImage(Image.open(os.path.join(image_path, "stop.png")), size=(40, 40))
-        self.stop_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.stop_image)
-        self.stop_image_label.grid(row=0, column=1, padx=15, pady=5, sticky="ew")
-
-
-        self.bin_image = ctk.CTkImage(Image.open(os.path.join(image_path, "bin.png")), size=(40, 40))
-        self.bin_image_label = ctk.CTkLabel(self.frame_buttons, text="", image=self.bin_image)
-        self.bin_image_label.grid(row=0, column=2, padx=15, pady=5, sticky="ew")
-
-        self.frame_commands = ctk.CTkFrame(self)
-        self.frame_commands.grid(row=2, column=0, padx=20, pady=(10, 0), sticky="ew")
-
-        self.frame_commands.grid_rowconfigure(0, weight=1)
-        self.frame_commands.grid_columnconfigure(0, weight=1)
-        self.frame_commands.grid_columnconfigure(1, weight=1)
-        self.frame_commands.grid_columnconfigure(2, weight=1)
-        self.frame_commands.grid_columnconfigure(3, weight=1)
-        self.frame_commands.grid_columnconfigure(4, weight=1)
-
-        self.entry_interval = ctk.CTkLabel(self.frame_commands, text="Intervalo:", justify="right")
-        self.entry_interval.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
-
-        self.entry_interval = ctk.CTkEntry(self.frame_commands, placeholder_text="15", width=60, state="disabled")
-        self.entry_interval.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
-
-        self.radio_var = tkinter.IntVar(value=0)
-        self.radio_button_seg = ctk.CTkRadioButton(master=self.frame_commands, text="seg", variable=self.radio_var, value=0, width=60, state="disabled")
-        self.radio_button_seg.grid(row=0, column=2, padx=0, pady=5)
-        self.radio_button_min = ctk.CTkRadioButton(master=self.frame_commands, text="min", variable=self.radio_var, value=1, width=60, state="disabled")
-        self.radio_button_min.grid(row=0, column=3, padx=0, pady=5)
-
-        self.main_button_interval = ctk.CTkButton(master=self.frame_commands, text="Enviar", command=self.send_button_event, width=80, state="disabled")
-        self.main_button_interval.grid(row=0, column=4, padx=5, pady=5, sticky="ew")
-
-    def process_data_manual_record(self, data):
-        if data == MsgType.ESP_CONNECTED:
-            self.esp_connected()        
-        
-        if data == MsgType.ESP_DISCONNECTED:
-            self.esp_disconnected() 
-
-    def esp_connected(self):
-        self.play_pause_image_label.bind("<Enter>", self.on_hover)
-        self.play_pause_image_label.bind("<Leave>", self.off_hover)
-        self.play_pause_image_label.bind("<Button-1>", self.play_pause_event)
-        self.is_playing = True
-
-        self.stop_image_label.bind("<Enter>", self.on_hover)
-        self.stop_image_label.bind("<Leave>", self.off_hover)
-
-        self.bin_image_label.bind("<Enter>", self.on_hover)
-        self.bin_image_label.bind("<Leave>", self.off_hover)
-
-        self.main_button_interval.configure(state = "normal")
-        self.entry_interval.configure(state = "normal")
-        self.radio_button_seg.configure(state = "normal")
-        self.radio_button_min.configure(state = "normal")
-
-    def esp_disconnected(self):
-        self.play_pause_image_label.unbind("<Enter>")
-        self.play_pause_image_label.unbind("<Leave>")
-        self.play_pause_image_label.unbind("<Button-1>")
-        self.is_playing = True
-
-        self.stop_image_label.unbind("<Enter>")
-        self.stop_image_label.unbind("<Leave>")
-
-        self.bin_image_label.unbind("<Enter>")
-        self.bin_image_label.unbind("<Leave>")
-
-        self.main_button_interval.configure(state = "disabled")
-        self.entry_interval.configure(state = "disabled")
-        self.radio_button_seg.configure(state = "disabled")
-        self.radio_button_min.configure(state = "disabled")
-
-    def on_hover(self, event):
-        self.play_pause_image_label.configure(cursor="hand2") 
-        self.stop_image_label.configure(cursor="hand2") 
-        self.bin_image_label.configure(cursor="hand2") 
-
-    def off_hover(self, event):
-        self.play_pause_image_label.configure(cursor="arrow") 
-        self.stop_image_label.configure(cursor="arrow") 
-        self.bin_image_label.configure(cursor="arrow") 
-    
-    def play_pause_event(self, event):
-        if self.is_playing:
-            self.play_pause_image_label.configure(image=self.pause_image)
-        else:
-            self.play_pause_image_label.configure(image=self.play_image)
-        self.is_playing = not self.is_playing
-
-    def send_button_event(self):
-        print("Enviar")
-
 class ManualFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master, corner_radius=0, fg_color="transparent")
@@ -653,8 +533,5 @@ class ManualFrame(ctk.CTkFrame):
         self.instant_values_frame = InstantValuesFrame(self)
         self.instant_values_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
 
-        #self.manual_record_frame = ManualRecordFrame(self)
-        #self.manual_record_frame.grid(row=0, column=2, padx=10, pady=10, sticky="nsew")
-
-        self.log_frame = LogFrame(self)#, os.path.join(datalog_path, "datos_generados_logico.csv"))
+        self.log_frame = LogFrame(self)
         self.log_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew", columnspan=3)

@@ -278,16 +278,35 @@ class ControlCycleFrame(ctk.CTkFrame):
             self.play_pause_image_label.configure(image=self.play_image)
             self.enable_play_pause(False)
             self.enable_bin(False)
+            self.enable_load_file(True)
 
     def enable_load_file(self, bool):
+        self.fname = ""
+        self.interval_entry.delete(0, "end")
+        self.interval_entry.insert(0,"")
+        self.info_entry.delete(0, "end")
+        self.info_entry.insert(0,"")
+
         if bool:
             self.add_file_image_label.bind("<Enter>", self.on_hover)
             self.add_file_image_label.bind("<Leave>", self.off_hover)
             self.add_file_image_label.bind("<Button-1>", self.load_cycle_event)
+
+            self.main_button_interval.configure(state = "normal")
+            self.interval_entry.configure(state = "normal")
+            self.info_entry.configure(state = "normal")
+            self.radio_button_seg.configure(state = "normal")
+            self.radio_button_min.configure(state = "normal")
         else:
             self.add_file_image_label.unbind("<Enter>")
             self.add_file_image_label.unbind("<Leave>")
             self.add_file_image_label.unbind("<Button-1>")
+
+            self.main_button_interval.configure(state = "disabled")
+            self.interval_entry.configure(state = "disabled")
+            self.info_entry.configure(state = "disabled")
+            self.radio_button_seg.configure(state = "disabled")
+            self.radio_button_min.configure(state = "disabled")
 
     def enable_play_pause(self, bool):
         if bool:
@@ -313,12 +332,6 @@ class ControlCycleFrame(ctk.CTkFrame):
 
     def esp_connected(self):
         self.enable_load_file(True)
-
-        self.main_button_interval.configure(state = "normal")
-        self.interval_entry.configure(state = "normal")
-        self.info_entry.configure(state = "normal")
-        self.radio_button_seg.configure(state = "normal")
-        self.radio_button_min.configure(state = "normal")
     
     def esp_syncronized(self):
         self.enable_load_file(True)
@@ -326,31 +339,13 @@ class ControlCycleFrame(ctk.CTkFrame):
         if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING: # Si hay un ciclo corriendo, habilito play/pause y eliminar
             self.play_pause_image_label.configure(image=self.pause_image)
             self.enable_play_pause(True)
-            self.enable_bin(True)
-            self.enable_load_file(False)        
-
-        self.main_button_interval.configure(state = "normal")
-        self.interval_entry.configure(state = "normal")
-        self.info_entry.configure(state = "normal")
-        self.radio_button_seg.configure(state = "normal")
-        self.radio_button_min.configure(state = "normal")
+            self.enable_bin(False)
+            self.enable_load_file(False)     
 
     def esp_disconnected(self):
         self.enable_play_pause(False)
         self.enable_bin(False)
-        self.enable_load_file(False)
-
-        self.main_button_interval.configure(state = "disabled")
-        self.interval_entry.configure(state = "disabled")
-        self.info_entry.configure(state = "disabled")
-        self.radio_button_seg.configure(state = "disabled")
-        self.radio_button_min.configure(state = "disabled")
-
-        self.fname = ""
-        self.interval_entry.delete(0, "end")
-        self.interval_entry.insert(0,"")
-        self.info_entry.delete(0, "end")
-        self.info_entry.insert(0,"")
+        self.enable_load_file(False)   
 
     def on_hover(self, event):
         self.play_pause_image_label.configure(cursor="hand2") 
