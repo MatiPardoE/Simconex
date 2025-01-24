@@ -483,7 +483,7 @@ class PlotFrame(ctk.CTkFrame):
         if data == MsgType.ESP_CONNECTED or data == MsgType.ESP_SYNCRONIZED or data == MsgType.NEW_CYCLE_SENT:
             self.esp_connected()        
         
-        if data == MsgType.ESP_DISCONNECTED:
+        if data == MsgType.ESP_DISCONNECTED or data == MsgType.CYCLE_DELETED:
             self.esp_disconnected()  
 
     def esp_connected(self):
