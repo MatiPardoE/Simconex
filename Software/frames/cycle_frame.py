@@ -90,7 +90,7 @@ class ActualCycleFrame(ctk.CTkFrame):
                     self.label_actual.configure(text="Ciclo Actual: {} (terminado)".format(ui_serial.cycle_alias))
                     self.update_progressbar(total_time, total_time, 0)
 
-        if data == MsgType.NEW_MEASUREMENT:
+        if data == MsgType.NEW_MEASUREMENT and CycleStatus.CYCLE_RUNNING:
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
             elapsed_time = len(data_lists["id"]) * ui_serial.cycle_interval
             restant_time = total_time - elapsed_time
@@ -151,6 +151,7 @@ class ActualCycleFrame(ctk.CTkFrame):
             self.label_actual.configure(text="Ciclo Actual: {} (terminado)".format(ui_serial.cycle_alias))
             self.progressbar_actual.configure(progress_color="green")
             messagebox.showinfo("Información", "Ciclo terminado!")
+            ui_serial.cycle_status = CycleStatus.CYCLE_FINISHED
             ui_serial.publisher.notify_cycle_finished()
 
     def reset_progressbar(self, total_time, elapsed_time, restant_time):
@@ -719,7 +720,7 @@ class LogFrame(ctk.CTkFrame):
 
             self.scrollable_frame._parent_canvas.yview_moveto(1.0)
 
-        if data == MsgType.NEW_MEASUREMENT:
+        if data == MsgType.NEW_MEASUREMENT and CycleStatus.CYCLE_RUNNING:
             num_measurements = len(data_lists['id'])
             if num_measurements == 0:
                 return

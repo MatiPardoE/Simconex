@@ -95,8 +95,8 @@ class SerialPublisher:
         pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(0|1),(0|1),(0|1),(0|1)$"
         match = re.match(pattern, data)
 
-        if match and cycle_status == CycleStatus.CYCLE_RUNNING: 
-            print("Valid measurement and cycle running!")
+        if match and (cycle_status == CycleStatus.CYCLE_RUNNING or cycle_status == CycleStatus.CYCLE_PAUSED): 
+            print("Valid measurement and cycle running! (or maybe paused)")
             data_lists['id'].append(int(match.group(1)))
             data_lists['light'].append(int(match.group(5)))
             data_lists['ph'].append(float(match.group(2)))

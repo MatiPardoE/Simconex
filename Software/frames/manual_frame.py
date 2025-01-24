@@ -9,6 +9,7 @@ import re
 from frames.serial_handler import MsgType 
 from frames.serial_handler import CycleStatus 
 from frames.serial_handler import data_lists 
+from tkinter import messagebox
 
 class LogFrame(ctk.CTkFrame):
 
@@ -116,7 +117,7 @@ class LogFrame(ctk.CTkFrame):
 
             self.scrollable_frame._parent_canvas.yview_moveto(1.0)
          
-        if data == MsgType.NEW_MEASUREMENT:
+        if data == MsgType.NEW_MEASUREMENT: # TODO: distinguir si viene o no de un ciclo
             num_measurements = len(data_lists['id'])
             if num_measurements == 0:
                 return
@@ -252,6 +253,8 @@ class SetPointsFrame(ctk.CTkFrame):
         super().__init__(master) 
         ui_serial.publisher.subscribe(self.process_data_set_points)
 
+        self.validate = self.register(self.only_numbers)
+
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -270,7 +273,7 @@ class SetPointsFrame(ctk.CTkFrame):
         self.left_frame.grid_rowconfigure(8, weight=1)
         self.left_frame.grid_columnconfigure(0, weight=1)
 
-        self.label_control = ctk.CTkLabel(self.left_frame, text="Control Salidas", font=ctk.CTkFont(size=20, weight="bold"))
+        self.label_control = ctk.CTkLabel(self.left_frame, text="Control Válvulas", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_control.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsew")
 
         self.label_co2 = ctk.CTkLabel(self.left_frame, text="CO2", font=ctk.CTkFont(weight="bold"))
@@ -304,39 +307,29 @@ class SetPointsFrame(ctk.CTkFrame):
         self.right_frame.grid_rowconfigure(5, weight=1)
         self.right_frame.grid_rowconfigure(6, weight=1)
         self.right_frame.grid_rowconfigure(7, weight=1)
-        self.right_frame.grid_rowconfigure(8, weight=1)
-        self.right_frame.grid_rowconfigure(9, weight=1)
         self.right_frame.grid_columnconfigure(0, weight=1)
 
         self.label_control = ctk.CTkLabel(self.right_frame, text="Control Variables", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_control.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsew")
 
+        self.label_cold = ctk.CTkLabel(self.right_frame, text="Agua Fría", font=ctk.CTkFont(weight="bold"))
+        self.label_cold.grid(row=1, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.cold_button = ctk.CTkButton(self.right_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, command=self.cold_button_event, width=100, state="disabled")
+        self.cold_button.grid(row=2, column=0, padx=10, pady=0, sticky="ns")
+
+        self.label_hot = ctk.CTkLabel(self.right_frame, text="Agua Caliente", font=ctk.CTkFont(weight="bold"))
+        self.label_hot.grid(row=3, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.hot_button = ctk.CTkButton(self.right_frame, text="Desconectado", fg_color="orange", text_color_disabled="white", hover=False, command=self.hot_button_event, width=100, state="disabled")
+        self.hot_button.grid(row=4, column=0, padx=10, pady=0, sticky="ns")
+
         self.light_text_var = tkinter.StringVar()
         self.label_light = ctk.CTkLabel(self.right_frame, text="Luz [%]", font=ctk.CTkFont(weight="bold"))
-        self.label_light.grid(row=1, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.entry_light = ctk.CTkEntry(self.right_frame, textvariable=self.light_text_var, justify="center", width=100, state="disabled")
-        self.entry_light.grid(row=2, column=0, padx=10, pady=0, sticky="ns")
-
-        self.ph_text_var = tkinter.StringVar()
-        self.label_ph = ctk.CTkLabel(self.right_frame, text="pH", font=ctk.CTkFont(weight="bold"))
-        self.label_ph.grid(row=3, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.entry_ph = ctk.CTkEntry(self.right_frame, textvariable=self.ph_text_var, justify="center", width=100, state="disabled")
-        self.entry_ph.grid(row=4, column=0, padx=10, pady=0, sticky="ns")
-
-        self.do_text_var = tkinter.StringVar()
-        self.label_do = ctk.CTkLabel(self.right_frame, text="OD [%]", font=ctk.CTkFont(weight="bold"))
-        self.label_do.grid(row=5, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.entry_do = ctk.CTkEntry(self.right_frame, textvariable=self.do_text_var, justify="center", width=100, state="disabled")
-        self.entry_do.grid(row=6, column=0, padx=10, pady=0, sticky="ns")
-
-        self.temp_text_var = tkinter.StringVar()
-        self.label_temp = ctk.CTkLabel(self.right_frame, text="Temperatura [°C]", font=ctk.CTkFont(weight="bold"))
-        self.label_temp.grid(row=7, column=0, padx=10, pady=(10,0), sticky="nsew")
-        self.entry_temp = ctk.CTkEntry(self.right_frame, textvariable=self.temp_text_var, justify="center", width=100, state="disabled")
-        self.entry_temp.grid(row=8, column=0, padx=10, pady=0, sticky="ns")
+        self.label_light.grid(row=5, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.entry_light = ctk.CTkEntry(self.right_frame, textvariable=self.light_text_var, justify="center", width=100, state="disabled", validate="key", validatecommand=(self.validate, "%P"))
+        self.entry_light.grid(row=6, column=0, padx=10, pady=0, sticky="ns")
 
         self.send_button = ctk.CTkButton(self.right_frame, text="Enviar", command=self.send_button_event, width=100, state="disabled")
-        self.send_button.grid(row=9, column=0, padx=10, pady=(20, 10), sticky="ns")
+        self.send_button.grid(row=7, column=0, padx=10, pady=(20, 10), sticky="ns")
 
     def process_data_set_points(self, data):
         if data == MsgType.ESP_CONNECTED:
@@ -350,15 +343,19 @@ class SetPointsFrame(ctk.CTkFrame):
 
     def esp_connected(self):
         self.entry_light.configure(state = "normal")
-        self.entry_ph.configure(state = "normal")
-        self.entry_do.configure(state = "normal")
-        self.entry_temp.configure(state = "normal")
+        self.cold_button.configure(state = "normal")
+        self.hot_button.configure(state = "normal")
         self.send_button.configure(state = "normal")
 
         self.co2_button.configure(state = "normal")
         self.o2_button.configure(state = "normal")
         self.air_button.configure(state = "normal")
         self.n2_button.configure(state = "normal")
+
+        self.hot_button.configure(text="Apagado")
+        self.hot_button.configure(fg_color="red")
+        self.cold_button.configure(text="Apagado")
+        self.cold_button.configure(fg_color="red")
 
         self.co2_button.configure(text="Apagado")
         self.co2_button.configure(fg_color="red")
@@ -371,15 +368,19 @@ class SetPointsFrame(ctk.CTkFrame):
     
     def esp_disconnected(self):
         self.entry_light.configure(state = "disabled")
-        self.entry_ph.configure(state = "disabled")
-        self.entry_do.configure(state = "disabled")
-        self.entry_temp.configure(state = "disabled")
+        self.hot_button.configure(state = "disabled")
+        self.cold_button.configure(state = "disabled")
         self.send_button.configure(state = "disabled") 
 
         self.co2_button.configure(state = "disabled")
         self.o2_button.configure(state = "disabled")
         self.air_button.configure(state = "disabled")
-        self.n2_button.configure(state = "disabled")   
+        self.n2_button.configure(state = "disabled")  
+
+        self.hot_button.configure(text="Desconectado")
+        self.hot_button.configure(fg_color="orange") 
+        self.cold_button.configure(text="Desconectado")
+        self.cold_button.configure(fg_color="orange")  
 
         self.co2_button.configure(text="Desconectado")
         self.co2_button.configure(fg_color="orange") 
@@ -417,50 +418,101 @@ class SetPointsFrame(ctk.CTkFrame):
             self.n2_button.configure(fg_color="green")
 
     def co2_button_event(self):
-        if self.co2_button.cget("text") == "Encendido":
-            ui_serial.publisher.send_data(b"#C0!")
-            self.co2_button.configure(text="Apagado")
-            self.co2_button.configure(fg_color="red")
-        elif self.co2_button.cget("text") == "Apagado":
-            ui_serial.publisher.send_data(b"#C1!")
-            self.co2_button.configure(text="Encendido")
-            self.co2_button.configure(fg_color="green")
+        if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
+            if self.co2_button.cget("text") == "Encendido":
+                ui_serial.publisher.send_data(b"#C0$")
+                self.co2_button.configure(text="Apagado")
+                self.co2_button.configure(fg_color="red")
+            elif self.co2_button.cget("text") == "Apagado":
+                ui_serial.publisher.send_data(b"#C1$")
+                self.co2_button.configure(text="Encendido")
+                self.co2_button.configure(fg_color="green")
+        else: 
+            messagebox.showwarning("Advertencia", "Para controlar manualmente, el ciclo debe estar pausado")
 
     def o2_button_event(self):
-        if self.o2_button.cget("text") == "Encendido":
-            ui_serial.publisher.send_data(b"#O0!")
-            self.o2_button.configure(text="Apagado")
-            self.o2_button.configure(fg_color="red")
-        elif self.o2_button.cget("text") == "Apagado":
-            ui_serial.publisher.send_data(b"#O1!")
-            self.o2_button.configure(text="Encendido")
-            self.o2_button.configure(fg_color="green")
+        if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
+            if self.o2_button.cget("text") == "Encendido":
+                ui_serial.publisher.send_data(b"#O0$")
+                self.o2_button.configure(text="Apagado")
+                self.o2_button.configure(fg_color="red")
+            elif self.o2_button.cget("text") == "Apagado":
+                ui_serial.publisher.send_data(b"#O1$")
+                self.o2_button.configure(text="Encendido")
+                self.o2_button.configure(fg_color="green")
+        else: 
+            messagebox.showwarning("Advertencia", "Para controlar manualmente, el ciclo debe estar pausado")
     
     def air_button_event(self):
-        if self.air_button.cget("text") == "Encendido":
-            ui_serial.publisher.send_data(b"#A0!")
-            self.air_button.configure(text="Apagado")
-            self.air_button.configure(fg_color="red")
-        elif self.air_button.cget("text") == "Apagado":
-            ui_serial.publisher.send_data(b"#A1!")
-            self.air_button.configure(text="Encendido")
-            self.air_button.configure(fg_color="green")
+        if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
+            if self.air_button.cget("text") == "Encendido":
+                ui_serial.publisher.send_data(b"#A0$")
+                self.air_button.configure(text="Apagado")
+                self.air_button.configure(fg_color="red")
+            elif self.air_button.cget("text") == "Apagado":
+                ui_serial.publisher.send_data(b"#A1$")
+                self.air_button.configure(text="Encendido")
+                self.air_button.configure(fg_color="green")
+        else: 
+            messagebox.showwarning("Advertencia", "Para controlar manualmente, el ciclo debe estar pausado")
 
     def n2_button_event(self):
-        if self.n2_button.cget("text") == "Encendido":
-            ui_serial.publisher.send_data(b"#W0!")
-            self.n2_button.configure(text="Apagado")
-            self.n2_button.configure(fg_color="red")
-        elif self.n2_button.cget("text") == "Apagado":
-            ui_serial.publisher.send_data(b"#W1!")
-            self.n2_button.configure(text="Encendido")
-            self.n2_button.configure(fg_color="green")
+        if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
+            if self.n2_button.cget("text") == "Encendido":
+                ui_serial.publisher.send_data(b"#N0$")
+                self.n2_button.configure(text="Apagado")
+                self.n2_button.configure(fg_color="red")
+            elif self.n2_button.cget("text") == "Apagado":
+                ui_serial.publisher.send_data(b"#N1$")
+                self.n2_button.configure(text="Encendido")
+                self.n2_button.configure(fg_color="green")
+        else: 
+            messagebox.showwarning("Advertencia", "Para controlar manualmente, el ciclo debe estar pausado")
+    
+    def cold_button_event(self):
+        if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
+            if self.cold_button.cget("text") == "Encendido":
+                ui_serial.publisher.send_data(b"#COLD0$")
+                self.cold_button.configure(text="Apagado")
+                self.cold_button.configure(fg_color="red")
+            elif self.cold_button.cget("text") == "Apagado":
+                ui_serial.publisher.send_data(b"#HOT0$")
+                self.hot_button.configure(text="Apagado")
+                self.hot_button.configure(fg_color="red")
+                ui_serial.publisher.send_data(b"#COLD1$")
+                self.cold_button.configure(text="Encendido")
+                self.cold_button.configure(fg_color="green")
+        else: 
+            messagebox.showwarning("Advertencia", "Para controlar manualmente, el ciclo debe estar pausado")
+    
+    def hot_button_event(self):
+        if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
+            if self.hot_button.cget("text") == "Encendido":
+                ui_serial.publisher.send_data(b"#HOT0$")
+                self.hot_button.configure(text="Apagado")
+                self.hot_button.configure(fg_color="red")
+            elif self.hot_button.cget("text") == "Apagado":
+                ui_serial.publisher.send_data(b"#COLD0$")
+                self.cold_button.configure(text="Apagado")
+                self.cold_button.configure(fg_color="red")
+                ui_serial.publisher.send_data(b"#HOT1$")
+                self.hot_button.configure(text="Encendido")
+                self.hot_button.configure(fg_color="green")
+        else: 
+            messagebox.showwarning("Advertencia", "Para controlar manualmente, el ciclo debe estar pausado")
 
     def send_button_event(self):
-        ui_serial.publisher.send_data(str.encode(f"#L{int(self.entry_light.get())}!"))
-        ui_serial.publisher.send_data(str.encode(f"#P{int(float(self.entry_ph.get())*100)}!"))
-        ui_serial.publisher.send_data(str.encode(f"#O{int(float(self.entry_do.get())*100)}!"))
-        ui_serial.publisher.send_data(str.encode(f"#T{int(float(self.entry_temp.get())*100)}!"))
+        if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
+            val = int(self.entry_light.get())
+            if val < 0 or val > 100:
+                messagebox.showwarning("Advertencia", "El valor de luz debe ser porcentual")
+            else:
+                ui_serial.publisher.send_data(str.encode("#L{:03d}$".format(val)))
+        else: 
+            messagebox.showwarning("Advertencia", "Para controlar manualmente, el ciclo debe estar pausado")
+
+    def only_numbers(self, text):
+        return text.isdigit() or text == ""
 
 class ManualRecordFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -591,7 +643,7 @@ class ManualFrame(ctk.CTkFrame):
 
         datalog_path = os.path.join(os.getcwd(), "test_data")
         
-        self.grid_columnconfigure((0, 1, 2), weight=1)
+        self.grid_columnconfigure((0, 1), weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=3)      
         
@@ -601,8 +653,8 @@ class ManualFrame(ctk.CTkFrame):
         self.instant_values_frame = InstantValuesFrame(self)
         self.instant_values_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
 
-        self.manual_record_frame = ManualRecordFrame(self)
-        self.manual_record_frame.grid(row=0, column=2, padx=10, pady=10, sticky="nsew")
+        #self.manual_record_frame = ManualRecordFrame(self)
+        #self.manual_record_frame.grid(row=0, column=2, padx=10, pady=10, sticky="nsew")
 
         self.log_frame = LogFrame(self)#, os.path.join(datalog_path, "datos_generados_logico.csv"))
         self.log_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew", columnspan=3)
