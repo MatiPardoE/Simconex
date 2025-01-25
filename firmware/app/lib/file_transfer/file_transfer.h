@@ -35,7 +35,7 @@ public:
 
     FileTransfer(HardwareSerial &serial, int chipSelectPin);
     bool checkCommand();
-    TransferStatus transferFiles(const char *destPathHeader, const char *destPathData, unsigned long timeout);
+    TransferStatus transferFiles(const char *destPathHeader, const char *destPathData,const char *outPath, unsigned long timeout);
     TransferStatus transferCycle(const char *destPathHeader, const char *pathDataOut, unsigned long timeout);
 
 private:

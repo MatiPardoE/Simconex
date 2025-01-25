@@ -41,6 +41,7 @@ public:
         RESUME_CYCLE,
         FINISH_CYCLE,
         NEW_INTERVAL,
+        FIRST_INTERVAL_RUNNING
     };
     struct CycleBundle
     {
@@ -67,6 +68,9 @@ public:
     cycle_manager(uint8_t SPI_CLK, uint8_t SPI_MISO, uint8_t SPI_MOSI, uint8_t SPI_SS);
     bool begin(u_int8_t SD_CS_PIN);
     CycleBundle run();
+    CycleBundle firstIntervalAtRunning();
+    bool pauseCycle();
+    bool resumeCycle();
     bool readNextInterval();
     bool readInterval();
     bool resetHeaderForDebug(u_int8_t SD_CS_PIN);

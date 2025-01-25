@@ -41,6 +41,10 @@ CommUI::CommandFromUI CommUI::parseCommand(const String& input) {
         return INIT_COMM_UI;
     }else if (input == "#SYNC0!") {
         return SYNC_CYCLE_START;
+    }else if (input == "#PAUSE!") {
+        return PAUSE_CYCLE;
+    }else if (input == "#PLAY!") {
+        return RESUME_CYCLE;
     }
     // Add more commands as needed
     return UNKNOWN_COMMAND;
