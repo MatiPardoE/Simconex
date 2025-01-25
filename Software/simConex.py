@@ -53,6 +53,7 @@ class App(ctk.CTk):
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         self.geometry(f"{screen_width}x{screen_height}+0+0")
+        self.alert_counter = 0
 
         ui_serial.publisher.subscribe(self.update_btn)
 
@@ -209,10 +210,17 @@ class App(ctk.CTk):
         if data == MsgType.ESP_DISCONNECTED:
             self.connection_label.configure(image=self.unsync_image)  
 
+    def check_calib(self):
+        self.calibration_frame.instant_values_frame.read_calib_file()
+
 def backend(data):
     if data == MsgType.ESP_SYNCRONIZED or data == MsgType.NEW_CYCLE_SENT:
         app.sync_button.configure(state="disabled")
         app.sync_button.configure(text="Sincronizado")
+
+        app.alerts_button.configure(text="Alertas")
+        app.alert_counter = 0
+        
         fname = os.path.join(os.getcwd(), "input_csv", ui_serial.cycle_id, "data_"+ui_serial.cycle_id+".csv")
         with open(fname, "r") as csvfile:
             reader = csv.reader(csvfile)
@@ -239,6 +247,9 @@ def backend(data):
         app.sync_button.configure(state="disabled")
         app.sync_button.configure(text="Sincronizar")
 
+        app.alerts_button.configure(text="Alertas")
+        app.alert_counter = 0
+
         data_lists['id'] = []
         data_lists['light'] = []
         data_lists['ph'] = []
@@ -256,9 +267,27 @@ def backend(data):
         data_lists_expected['temperature'] = []
 
         ui_serial.cycle_status = CycleStatus.NOT_CYCLE
+    
+    if data == MsgType.PH_OUT_OF_RANGE:
+        app.alert_counter += 1
+        app.alerts_button.configure(text="Alertas [" + str(app.alert_counter) +"]")
+    if data == MsgType.OD_OUT_OF_RANGE:
+        app.alert_counter += 1
+        app.alerts_button.configure(text="Alertas [" + str(app.alert_counter) +"]")
+    if data == MsgType.TEMP_OUT_OF_RANGE:
+        app.alert_counter += 1
+        app.alerts_button.configure(text="Alertas [" + str(app.alert_counter) +"]")
+    
+    if data == MsgType.PH_OUT_OF_CALIB:
+        app.alert_counter += 1 # TODO: tengo que corregir esto porque app todavia no existe
+        app.alerts_button.configure(text="Alertas [" + str(app.alert_counter) +"]")
+    if data == MsgType.OD_OUT_OF_CALIB:
+        app.alert_counter += 1
+        app.alerts_button.configure(text="Alertas [" + str(app.alert_counter) +"]")
 
 if __name__ == "__main__":
     ui_serial.publisher.subscribe(backend)
 
     app = App()
+    app.check_calib()
     app.mainloop()

@@ -16,7 +16,12 @@ class MsgType(Enum):
     ESP_PAUSED = 5
     ESP_PLAYED = 6
     CYCLE_DELETED = 7
-    CYCLE_FINISHED = 8
+    TEMP_OUT_OF_RANGE = 8
+    OD_OUT_OF_RANGE = 9
+    PH_OUT_OF_RANGE = 10
+    OD_OUT_OF_CALIB = 11
+    PH_OUT_OF_CALIB = 12
+    CYCLE_FINISHED = 13
 
 class CycleStatus(Enum):
     NOT_CYCLE = 0 # No hay un ciclo corriendo
@@ -31,6 +36,9 @@ class SerialPublisher:
         self.subscribers = [] 
         self.ser = serial.Serial()
         self.start_time = 0
+        self.noti_ph = False
+        self.noti_od = False
+        self.noti_temp = False
 
         self.read_thread = threading.Thread(target=self.read_port)
         self.read_thread.daemon = True
@@ -58,6 +66,10 @@ class SerialPublisher:
         data_lists_expected['od'] = []
         data_lists_expected['temperature'] = []
 
+        self.noti_ph = False
+        self.noti_od = False
+        self.noti_temp = False
+
         for callback in self.subscribers:
             callback(MsgType.NEW_CYCLE_SENT)
     
@@ -84,9 +96,28 @@ class SerialPublisher:
     def notify_deleted(self):
         for callback in self.subscribers: 
             callback(MsgType.CYCLE_DELETED)
+
+    def notify_out_of_calib(self, variable):
+        if variable == 'ph':
+            for callback in self.subscribers: 
+                callback(MsgType.PH_OUT_OF_CALIB)
+        elif variable == 'od':
+            for callback in self.subscribers: 
+                callback(MsgType.OD_OUT_OF_CALIB)
         
     def notify_connected(self):
         for callback in self.subscribers: callback(MsgType.ESP_CONNECTED)
+
+    def notify_out_of_range(self, variable):
+        if variable == 'ph':
+            for callback in self.subscribers: 
+                callback(MsgType.PH_OUT_OF_RANGE)
+        elif variable == 'od':
+            for callback in self.subscribers: 
+                callback(MsgType.OD_OUT_OF_RANGE)
+        elif variable == 'temperature':
+            for callback in self.subscribers: 
+                callback(MsgType.TEMP_OUT_OF_RANGE)
 
     def notify_subscribers(self, data):
         if "#Z1!" in data:
@@ -107,6 +138,10 @@ class SerialPublisher:
             data_lists['n2'].append(int(match.group(8)))
             data_lists['air'].append(int(match.group(9)))
             self.send_data(b"#OK!\n")
+
+            self.in_range(data_lists['od'], data_lists_expected['od'], len(data_lists['od']), 'od')
+            self.in_range(data_lists['ph'], data_lists_expected['ph'], len(data_lists['ph']), 'ph')
+            self.in_range(data_lists['temperature'], data_lists_expected['temperature'], len(data_lists['temperature']), 'temperature')
 
             for callback in self.subscribers: callback(MsgType.NEW_MEASUREMENT)
         
@@ -253,6 +288,39 @@ class SerialPublisher:
 
     def force_sync(self):
         for callback in self.subscribers: callback(MsgType.ESP_SYNCRONIZED)
+
+    def in_range(self, list_1, list_2, index, variable):
+        if index-3 < 0:
+            return True
+        last_list_1 = list_1[-3:]
+        last_list_2 = list_2[index-3:index]
+
+        # Comparar los valores
+        for v1, v2 in zip(last_list_1, last_list_2):
+            if abs(v2 - v1) < 0.1 * v1:
+                if variable == "ph":
+                    self.noti_ph = False
+                if variable == "od":
+                    self.noti_od = False
+                if variable == "temperature":
+                    self.noti_temp = False
+                return True
+        
+        print("[" + variable + "] Fuera de rango!")
+
+        if variable == "ph" and not self.noti_ph:
+            self.noti_ph = True
+            self.notify_out_of_range(variable)
+        
+        if variable == "od" and not self.noti_od:
+            self.noti_od = True
+            self.notify_out_of_range(variable)
+
+        if variable == "temperature" and not self.noti_temp:
+            self.noti_temp = True
+            self.notify_out_of_range(variable)
+
+        return False
 
 publisher = SerialPublisher()
 cycle_id = "" 
