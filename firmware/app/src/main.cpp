@@ -7,6 +7,13 @@
 #include "esp_log.h"
 #include <manualMode.h>
 
+//cosas RDO
+#include <rdoApiCode.h>
+//MODBUS
+#include <ModbusMessage.h>
+#include <esp32ModbusRTU.h>
+#include <algorithm>  // for std::reverse
+
 #define SPI_MISO 34
 #define SPI_MOSI 33
 #define SPI_SS 26
@@ -22,6 +29,23 @@ ManualMode manualMode;
 
 pH pH_Device = pH(20, "EZO pH probe");
 bool first_interval = false;
+
+
+/* ----------------------------------------------------------------------------
+  -- RDO
+  ---------------------------------------------------------------------------- */
+esp32ModbusRTU modbus(&Serial1, RDO_DE_RE_GPIO);  // use Serial1 and GPIO11/27 as RTS
+uint32_t lastMillisRDO = 0; //para que arranque de una
+volatile rdo_t rdo;
+bool initRDO = true;
+uint8_t calModeOn [] = { 0xE0, 0x00 };
+uint8_t saturationBarometricPressure100 [] = { 0x44, 0x7D, 0x50, 0x00 };
+uint8_t saturationSalinity100           [] = { 0x00, 0x00, 0x00, 0x00 };
+uint8_t defaultBarometricPressure       [] = { 0x44, 0x7D, 0x50, 0x00 };
+
+uint8_t calUpdate [] = { 0xE0, 0x01 };
+uint8_t calModeOff [] = { 0xE0, 0x02 };
+
 
 void setup()
 {

@@ -1,5 +1,6 @@
 #include "controlAPI.h"
 #include <Arduino.h>
+#include "rdoApiCode.h"
 
 ControlAPI::ControlAPI()
 {
@@ -15,6 +16,12 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
     {
         measuresAndOutputs.ph = ph_response;
         // Serial.printf("pH: %02.2f \n", ph_response);
+    }
+
+    // Medicion OD
+    if ( _TIMEOUT_TO_RDO_REQUEST_ ) {
+        requestRDO( &rdo );
+        _updateTimeout_;
     }
 
     switch (cycleStatus)
@@ -184,8 +191,8 @@ cycle_manager::MeasuresAndOutputs ControlAPI::takeMeasuresAndOutputs()
     measuresAndOutputs.EV_nitrogen = (output_shift & 0x04) == 0x04;
     measuresAndOutputs.EV_air = (output_shift & 0x08) == 0x08;
     measuresAndOutputs.light = ledStrip1.getDuty();
-    measuresAndOutputs.temperature = 24;
-    measuresAndOutputs.oxygen = 100.42;
+    measuresAndOutputs.temperature = rdo.temperature.measuredValue;
+    measuresAndOutputs.oxygen = rdo.doSaturation.measuredValue;
     // la medicion de ph se actualiza en el .run()
 
     return measuresAndOutputs;
