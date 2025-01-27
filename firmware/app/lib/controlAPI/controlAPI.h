@@ -6,6 +6,9 @@
 #include "ezo_ph.h"
 #include <ledStrip.h>
 #include <shiftRegister74HC595.h>
+#include <optional>
+#include "esp_log.h"
+
 
 /////////// PINES DE NUESTRO MICROCONTROLADOR ///////////
 /////////// LED STRIPS //////
@@ -18,6 +21,15 @@
 #define SR_DATA_PIN 15
 #define SR_LATCH_PIN 2
 #define SR_CLOCK_PIN 0
+/////////// Shift Register //////
+#define CO2 0
+#define O2 1
+#define N2 2
+#define AIR 3
+#define HEATER 4
+#define COOLER 5
+#define EV_1 6
+#define EV_2 7
 
 class ControlAPI
 {
@@ -25,6 +37,7 @@ public:
     // Constructor
     ControlAPI();
     bool run(cycle_manager::CycleStatus cycleStatus);
+    bool modeManualsetOutputs(String command);
     bool init();
 
     // Function to take measures

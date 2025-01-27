@@ -125,7 +125,6 @@ bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uin
     file.println();
     file.close();
 
-    sendDataToUI(measuresAndOutputs, interval_id_measure);
     return true;
 }
 
@@ -308,7 +307,6 @@ cycle_manager::CycleBundle cycle_manager::run()
     if (alarmFlag) // la alarma solo se va a activar si el ciclo esta corriendo
     {
         alarmFlag = false;
-        ESP_LOGI(TAG, "SE ACTIVO LA ALARMA");
         if (readNextInterval())
         {
             // ESP_LOGI(TAG,"New interval available");

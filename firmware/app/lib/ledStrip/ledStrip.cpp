@@ -44,5 +44,5 @@ void LedStrip::setDuty(int duty) {
 
 int LedStrip::getDuty()
 {
-    return _currentDuty;
+    return map(_currentDuty, 0, _maxDuty, 0, 100);
 }
