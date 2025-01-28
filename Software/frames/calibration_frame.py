@@ -243,7 +243,8 @@ class CalibOdWindow(ctk.CTkToplevel):
         elif self.label_title.cget("text") == "Coloque la sonda en la solución":
             self.label_title.configure(text="Espere a que las mediciones se estabilicen-")
             self.label_text.configure(text="El sensor debe estar 13 mm por encima del fondo del recipiente de calibracion.")
-
+            # TODO : Aca es donde deberiamos enviar el comando para calibrar
+            ui_serial.publisher.send_data(b"#STARTCALODSAT!\n")
             self.btn_b.configure(state="disabled")
             thread = threading.Thread(target=self.update_seconds)
             thread.start() 
@@ -260,6 +261,7 @@ class CalibOdWindow(ctk.CTkToplevel):
             self.destroy()
     
     def btn_end_press(self):
+        ui_serial.publisher.send_data(b"#FINISHCALODSAT!\n")
         self.label_title.configure(text="Verificacion")
         self.label_text.configure(text="Espere a verificar la correcta finalizacion de la calibracion")
         self.btn_a.grid_forget()
