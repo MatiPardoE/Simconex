@@ -91,6 +91,22 @@ CommUI::CommandFromUI CommUI::parseCommand(const String &input)
     {
         return RESUME_CYCLE;
     }
+    else if (input == "#STARTCALODSAT!")
+    {
+        return START_CALIB_OD_SAT;
+    }
+    else if (input == "#FINISHCALODSAT!")
+    {
+        return FINISH_CALIB_OD_SAT;
+    }
+    else if (input == "#STARTCALPH!")
+    {
+        return START_CALIB_PH;
+    }
+    else if (input == "#FINISHCALPH!")
+    {
+        return FINISH_CALIB_PH;
+    }
     // Add more commands as needed
     return UNKNOWN_COMMAND;
 }
