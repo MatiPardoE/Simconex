@@ -31,7 +31,7 @@
 #include <rdoApiGlobalVariables.h>
 
 //#define __DEBUG__
-#define __AUTOCAL__
+//#define __AUTOCAL__
 
 /***********************************************
  * @brief			: 	Function project prototype
