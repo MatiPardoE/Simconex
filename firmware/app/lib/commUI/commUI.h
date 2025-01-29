@@ -17,7 +17,9 @@ public:
         RESUME_CYCLE,
         MANUAL_MODE,
         START_CALIB_OD_SAT,
-        FINISH_CALIB_OD_SAT
+        FINISH_CALIB_OD_SAT,
+        START_CALIB_PH,
+        FINISH_CALIB_PH
     };
     CommUI();
     ~CommUI();

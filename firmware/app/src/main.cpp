@@ -183,6 +183,14 @@ void loop()
         ESP_LOGI(TAG, "Finish calibration OD saturation\n");
         //finishPercentSaturationcalibration(&rdo);
         break;
+    case CommUI::START_CALIB_PH:
+        ESP_LOGI(TAG, "Start calibration pH\n");
+        //startPHcalibration(&rdo);
+        break;
+    case CommUI::FINISH_CALIB_PH:
+        ESP_LOGI(TAG, "Finish calibration pH\n");
+        //finishPHcalibration(&rdo);
+        break;
     default:
         ESP_LOGE(TAG, "Unknown command\n");
         break;
