@@ -61,6 +61,8 @@ void clearRDO (void){
     rdo.doSaturation.measuredValue    = 0;
 
     rdo.onCalibration = false;
+    rdo.onSaturationCalibration = false;
+    rdo.onConcentrationCalibration = false;
 
 }
 
@@ -374,7 +376,9 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
 #endif
                     rdo.replies++;
                     rdo.status = GET_DO;
-                    rdo.onCalibration = false;
+                    rdo.onCalibration               = false;
+                    rdo.onSaturationCalibration     = false;
+                    rdo.onConcentrationCalibration  = false;
                     break;
 
                 default:
@@ -419,6 +423,7 @@ void rxErrorRDO (esp32Modbus::Error error) {
 void triggerPercentSaturationCalibration ( volatile rdo_t * rdo ){
   rdo->status = WRITE_CALIBRATION_COMMAND;
   rdo->onCalibration = true;
+  rdo->onSaturationCalibration = true;
 }
 
 /***********************************************************************************
@@ -442,7 +447,10 @@ bool isAnyCalibrationDone ( volatile rdo_t * rdo ){
 void finishPercentSaturationCalibration ( volatile rdo_t * rdo ){
 
     if( rdo->onCalibration == true ){
-        rdo->status = SET_LIVE_BAR_PRESSURE; //cambio de estado para finalizar
+        if( rdo->onSaturationCalibration == true)
+            rdo->status = SET_LIVE_BAR_PRESSURE; //cambio de estado para finalizar
+        if( rdo->onConcentrationCalibration == true) //TODO: VER COMO SE HACE
+            rdo->status = SET_LIVE_BAR_PRESSURE; 
     }
 }
 

@@ -129,6 +129,8 @@ typedef struct{
 
     //! auxiliar
     bool onCalibration;
+    bool onSaturationCalibration;
+    bool onConcentrationCalibration;
     uint16_t equilibrium;
 
 } rdo_t;
