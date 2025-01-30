@@ -6,6 +6,7 @@
 #include <controlAPI.h>
 #include "esp_log.h"
 #include <manualMode.h>
+#include "ezo_ph.h"
 
 // cosas RDO
 #include <rdoApiCode.h>
@@ -177,19 +178,59 @@ void loop()
         break;
     case CommUI::START_CALIB_OD_SAT:
         ESP_LOGI(TAG, "Start calibration OD saturation\n");
+        if (cm.cycleData.status == cycle_manager::CYCLE_RUNNING)
+        {
+            ESP_LOGI(TAG, "Ciclo corriendo, pauso ciclo para iniciar la calibracion de OD");
+            cm.pauseCycle();
+            sensorControl.turnOffOutputs();
+        }
         triggerPercentSaturationCalibration(&rdo);
         break;
     case CommUI::FINISH_CALIB_OD_SAT:
         ESP_LOGI(TAG, "Finish calibration OD saturation\n");
-        //finishPercentSaturationcalibration(&rdo);
+        if (cm.cycleData.status == cycle_manager::CYCLE_PAUSED)
+        {
+            ESP_LOGI(TAG, "reanudo ciclo luego de calibracion de OD");
+            cm.resumeCycle();
+        }
+        // finishPercentSaturationcalibration(&rdo);
         break;
     case CommUI::START_CALIB_PH:
         ESP_LOGI(TAG, "Start calibration pH\n");
-        //startPHcalibration(&rdo);
+        pH_Device.start_calibration();
+        if (cm.cycleData.status == cycle_manager::CYCLE_RUNNING)
+        {
+            ESP_LOGI(TAG, "Ciclo corriendo, pauso ciclo para iniciar la calibracion de pH");
+            cm.pauseCycle();
+            sensorControl.turnOffOutputs();
+        }
+        break;
+    case CommUI::CLEAR_CALIB_PH:
+        if (!pH_Device.is_on_calibration())
+        {
+            ESP_LOGI(TAG, "Not in calibration mode");
+            break;
+        }
+        ESP_LOGI(TAG, "Clear calibration pH\n");
+        pH_Device.state_calib = CLEAR_CALIB;
+        break;
+    case CommUI::SET_MID_POINT_PH:
+        if (!pH_Device.is_on_calibration())
+        {
+            ESP_LOGI(TAG, "Not in calibration mode");
+            break;
+        }
+        ESP_LOGI(TAG, "Set mid point pH\n");
+        pH_Device.state_calib = MID_POINT;
         break;
     case CommUI::FINISH_CALIB_PH:
         ESP_LOGI(TAG, "Finish calibration pH\n");
-        //finishPHcalibration(&rdo);
+        if (cm.cycleData.status == cycle_manager::CYCLE_PAUSED)
+        {
+            ESP_LOGI(TAG, "reanudo ciclo luego de calibracion de PH");
+            cm.resumeCycle();
+        }
+        // finishPHcalibration(&rdo);
         break;
     default:
         ESP_LOGE(TAG, "Unknown command\n");
@@ -233,6 +274,120 @@ void loop()
         cm.sendDataToUI(new_measure_outputs, 0);
         break;
     default:
+        break;
+    }
+
+    switch (pH_Device.state_calib)
+    {
+    case NO_CALIB:
+        break;
+    case INIT_CALIB:
+        break;
+    case CLEAR_CALIB:
+        if (calib_clear_seq.run() == calib_check_seq.FINISHED)
+        {
+            pH_Device.state_calib = ESTABLISH_MID_POINT;
+            ESP_LOGI(TAG, "Calibracion de pH reseteada\n");
+        }
+        break;
+    case ESTABLISH_MID_POINT:
+        if (millis() - pH_Device.last_read_time >= 2000)
+        {
+            if (read_seq.run() == read_seq.FINISHED)
+            {
+                pH_Device.last_read_time = millis();
+                if (pH_Device.get_error() == pH::SUCCESS)
+                {
+                    Serial.printf("Valor de pH: %.2f\n", pH_Device.get_last_received_reading());
+                }
+                else
+                {
+                    ESP_LOGE(TAG, "ph read error in Calib state");
+                }
+            }
+        }
+        break;
+    case MID_POINT:
+        if (calib_mid_seq.run() == calib_mid_seq.FINISHED)
+        {
+            state_calib = WAIT_ENTER_LOW;
+        }
+        break;
+    case WAIT_ENTER_LOW:
+        if (millis() - last_read_time >= 2000)
+        {
+            if (read_seq.run() == read_seq.FINISHED)
+            {
+                last_read_time = millis();
+                if (pH_Device.get_error() == pH::SUCCESS)
+                {
+                    Serial.printf("Valor de pH: %.2f\n", pH_Device.get_last_received_reading());
+                }
+                else
+                {
+                    Log.error("ph read error in Calib state\n");
+                }
+            }
+        }
+        if (Serial.available() > 0)
+        {
+            char c = Serial.read();
+            if (c == '\n')
+            {
+                state_calib = LOW_POINT;
+            }
+        }
+        break;
+
+    case LOW_POINT:
+        if (calib_low_seq.run() == calib_low_seq.FINISHED)
+        {
+            state_calib = WAIT_ENTER_HIGH;
+            ESP_LOGI(TAG, "Calibracion en ph 4.00 finalizada\n");
+            ESP_LOGI(TAG, "Coloque la sonda en la solucion de calibracion de 10.00\n");
+            ESP_LOGI(TAG, "Espere que se estabilice la medicion y presione enter para continuar...\n");
+        }
+        break;
+
+    case WAIT_ENTER_HIGH:
+        if (millis() - last_read_time >= 2000)
+        {
+            if (read_seq.run() == read_seq.FINISHED)
+            {
+                last_read_time = millis();
+                if (pH_Device.get_error() == pH::SUCCESS)
+                {
+                    Serial.printf("Valor de pH: %.2f\n", pH_Device.get_last_received_reading());
+                }
+                else
+                {
+                    Log.error("ph read error in Calib state\n");
+                }
+            }
+        }
+        break;
+
+    case HIGH_POINT:
+        if (calib_high_seq.run() == calib_high_seq.FINISHED)
+        {
+            ESP_LOGI(TAG, "Calibracion en ph 10.00 finalizada\n");
+            ESP_LOGI(TAG, "Vamos a chequear la calibracion\n");
+        }
+        break;
+
+    case CHECK_CALIB:
+        if (calib_check_seq.run() == calib_check_seq.FINISHED)
+        {
+            ESP_LOGI(TAG, "Calibracion chequeada!\n");
+        }
+        else
+        {
+            ESP_LOGI(TAG, "La calibracion no se chequeo bien!\n");
+        }
+        break;
+
+    default: // error
+        ESP_LOGE(TAG, "La calibracion no se chequeo bien!\n");
         break;
     }
 }

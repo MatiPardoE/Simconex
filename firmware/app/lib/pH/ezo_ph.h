@@ -12,13 +12,7 @@
 #define READING_DELAY   1000
 #define CLEAR_DELAY     400
 
-enum state_calib_t {
-    CLEAR_CALIB,
-    MID_POINT,
-    LOW_POINT,
-    HIGH_POINT,
-    CHECK_CALIB
-};
+
 
 enum state_ph_t {
     READ_PH,
