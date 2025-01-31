@@ -49,8 +49,14 @@ void setup()
 {
     commUI.begin(230400); // Solo define el puerto y velocidad de comunicación
     Log.begin(LOG_LEVEL_VERBOSE, &Serial, true);
+    Serial1.begin(RDO_BAUD_RATE, SERIAL_8E1, RDO_RX_GPIO, RDO_TX_GPIO, false);
     ESP_LOGI(TAG, "Starting...\n");
     sensorControl.init();
+    modbus.onData(rxRDO);
+    modbus.onError(rxErrorRDO);
+    modbus.begin();
+    clearRDO();
+
     delay(350);
     if (!cm.begin(SD_CS_PIN)) // Inicializa la SD y lee el header
     {
@@ -71,6 +77,9 @@ void loop()
     cycleBundle = cm.run();
     manualBundle = manualMode.run();
     sensorControl.run(cm.cycleData.status);
+
+    unsigned long millis_init;
+
     switch (commandUI)
     {
     case CommUI::TRANSFER_FILE_START:
@@ -181,16 +190,35 @@ void loop()
         break;
     case CommUI::FINISH_CALIB_OD_SAT:
         ESP_LOGI(TAG, "Finish calibration OD saturation\n");
-        //finishPercentSaturationcalibration(&rdo);
+        finishPercentSaturationCalibration(&rdo);
+
+        millis_init = millis();
+        while (millis_init + 40000 > millis())
+        {
+            //TODO Hacer maquina de estado o no bloqueante y que haga el request en el .run
+            if (isAnyCalibrationDone(&rdo))
+            {
+                ESP_LOGI(TAG, "Checked calibration OD saturation\n");
+                break;
+            }
+
+            if (_TIMEOUT_TO_RDO_REQUEST_)
+            {
+                //ESP_LOGI(TAG, "rDO Status: %d",rdo.status);
+                requestRDO(&rdo);
+                _updateTimeout_;
+            }
+        }
+        ESP_LOGE(TAG, "Error checking calibration OD saturation\n");
         break;
-    case CommUI::START_CALIB_PH:
-        ESP_LOGI(TAG, "Start calibration pH\n");
-        //startPHcalibration(&rdo);
-        break;
-    case CommUI::FINISH_CALIB_PH:
-        ESP_LOGI(TAG, "Finish calibration pH\n");
-        //finishPHcalibration(&rdo);
-        break;
+    // case CommUI::START_CALIB_PH:
+    //     ESP_LOGI(TAG, "Start calibration pH\n");
+    //     //startPHcalibration(&rdo);
+    //     break;
+    // case CommUI::FINISH_CALIB_PH:
+    //     ESP_LOGI(TAG, "Finish calibration pH\n");
+    //     //finishPHcalibration(&rdo);
+    //     break;
     default:
         ESP_LOGE(TAG, "Unknown command\n");
         break;

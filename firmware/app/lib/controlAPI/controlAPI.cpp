@@ -20,6 +20,7 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
 
     // Medicion OD
     if ( _TIMEOUT_TO_RDO_REQUEST_ ) {
+        //ESP_LOGI("RDO", "rDO Status: %d",rdo.status);
         requestRDO( &rdo );
         _updateTimeout_;
     }
