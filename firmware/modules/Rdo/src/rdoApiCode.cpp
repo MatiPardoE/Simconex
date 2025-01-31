@@ -254,7 +254,9 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
 
                     rdo.doConcentration.measuredValue = tmpMeasure;
                     rdo.replies++;
-                    rdo.status = GET_TEMP;
+
+                    if( _NOT_CALIBRATING_CMDS_ )
+                        rdo.status = GET_TEMP;
                     break;
 
                 case TEMPERATURE_ID:
@@ -273,7 +275,8 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
 
                     rdo.temperature.measuredValue = tmpMeasure;
                     rdo.replies++;
-                    rdo.status = GET_DO_SAT;
+                    if( _NOT_CALIBRATING_CMDS_ )
+                        rdo.status = GET_DO_SAT;
                     break;
 
                 case DO_SATURATION_ID:
@@ -292,7 +295,8 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
 
                     rdo.doSaturation.measuredValue = tmpMeasure;
                     rdo.replies++;
-                    rdo.status = GET_DO;
+                    if( _NOT_CALIBRATING_CMDS_ )
+                        rdo.status = GET_DO;
                     break;
 
                 default:

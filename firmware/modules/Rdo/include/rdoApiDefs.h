@@ -262,4 +262,16 @@ typedef enum{
 #define _TIMEOUT_TO_RDO_REQUEST_    ( (uint32_t)(millis() - lastMillisRDO) > (uint32_t)(_TIMEOUT_RDO_REQUEST_) )
 #define _updateTimeout_             lastMillisRDO = millis()
 
+#define _NOT_CALIBRATING_CMDS_      (   rdo.status != WRITE_CALIBRATION_COMMAND     && \
+                                        rdo.status != SET_LIVE_BAR_PRESSURE         && \
+                                        rdo.status != SET_100_SAT_BAR_PRESSURE      && \
+                                        rdo.status != SET_100_SAT_SALINITY          && \
+                                        rdo.status != SET_100_SAT_CONCENTRATION     && \
+                                        rdo.status != SET_100_SAT_TEMPERATURE       && \
+                                        rdo.status != UPDATE_CALIBRATION_COMMAND    && \
+                                        rdo.status != WRITE_CALIBRATION_COMMAND_OFF     \ 
+                                    )
+
+
+
 #endif
