@@ -46,6 +46,8 @@ void triggerPercentSaturationCalibration    ( volatile rdo_t * rdo );
 void finishPercentSaturationCalibration     ( volatile rdo_t * rdo );
 bool isAnyCalibrationDone                   ( volatile rdo_t * rdo );
 
+void forceEndCalibrationState               ( volatile rdo_t * rdo , rdoStatus_t state );
+
 bool isRDOequilibrium ( float lastMeasure , float newMeasure );
 bool evaluateEquilibrium ( volatile rdo_t * rdo , uint8_t id , float newMeasure );
 

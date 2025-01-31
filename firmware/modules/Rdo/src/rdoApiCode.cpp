@@ -440,6 +440,22 @@ bool isAnyCalibrationDone ( volatile rdo_t * rdo ){
   return(!rdo->onCalibration);
 }
 
+/***********************************************************************************
+* @function 	forceEndCalibrationState
+* @brief  	
+* @param
+* @retval       fuerza a cambiar el estado, pensada para ejecutarse luego de calibracion fallida
+**********************************************************************************/
+void forceEndCalibrationState ( volatile rdo_t * rdo , rdoStatus_t state ){
+    rdo->status = state;
+    if(rdo->onCalibration == true)
+        rdo->onCalibration = false;
+    if(rdo->onSaturationCalibration == true)
+        rdo->onSaturationCalibration = false;
+    if(rdo->onConcentrationCalibration == true)
+        rdo->onConcentrationCalibration = false;
+}
+
 
 
 /***********************************************************************************
