@@ -31,21 +31,21 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
     case cycle_manager::CycleStatus::CYCLE_RUNNING:
         // TODO pasar a funcion
         // Umbrales de control
-        if (measuresAndOutputs.ph < goalValues.ph + 0.1)
+        if (__PH_LOWER__)
         {
-            shiftRegister.setOutput(AIR, LOW); // TODO : Revisar esto CO2 por aire
+            shiftRegister.setOutput(CO2, LOW);
         }
-        else if (measuresAndOutputs.ph > goalValues.ph - 0.1)
+        else if (__PH_HIGHER__)
         {
-            shiftRegister.setOutput(AIR, HIGH);
+            shiftRegister.setOutput(CO2, HIGH);
         }
 
-        if (measuresAndOutputs.oxygen < goalValues.oxygen + 2)
+        if (__O2_LOWER_SAT__)
         {
             shiftRegister.setOutput(O2, HIGH);
             shiftRegister.setOutput(N2, LOW);
         }
-        else if (measuresAndOutputs.oxygen > goalValues.oxygen - 2)
+        else if (__O2_HIGHER_SAT__)
         {
             shiftRegister.setOutput(O2, LOW);
             shiftRegister.setOutput(N2, HIGH);
@@ -53,11 +53,7 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
 
         if (ledStrip1.getDuty() != goalValues.light)
         {
-            ledStrip1.setDuty(goalValues.light);
-            ledStrip2.setDuty(goalValues.light);
-            ledStrip3.setDuty(goalValues.light);
-            ledStrip4.setDuty(goalValues.light);
-            ledStrip5.setDuty(goalValues.light);
+            set_light_duty_all(goalValues.light);
         }
         break;
     default:
@@ -132,11 +128,7 @@ bool ControlAPI::modeManualsetOutputs(String command)
     else if (command.startsWith("#L"))
     {
         int value = command.substring(2).toInt();
-        ledStrip1.setDuty(value);
-        ledStrip2.setDuty(value);
-        ledStrip3.setDuty(value);
-        ledStrip4.setDuty(value);
-        ledStrip5.setDuty(value);
+        set_light_duty_all(value);
         ESP_LOGI("Manual", "Set light to: %d", value);
     }
     return true;

@@ -28,7 +28,7 @@ ManualMode::ManualBundle ManualMode::run()
     ManualBundle bundle;
     if (manualAlarmFlag)
     {
-        ESP_LOGI("ManualMode", "Alarma de modo manual mode");
+        //ESP_LOGI("ManualMode", "Alarma de modo manual mode");
         manualAlarmFlag = false;
         bundle = ManualBundle::SEND_MEASURES;
     }
