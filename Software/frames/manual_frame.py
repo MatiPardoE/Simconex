@@ -238,7 +238,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
 
-        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)): 
+        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING)): 
             self.light_button.configure(text = f"{data_lists_manual['light'][-1]}")
             self.ph_button.configure(text = "{0:.2f}".format(data_lists_manual['ph'][-1]))
             self.do_button.configure(text = "{0:.2f}".format(data_lists_manual['od'][-1]))
