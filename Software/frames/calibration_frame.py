@@ -78,6 +78,7 @@ class CalibPhWindow(ctk.CTkToplevel):
             self.label_title.configure(text="Que soluciones usar para la calibracion")
             self.label_text.configure(text="Se recomienda usar soluciones que tengan valores sencillos")
             self.img_label.configure(image=self.img_solutions)
+            ui_serial.publisher.send_data(b"#STARTCALPH!\n")
         elif self.label_title.cget("text") == "Que soluciones usar para la calibracion":
             self.label_title.configure(text="Buenas practicas durante la calibracion")
             self.label_text.configure(text="Siempre prestar atencion a las mediciones durante el proceso. Esperar a que se estabilicen las lecturas.")
@@ -87,6 +88,7 @@ class CalibPhWindow(ctk.CTkToplevel):
             self.label_text.configure(text="Para eliminar la calibracion actual, haga click en Siguiente")
             self.img_label.configure(image=self.img_start)
         elif self.label_title.cget("text") == "Comienzo del proceso de calibracion":
+            ui_serial.publisher.send_data(b"#CLEARCALPH!\n")
             self.label_title.configure(text="Punto medio")
             self.label_text.configure(text="Coloque el sensor en la solucion. Espere durante al menos un minuto y hasta que las lecturas sean estables")
             self.ph_button.grid(column=0, row=3, padx=10, pady=0, sticky="ns", columnspan=2)
@@ -95,6 +97,7 @@ class CalibPhWindow(ctk.CTkToplevel):
             thread = threading.Thread(target=self.update_seconds)
             thread.start()            
         elif self.label_title.cget("text") == "Punto medio":
+            ui_serial.publisher.send_data(b"#SETMIDCALPH!\n")
             self.label_title.configure(text="Punto bajo")
             self.img_label.configure(image=self.img_low)
             self.btn.configure(state="disabled")
@@ -102,12 +105,14 @@ class CalibPhWindow(ctk.CTkToplevel):
             thread = threading.Thread(target=self.update_seconds)
             thread.start() 
         elif self.label_title.cget("text") == "Punto bajo":
+            ui_serial.publisher.send_data(b"#SETLOWCALPH!\n")
             self.label_title.configure(text="Punto alto")
             self.img_label.configure(image=self.img_high)
             self.btn.configure(state="disabled")
             thread = threading.Thread(target=self.update_seconds)
             thread.start() 
         elif self.label_title.cget("text") == "Punto alto":
+            ui_serial.publisher.send_data(b"#SETHIGHCALPH!\n")
             self.label_title.configure(text="Verificacion")
             self.label_text.configure(text="Espere a verificar la correcta finalizacion de la calibracion")
             self.btn_end.grid_forget()
