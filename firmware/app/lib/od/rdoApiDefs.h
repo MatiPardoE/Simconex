@@ -256,6 +256,12 @@ typedef enum
     DO_SATURATION_ID = 21,
 } rdoParameterId_t;
 
+typedef enum{
+    CALIBRATION_SUCCES = 0,
+    CALIBRATION_FAIL,
+    CALIBRATION_IN_PROCESS
+}rdoCalibStatus_t
+
 /***********************************************
  * @brief			: Macros
  **********************************************/

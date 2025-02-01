@@ -14,6 +14,9 @@
 #include <esp32ModbusRTU.h>
 #include <algorithm> // for std::reverse
 
+//APIS PARA COSAS COMUNES
+#include <apis.h>
+
 #define SPI_MISO 34
 #define SPI_MOSI 33
 #define SPI_SS 26
@@ -79,6 +82,7 @@ void loop()
     sensorControl.run(cm.cycleData.status);
 
     unsigned long millis_init;
+    bool waitingEndCalibration = false;
 
     switch (commandUI)
     {
@@ -191,7 +195,23 @@ void loop()
     case CommUI::FINISH_CALIB_OD_SAT:
         ESP_LOGI(TAG, "Finish calibration OD saturation\n");
         finishPercentSaturationCalibration(&rdo);
+        
+        switch(isDoSatCalibrationSucces())
+        {
+            case CALIBRATION_SUCCES:
+                ESP_LOGI(TAG, "Calibration OD saturation succes\n");
+                break;
+            case CALIBRATION_FAIL:
+                ESP_LOGE(TAG, "Calibration OD saturation fail\n");
+                
+                break;
+            case CALIBRATION_IN_PROCESS:
+                
+                break;
+        }
+        break;
 
+/*
         millis_init = millis();
         while (millis_init + 40000 > millis())
         {
@@ -209,8 +229,12 @@ void loop()
                 _updateTimeout_;
             }
         }
-        ESP_LOGE(TAG, "Error checking calibration OD saturation\n");
+        if (millis_init + 40000 > millis())
+            ESP_LOGE(TAG, "Error checking calibration OD saturation\n");
+*/
+
         break;
+
     // case CommUI::START_CALIB_PH:
     //     ESP_LOGI(TAG, "Start calibration pH\n");
     //     //startPHcalibration(&rdo);

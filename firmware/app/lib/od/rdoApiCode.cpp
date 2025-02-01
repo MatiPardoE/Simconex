@@ -452,7 +452,7 @@ bool isAnyCalibrationDone(volatile rdo_t *rdo)
  **********************************************************************************/
 void finishPercentSaturationCalibration(volatile rdo_t *rdo)
 {
-    ESP_LOGI("OD", "En Calibracion? %d", rdo->onCalibration);
+    //ESP_LOGI("OD", "En Calibracion? %d", rdo->onCalibration);
     if (rdo->onCalibration == true)
     {
         rdo->status = SET_LIVE_BAR_PRESSURE; // cambio de estado para finalizar
