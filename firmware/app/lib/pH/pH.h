@@ -25,24 +25,31 @@ public:
 		NOT_READ_CMD
 	};
 
-	enum state_calib_t {
-    NO_CALIB,
-    INIT_CALIB,
-    CLEAR_CALIB,
-    ESTABLISH_MID_POINT,
-    MID_POINT,
-    ESTABLISH_LOW_POINT,
-    LOW_POINT,
-    HIGH_POINT,
-    CHECK_CALIB
-};
+	enum state_calib_t
+	{
+		NO_CALIB,
+		INIT_CALIB,
+		WAIT_CLEAR,
+		CLEAR_CALIB,
+		ESTABLISH_MID_POINT,
+		MID_POINT,
+		ESTABLISH_LOW_POINT,
+		ESTABLISH_HIGH_POINT,
+		LOW_POINT,
+		HIGH_POINT,
+		CHECK_CALIB
+	};
 
 	// constructors
-	pH(uint8_t address);				   // Takes I2C address of the device
-	pH(uint8_t address, const char *name); // Takes I2C address of the device
-										   // as well a name of your choice
+	pH(uint8_t address);								  // Takes I2C address of the device
+	pH(uint8_t address, const char *name);				  // Takes I2C address of the device
+														  // as well a name of your choice
 	pH(uint8_t address, TwoWire *wire);					  // Takes I2C address and TwoWire interface
 	pH(uint8_t address, const char *name, TwoWire *wire); // Takes all 3 parameters
+
+	bool is_on_calibration();
+	bool start_calibration();
+	bool finish_calibration();
 
 	void send_cmd(const char *command);
 	// send any command in a string, see the devices datasheet for available i2c commands
@@ -97,11 +104,10 @@ public:
 	void set_address(uint8_t address);
 	// lets you change the I2C address of the device
 
-	bool is_on_calibration();
-	bool start_calibration();
-	bool finish_calibration();
 	state_calib_t state_calib = NO_CALIB;
 	unsigned long last_read_time = 0;
+	bool next_calib_step = false;
+
 protected:
 	uint8_t i2c_address;
 	const char *name = 0;
