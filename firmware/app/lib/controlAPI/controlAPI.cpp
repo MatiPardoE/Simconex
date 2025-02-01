@@ -31,15 +31,17 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
     case cycle_manager::CycleStatus::CYCLE_RUNNING:
         // TODO pasar a funcion
         // Umbrales de control
-        if (__PH_LOWER__)
+        if (__PH_IS_WORKING__)
         {
-            shiftRegister.setOutput(CO2, LOW);
+            if (__PH_LOWER__)
+            {
+                shiftRegister.setOutput(CO2, LOW);
+            }
+            else if (__PH_HIGHER__)
+            {
+                shiftRegister.setOutput(CO2, HIGH);
+            }
         }
-        else if (__PH_HIGHER__)
-        {
-            shiftRegister.setOutput(CO2, HIGH);
-        }
-
         if (__O2_LOWER_SAT__)
         {
             shiftRegister.setOutput(O2, HIGH);
