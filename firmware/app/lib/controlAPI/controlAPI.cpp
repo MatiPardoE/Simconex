@@ -19,9 +19,10 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
     }
 
     // Medicion OD
-    if ( _TIMEOUT_TO_RDO_REQUEST_ ) {
-        //ESP_LOGI("RDO", "rDO Status: %d",rdo.status);
-        requestRDO( &rdo );
+    if (_TIMEOUT_TO_RDO_REQUEST_)
+    {
+        // ESP_LOGI("RDO", "rDO Status: %d",rdo.status);
+        requestRDO(&rdo);
         _updateTimeout_;
     }
 
@@ -32,23 +33,22 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
         // Umbrales de control
         if (measuresAndOutputs.ph < goalValues.ph + 0.1)
         {
-            shiftRegister.setOutput(CO2, HIGH);
-            shiftRegister.setOutput(N2, LOW);
-            shiftRegister.setOutput(AIR, LOW);
-            shiftRegister.setOutput(HEATER, LOW);
-            shiftRegister.setOutput(COOLER, LOW);
-            shiftRegister.setOutput(EV_1, LOW);
-            shiftRegister.setOutput(EV_2, LOW);
+            shiftRegister.setOutput(AIR, LOW); // TODO : Revisar esto CO2 por aire
         }
         else if (measuresAndOutputs.ph > goalValues.ph - 0.1)
         {
-            shiftRegister.setOutput(CO2, LOW);
+            shiftRegister.setOutput(AIR, HIGH);
+        }
+
+        if (measuresAndOutputs.oxygen < goalValues.oxygen + 2)
+        {
+            shiftRegister.setOutput(O2, HIGH);
+            shiftRegister.setOutput(N2, LOW);
+        }
+        else if (measuresAndOutputs.oxygen > goalValues.oxygen - 2)
+        {
+            shiftRegister.setOutput(O2, LOW);
             shiftRegister.setOutput(N2, HIGH);
-            shiftRegister.setOutput(AIR, LOW);
-            shiftRegister.setOutput(HEATER, LOW);
-            shiftRegister.setOutput(COOLER, LOW);
-            shiftRegister.setOutput(EV_1, LOW);
-            shiftRegister.setOutput(EV_2, LOW);
         }
 
         if (ledStrip1.getDuty() != goalValues.light)
@@ -160,16 +160,6 @@ bool ControlAPI::init()
     ledStrip3.begin(PIN_LED_STRIP_3, 2, 5000, 8); // Configura el pin 19, canal 2, frecuencia de 5000 Hz, resolución de 8 bits
     ledStrip4.begin(PIN_LED_STRIP_4, 3, 5000, 8); // Configura el pin 21, canal 3, frecuencia de 5000 Hz, resolución de 8 bits
     ledStrip5.begin(PIN_LED_STRIP_5, 4, 5000, 8); // Configura el pin 22, canal 4, frecuencia de 5000 Hz, resolución de 8 bits
-
-    for (int i = 100; i >= 0; i--)
-    {
-        ledStrip1.setDuty(i);
-        ledStrip2.setDuty(i);
-        ledStrip3.setDuty(i);
-        ledStrip4.setDuty(i);
-        ledStrip5.setDuty(i);
-        delay(10);
-    }
 
     shiftRegister.begin(SR_DATA_PIN, SR_LATCH_PIN, SR_CLOCK_PIN);
     shiftRegister.setOutput(0, LOW);
