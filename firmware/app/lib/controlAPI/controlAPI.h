@@ -22,10 +22,10 @@
 #define SR_LATCH_PIN 2
 #define SR_CLOCK_PIN 0
 /////////// Shift Register //////
-#define CO2 3
+#define CO2 0
 #define O2 1
 #define N2 2
-#define AIR 0
+#define AIR 3
 #define HEATER 4
 #define COOLER 5
 #define EV_1 6
