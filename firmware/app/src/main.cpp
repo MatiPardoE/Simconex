@@ -256,7 +256,7 @@ void loop()
     case ManualMode::NO_COMMAND:
         break;
     case ManualMode::SEND_MEASURES:
-        ESP_LOGI(TAG, "Envio mediciones desde modo manual");
+        //ESP_LOGI(TAG, "Envio mediciones desde modo manual");
         new_measure_outputs = sensorControl.takeMeasuresAndOutputs();
         cm.sendDataToUI(new_measure_outputs, 0);
         break;
