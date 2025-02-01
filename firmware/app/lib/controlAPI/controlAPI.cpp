@@ -10,17 +10,22 @@ ControlAPI::ControlAPI()
 
 bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
 {
+    float ph_response = 0;
     // Medicion de ph
-    float ph_response = get_ph();
-    if (ph_response != -1)
+    if (can_ph_read())
     {
-        measuresAndOutputs.ph = ph_response;
-        // Serial.printf("pH: %02.2f \n", ph_response);
+        ph_response = get_ph();
+        if (ph_response != -1)
+        {
+            ESP_LOGI("PH", "Valor de pH: %.2f", ph_response);
+            measuresAndOutputs.ph = ph_response;
+        }
     }
 
     // Medicion OD
-    if ( _TIMEOUT_TO_RDO_REQUEST_ ) {
-        requestRDO( &rdo );
+    if (_TIMEOUT_TO_RDO_REQUEST_)
+    {
+        requestRDO(&rdo);
         _updateTimeout_;
     }
 
@@ -153,7 +158,14 @@ bool ControlAPI::turnOffOutputs()
 bool ControlAPI::init()
 {
     Wire.begin(I2C_SDA, I2C_SCL); // start the I2C
-    init_pH_probe();
+    if (init_pH_probe())
+    {
+        ESP_LOGI("PH", "pH probe initialized");
+    }
+    else
+    {
+        ESP_LOGE("PH", "pH probe not initialized");
+    }
     ledStrip1.begin(PIN_LED_STRIP_1, 0, 5000, 8); // Configura el pin 5, canal 0, frecuencia de 5000 Hz, resolución de 8 bits
     ledStrip2.begin(PIN_LED_STRIP_2, 1, 5000, 8); // Configura el pin 18, canal 1, frecuencia de 5000 Hz, resolución de 8 bits
     ledStrip3.begin(PIN_LED_STRIP_3, 2, 5000, 8); // Configura el pin 19, canal 2, frecuencia de 5000 Hz, resolución de 8 bits
