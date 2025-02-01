@@ -366,7 +366,7 @@ class ControlCycleFrame(ctk.CTkFrame):
             ui_serial.cycle_status = CycleStatus.CYCLE_PAUSED
             ui_serial.publisher.notify_paused()
 
-        elif ui_serial.cycle_status == CycleStatus.CYCLE_PAUSED:
+        elif (ui_serial.cycle_status == CycleStatus.CYCLE_PAUSED or ui_serial.cycle_status == CycleStatus.CYCLE_MANUAL):
             self.play_pause_image_label.configure(image=self.pause_image)
             self.enable_bin(False)
 
