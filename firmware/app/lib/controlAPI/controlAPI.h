@@ -37,6 +37,9 @@
 #define __PH_IS_WORKING__ (measuresAndOutputs.ph != 0)
 #define __OD_IS_WORKING__ (measuresAndOutputs.oxygen != 0)
 
+#define __NOT_FREE_PH__ (goalValues.ph != 0)
+#define __NOT_FREE_OD__ (goalValues.oxygen != 0)
+
 #define __UMBRAL_O2__ 2
 #define __O2_LOWER_SAT__ (measuresAndOutputs.oxygen < goalValues.oxygen + __UMBRAL_O2__)
 #define __O2_HIGHER_SAT__ (measuresAndOutputs.oxygen > goalValues.oxygen - __UMBRAL_O2__)
