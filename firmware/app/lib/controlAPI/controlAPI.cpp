@@ -31,7 +31,7 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
     case cycle_manager::CycleStatus::CYCLE_RUNNING:
         // TODO pasar a funcion
         // Umbrales de control
-        if (__PH_IS_WORKING__)
+        if (__PH_IS_WORKING__ && __NOT_FREE_PH__)
         {
             if (__PH_LOWER__)
             {
@@ -45,7 +45,7 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
             shiftRegister.setOutput(CO2, LOW);
         }
 
-        if(__OD_IS_WORKING__){
+        if(__OD_IS_WORKING__ && __NOT_FREE_OD__){
             if (__O2_LOWER_SAT__)
             {
                 shiftRegister.setOutput(O2, HIGH);
