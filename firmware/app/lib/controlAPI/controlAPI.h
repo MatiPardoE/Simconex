@@ -34,6 +34,9 @@
 #define __PH_LOWER__ (measuresAndOutputs.ph < goalValues.ph - __UMBRAL_PH__)
 #define __PH_HIGHER__ (measuresAndOutputs.ph > goalValues.ph + __UMBRAL_PH__)
 
+#define __PH_IS_WORKING__ (measuresAndOutputs.ph != 0)
+#define __OD_IS_WORKING__ (measuresAndOutputs.oxygen != 0)
+
 #define __UMBRAL_O2__ 2
 #define __O2_LOWER_SAT__ (measuresAndOutputs.oxygen < goalValues.oxygen + __UMBRAL_O2__)
 #define __O2_HIGHER_SAT__ (measuresAndOutputs.oxygen > goalValues.oxygen - __UMBRAL_O2__)

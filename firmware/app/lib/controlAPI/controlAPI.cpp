@@ -41,16 +41,24 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
             {
                 shiftRegister.setOutput(CO2, HIGH);
             }
+        }else{
+            shiftRegister.setOutput(CO2, LOW);
         }
-        if (__O2_LOWER_SAT__)
-        {
-            shiftRegister.setOutput(O2, HIGH);
-            shiftRegister.setOutput(N2, LOW);
-        }
-        else if (__O2_HIGHER_SAT__)
-        {
+
+        if(__OD_IS_WORKING__){
+            if (__O2_LOWER_SAT__)
+            {
+                shiftRegister.setOutput(O2, HIGH);
+                shiftRegister.setOutput(N2, LOW);
+            }
+            else if (__O2_HIGHER_SAT__)
+            {
+                shiftRegister.setOutput(O2, LOW);
+                shiftRegister.setOutput(N2, HIGH);
+            }
+        }else{
             shiftRegister.setOutput(O2, LOW);
-            shiftRegister.setOutput(N2, HIGH);
+            shiftRegister.setOutput(N2, LOW);
         }
 
         if (ledStrip1.getDuty() != goalValues.light)
