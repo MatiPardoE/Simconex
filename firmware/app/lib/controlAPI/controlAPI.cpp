@@ -177,10 +177,10 @@ bool ControlAPI::init()
 cycle_manager::MeasuresAndOutputs ControlAPI::takeMeasuresAndOutputs()
 {
     byte output_shift = shiftRegister.getOutputState();
-    measuresAndOutputs.EV_co2 = (output_shift & 0x01) == 0x01;
+    measuresAndOutputs.EV_air = (output_shift & 0x01) == 0x01;
     measuresAndOutputs.EV_oxygen = (output_shift & 0x02) == 0x02;
     measuresAndOutputs.EV_nitrogen = (output_shift & 0x04) == 0x04;
-    measuresAndOutputs.EV_air = (output_shift & 0x08) == 0x08;
+    measuresAndOutputs.EV_co2 = (output_shift & 0x08) == 0x08;
     measuresAndOutputs.light = ledStrip1.getDuty();
     measuresAndOutputs.temperature = rdo.temperature.measuredValue;
     measuresAndOutputs.oxygen = rdo.doSaturation.measuredValue;
