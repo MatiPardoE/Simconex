@@ -230,6 +230,8 @@ void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, 
     uint16_t dataAddress;
     float tmpMeasure;
 
+    
+
     switch(fc){
 
         case esp32Modbus::FunctionCode::READ_HOLD_REGISTER:
