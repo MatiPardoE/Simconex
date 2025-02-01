@@ -238,7 +238,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
 
-        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING)): 
+        if data == MsgType.NEW_MEASUREMENT and ui_serial.cycle_status == CycleStatus.CYCLE_MANUAL: 
             self.light_button.configure(text = f"{data_lists_manual['light'][-1]}")
             self.ph_button.configure(text = "{0:.2f}".format(data_lists_manual['ph'][-1]))
             self.do_button.configure(text = "{0:.2f}".format(data_lists_manual['od'][-1]))
@@ -341,8 +341,8 @@ class SetPointsFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
 
-        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING)): # CAMBIO or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)):
-            self.update_data()
+        if data == MsgType.NEW_MEASUREMENT and ui_serial.cycle_status == CycleStatus.CYCLE_MANUAL:
+            self.update_buttons()
 
     def esp_connected(self):
         self.entry_light.configure(state = "normal")
@@ -394,7 +394,7 @@ class SetPointsFrame(ctk.CTkFrame):
         self.n2_button.configure(text="Desconectado")
         self.n2_button.configure(fg_color="orange")    
 
-    def update_data(self):
+    def update_buttons(self):
         if data_lists_manual['co2'][-1] == 0:
             self.co2_button.configure(text="Apagado")
             self.co2_button.configure(fg_color="red")
