@@ -226,6 +226,7 @@ void rxRDO(uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t *data, s
     uint8_t id;
     uint16_t dataAddress;
     float tmpMeasure;
+    rdo.errors = 0;
 
     switch (fc)
     {
@@ -408,6 +409,13 @@ void rxErrorRDO(esp32Modbus::Error error)
 {
     rdo.lastError = rdo.status;
     rdo.errors++;
+
+    if( _HAS_MORE_ERRORS_THAN_(MAX_ERRORS) ){
+        rdo.doSaturation.measuredValue      = 0;
+        rdo.doConcentration.measuredValue   = 0;
+        rdo.temperature.measuredValue       = 0;
+    }
+
     //_updateTimeout_;
     // lastMillisRDO -= _TIMEOUT_RDO_REQUEST_;
 

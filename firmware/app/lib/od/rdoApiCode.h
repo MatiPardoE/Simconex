@@ -34,6 +34,7 @@
 void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, size_t length);
 void rxErrorRDO (esp32Modbus::Error error);
 
+
 /***********************************************
  * @brief			: 	Function project prototype
  **********************************************/
