@@ -341,7 +341,7 @@ class SetPointsFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
 
-        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)):
+        if data == MsgType.NEW_MEASUREMENT or (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING)): # CAMBIO or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)):
             self.update_data()
 
     def esp_connected(self):
@@ -422,6 +422,7 @@ class SetPointsFrame(ctk.CTkFrame):
 
     def co2_button_event(self):
         if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
+            ui_serial.cycle_status = CycleStatus.CYCLE_MANUAL
             if self.co2_button.cget("text") == "Encendido":
                 ui_serial.publisher.send_data(b"#C0$")
                 self.co2_button.configure(text="Apagado")
@@ -435,6 +436,7 @@ class SetPointsFrame(ctk.CTkFrame):
 
     def o2_button_event(self):
         if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
+            ui_serial.cycle_status = CycleStatus.CYCLE_MANUAL
             if self.o2_button.cget("text") == "Encendido":
                 ui_serial.publisher.send_data(b"#O0$")
                 self.o2_button.configure(text="Apagado")
@@ -448,6 +450,7 @@ class SetPointsFrame(ctk.CTkFrame):
     
     def air_button_event(self):
         if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
+            ui_serial.cycle_status = CycleStatus.CYCLE_MANUAL
             if self.air_button.cget("text") == "Encendido":
                 ui_serial.publisher.send_data(b"#A0$")
                 self.air_button.configure(text="Apagado")
@@ -461,6 +464,7 @@ class SetPointsFrame(ctk.CTkFrame):
 
     def n2_button_event(self):
         if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
+            ui_serial.cycle_status = CycleStatus.CYCLE_MANUAL
             if self.n2_button.cget("text") == "Encendido":
                 ui_serial.publisher.send_data(b"#N0$")
                 self.n2_button.configure(text="Apagado")
@@ -474,6 +478,7 @@ class SetPointsFrame(ctk.CTkFrame):
     
     def cold_button_event(self):
         if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
+            ui_serial.cycle_status = CycleStatus.CYCLE_MANUAL
             if self.cold_button.cget("text") == "Encendido":
                 ui_serial.publisher.send_data(b"#COLD0$")
                 self.cold_button.configure(text="Apagado")
@@ -490,6 +495,7 @@ class SetPointsFrame(ctk.CTkFrame):
     
     def hot_button_event(self):
         if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
+            ui_serial.cycle_status = CycleStatus.CYCLE_MANUAL
             if self.hot_button.cget("text") == "Encendido":
                 ui_serial.publisher.send_data(b"#HOT0$")
                 self.hot_button.configure(text="Apagado")
@@ -510,6 +516,7 @@ class SetPointsFrame(ctk.CTkFrame):
             if val < 0 or val > 100:
                 messagebox.showwarning("Advertencia", "El valor de luz debe ser porcentual")
             else:
+                ui_serial.cycle_status = CycleStatus.CYCLE_MANUAL
                 ui_serial.publisher.send_data(str.encode("#L{:03d}$".format(val)))
         else: 
             messagebox.showwarning("Advertencia", "Para controlar manualmente, el ciclo debe estar pausado")
