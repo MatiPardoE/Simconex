@@ -21,8 +21,8 @@ public:
         START_CALIB_PH,
         CLEAR_CALIB_PH,
         SET_MID_POINT_PH,
-        WAIT_LOW_POINT_PH,
-        WAIT_HIGH_POINT_PH,
+        SET_LOW_POINT_PH,
+        SET_HIGH_POINT_PH,
         FINISH_CALIB_PH
     };
     CommUI();
