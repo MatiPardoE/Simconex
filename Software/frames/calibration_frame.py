@@ -5,7 +5,8 @@ import threading
 from PIL import Image
 import frames.serial_handler as ui_serial
 from frames.serial_handler import MsgType 
-from frames.serial_handler import CycleStatus 
+from frames.serial_handler import CycleStatus
+from frames.serial_handler import ModeStatus  
 from frames.serial_handler import data_lists 
 from frames.serial_handler import data_lists_manual
 from frames.serial_handler import data_calib
@@ -88,7 +89,7 @@ class CalibPhWindow(ctk.CTkToplevel):
             self.label_text.configure(text="Se recomienda usar soluciones que tengan valores sencillos")
             self.img_label.configure(image=self.img_solutions)
             ui_serial.publisher.send_data(b"#STARTCALPH!\n")
-            ui_serial.cycle_status = CycleStatus.CYCLE_CALIB
+            ui_serial.mode_status = ModeStatus.MODE_CALIB
             ui_serial.publisher.subscribe(self.update_ph_value)
 
         elif self.label_title.cget("text") == "Que soluciones usar para la calibracion":
@@ -135,6 +136,7 @@ class CalibPhWindow(ctk.CTkToplevel):
 
         elif self.label_title.cget("text") == "Verificacion":
             ui_serial.publisher.unsubscribe(self.update_ph_value)
+            ui_serial.mode_status = ModeStatus.NOT_MODE
             self.destroy()
             
     def update_ph_value(self, data):
