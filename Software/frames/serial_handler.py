@@ -32,6 +32,12 @@ class CycleStatus(Enum):
     CYCLE_ERROR = 4 # El ciclo tuvo un error
     CYCLE_MANUAL = 5 # El ciclo es manual
     CYCLE_CALIB = 6 # El ciclo es de calibración
+    
+class ModeStatus(Enum):
+    NOT_MODE = 0 # No estoy en modo alguno
+    MODE_MANUAL = 1 # El MODO es manual
+    MODE_CALIB = 2 # El MODO es de calibración
+    MODE_SYNC = 3 # El MODO es de sincronización
 
 class SerialPublisher:
     def __init__(self):
@@ -133,7 +139,7 @@ class SerialPublisher:
 
 
         if match:
-            if cycle_status == CycleStatus.CYCLE_RUNNING:
+            if cycle_status == CycleStatus.CYCLE_RUNNING: # Caso prioritario si esta corriendo solo guardo en data_list
                 # Modo LIVE
                 print("Valid measurement and cycle running!")
                 data_lists['id'].append(int(match.group(1)))
@@ -153,7 +159,7 @@ class SerialPublisher:
 
                 for callback in self.subscribers: callback(MsgType.NEW_MEASUREMENT)
         
-            elif cycle_status == CycleStatus.CYCLE_MANUAL:
+            elif mode_status == ModeStatus.MODE_MANUAL: # Si el estado del ciclo no esta corriendo, pero el modo es manual, guardo en data_lists_manual
                 # Modo MANUAL
                 data_lists_manual['id'].append(int(match.group(1)))
                 data_lists_manual['light'].append(int(match.group(5)))
@@ -167,7 +173,7 @@ class SerialPublisher:
                 self.send_data(b"#OK!\n")
 
                 for callback in self.subscribers: callback(MsgType.NEW_MEASUREMENT)
-            elif cycle_status == CycleStatus.CYCLE_CALIB:
+            elif mode_status == ModeStatus.MODE_CALIB: # Si el estado del ciclo no esta corriendo, pero el modo es calibración, guardo en data_calib
                 # Modo CALIB
                 data_calib['ph'] = float(match.group(2))
                 data_calib['od'] = float(match.group(3))
@@ -176,11 +182,9 @@ class SerialPublisher:
                 
                 for callback in self.subscribers: callback(MsgType.NEW_MEASURE_CALIB)
 
-            else:
-                # Modo Sync
-                print("Entre al match en modo sync")
-                for callback in self.subscribers:          
-                    callback(data)
+            elif mode_status == ModeStatus.MODE_SYNC: # Si el estado del ciclo no esta corriendo, pero el modo es sincronización, guardo en data_lists_expected
+                    for callback in self.subscribers:          
+                        callback(data)
         else:
             # Resto de comandos que no son intervalos
             for callback in self.subscribers:          
@@ -349,6 +353,7 @@ cycle_id = ""
 cycle_alias = "" 
 cycle_interval = 0
 cycle_status = CycleStatus.NOT_CYCLE
+mode_status = ModeStatus.NOT_MODE
 
 data_lists = {
     "id": [],
