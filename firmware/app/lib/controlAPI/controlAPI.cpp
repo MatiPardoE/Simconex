@@ -17,7 +17,7 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
         ph_response = get_ph();
         if (ph_response != -1)
         {
-            ESP_LOGI("PH", "Valor de pH: %.2f", ph_response);
+            //ESP_LOGI("PH", "Valor de pH: %.2f", ph_response);
             measuresAndOutputs.ph = ph_response;
         }
     }

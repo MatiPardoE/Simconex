@@ -8,6 +8,7 @@ from frames.serial_handler import MsgType
 from frames.serial_handler import CycleStatus 
 from frames.serial_handler import data_lists 
 from frames.serial_handler import data_lists_manual
+from frames.serial_handler import data_calib
 import csv
 from datetime import datetime, timedelta
 from tkinter import messagebox
@@ -67,14 +68,18 @@ class CalibPhWindow(ctk.CTkToplevel):
         self.btn.configure(text="Siguiente".format(seconds=i))
         self.btn.configure(state="normal")
         self.btn.grid(column=1, row=4, padx=15, pady=15, columnspan=1, sticky="w")
-        self.btn_end.grid(column=0, row=4, padx=15, pady=15, sticky="e")
+        if self.label_title.cget("text") == "Punto bajo" or self.label_title.cget("text") == "Punto alto":
+            self.btn_end.grid(column=0, row=4, padx=15, pady=15, sticky="e")
+        else:
+            self.btn_end.grid_forget()
 
     def btn_end_press(self):
+        ui_serial.publisher.send_data(b"#FINISHCALPH!\n")
         self.label_title.configure(text="Verificacion")
         self.label_text.configure(text="Espere a verificar la correcta finalizacion de la calibracion")
         self.btn_end.grid_forget()
-        self.btn.configure(text="Finalizar")
-        self.btn.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
+        self.ph_button.grid_forget()
+        self.btn.grid_forget()
         self.img_label.configure(image=self.img_check)
 
     def btn_press(self):
@@ -83,6 +88,9 @@ class CalibPhWindow(ctk.CTkToplevel):
             self.label_text.configure(text="Se recomienda usar soluciones que tengan valores sencillos")
             self.img_label.configure(image=self.img_solutions)
             ui_serial.publisher.send_data(b"#STARTCALPH!\n")
+            ui_serial.cycle_status = CycleStatus.CYCLE_CALIB
+            ui_serial.publisher.subscribe(self.update_ph_value)
+
         elif self.label_title.cget("text") == "Que soluciones usar para la calibracion":
             self.label_title.configure(text="Buenas practicas durante la calibracion")
             self.label_text.configure(text="Siempre prestar atencion a las mediciones durante el proceso. Esperar a que se estabilicen las lecturas.")
@@ -116,16 +124,32 @@ class CalibPhWindow(ctk.CTkToplevel):
             thread = threading.Thread(target=self.update_seconds)
             thread.start() 
         elif self.label_title.cget("text") == "Punto alto":
-            ui_serial.publisher.send_data(b"#SETHIGHCALPH!\n")
+            ui_serial.publisher.send_data(b"#SETHIGHCALPH!\n") #Despues de este comando el propio ESP hace la finalizacion porque no existen mas puntos
             self.label_title.configure(text="Verificacion")
             self.label_text.configure(text="Espere a verificar la correcta finalizacion de la calibracion")
             self.btn_end.grid_forget()
-            self.btn.configure(text="Finalizar")
-            self.btn.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
+            self.ph_button.grid_forget()
+            self.btn.grid_forget()
             self.img_label.configure(image=self.img_check)
-        elif self.label_title.cget("text") == "Verificacion":
-            self.destroy()
+            # TODO: Esperar la confirmacion de la finalizacion de la calibracion del ESP
 
+        elif self.label_title.cget("text") == "Verificacion":
+            ui_serial.publisher.unsubscribe(self.update_ph_value)
+            self.destroy()
+            
+    def update_ph_value(self, data):
+        if data == MsgType.NEW_MEASURE_CALIB:
+            self.ph_button.configure(text=f"pH: {data_calib['ph']:.2f}")
+        elif data.strip() == "#OKCALIBPH!":
+            # TODO : Hacer mas bonita la UI para estos casos
+            self.btn.configure(text="Cerrar ventana", fg_color="green")
+            self.btn.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
+        elif data.strip() == "#FAILCALIBPH!":
+            print("Calibracion Fail")
+            self.btn.configure(text="Cerrar ventana", fg_color="red")
+            self.btn.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
+
+            
 class CalibOdWindow(ctk.CTkToplevel):
     def __init__(self, master = None):
         super().__init__(master = master)

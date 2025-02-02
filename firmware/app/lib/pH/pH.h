@@ -107,6 +107,7 @@ public:
 	state_calib_t state_calib = NO_CALIB;
 	unsigned long last_read_time = 0;
 	bool next_calib_step = false;
+	bool finish_calib = false;
 
 protected:
 	uint8_t i2c_address;

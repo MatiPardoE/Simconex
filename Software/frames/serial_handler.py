@@ -22,6 +22,7 @@ class MsgType(Enum):
     OD_OUT_OF_CALIB = 11
     PH_OUT_OF_CALIB = 12
     CYCLE_FINISHED = 13
+    NEW_MEASURE_CALIB = 14
 
 class CycleStatus(Enum):
     NOT_CYCLE = 0 # No hay un ciclo corriendo
@@ -165,6 +166,15 @@ class SerialPublisher:
                 self.send_data(b"#OK!\n")
 
                 for callback in self.subscribers: callback(MsgType.NEW_MEASUREMENT)
+            elif cycle_status == CycleStatus.CYCLE_CALIB:
+                # Modo CALIB
+                data_calib['ph'] = float(match.group(2))
+                data_calib['od'] = float(match.group(3))
+                data_calib['temperature'] = float(match.group(4))
+                self.send_data(b"#OK!\n")
+                
+                for callback in self.subscribers: callback(MsgType.NEW_MEASURE_CALIB)
+
             else:
                 # Modo Sync
                 print("Entre al match en modo sync")
@@ -361,6 +371,12 @@ data_lists_manual = {
     "o2": [],
     "n2": [],
     "air": []
+}
+
+data_calib = {
+    "ph": 0,
+    "od": 0,
+    "temperature": 0,
 }
 
 data_lists_expected = {
