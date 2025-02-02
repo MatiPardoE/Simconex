@@ -288,9 +288,11 @@ class ControlCycleFrame(ctk.CTkFrame):
         self.info_entry.insert(0,"")
 
         if bool:
-            self.add_file_image_label.bind("<Enter>", self.on_hover)
-            self.add_file_image_label.bind("<Leave>", self.off_hover)
-            self.add_file_image_label.bind("<Button-1>", self.load_cycle_event)
+            if not self.add_file_image_label.bindtags().__contains__("bound"):
+                self.add_file_image_label.bind("<Enter>", self.on_hover)
+                self.add_file_image_label.bind("<Leave>", self.off_hover)
+                self.add_file_image_label.bind("<Button-1>", self.load_cycle_event)
+                self.add_file_image_label.bindtags(self.add_file_image_label.bindtags() + ("bound",))
 
             self.main_button_interval.configure(state = "normal")
             self.interval_entry.configure(state = "normal")
@@ -301,6 +303,7 @@ class ControlCycleFrame(ctk.CTkFrame):
             self.add_file_image_label.unbind("<Enter>")
             self.add_file_image_label.unbind("<Leave>")
             self.add_file_image_label.unbind("<Button-1>")
+            self.add_file_image_label.bindtags(tuple(tag for tag in self.add_file_image_label.bindtags() if tag != "bound"))
 
             self.main_button_interval.configure(state = "disabled")
             self.interval_entry.configure(state = "disabled")
