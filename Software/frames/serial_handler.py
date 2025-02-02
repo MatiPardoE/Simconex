@@ -31,6 +31,7 @@ class CycleStatus(Enum):
     CYCLE_FINISHED = 3 # Hay un ciclo terminado
     CYCLE_ERROR = 4 # El ciclo tuvo un error
     CYCLE_MANUAL = 5 # El ciclo es manual
+    CYCLE_CALIB = 6 # El ciclo es de calibración
 
 class SerialPublisher:
     def __init__(self):
