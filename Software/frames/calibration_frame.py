@@ -4,6 +4,10 @@ import time
 import threading
 from PIL import Image
 import frames.serial_handler as ui_serial
+from frames.serial_handler import MsgType 
+from frames.serial_handler import CycleStatus 
+from frames.serial_handler import data_lists 
+from frames.serial_handler import data_lists_manual
 import csv
 from datetime import datetime, timedelta
 from tkinter import messagebox
@@ -161,9 +165,13 @@ class CalibOdWindow(ctk.CTkToplevel):
         self.img_label = ctk.CTkLabel(self, text="", image=self.img_calib_od)
         self.img_label.grid(row=2, column=0, padx=0, pady=0, sticky="nsew", columnspan=2)
 
-        self.ph_button = ctk.CTkButton(self, text="pH: --", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
-        self.ph_button.grid(column=0, row=3, padx=10, pady=0, sticky="ns", columnspan=2)
-        self.ph_button.grid_forget()
+        self.od_button = ctk.CTkButton(self, text="od: --", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
+        self.od_button.grid(column=0, row=3, padx=10, pady=0, sticky="ns", columnspan=2)
+        self.od_button.grid_forget()
+        
+        self.temp_button = ctk.CTkButton(self, text="temp: --", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
+        self.temp_button.grid(column=0, row=3, padx=10, pady=0, sticky="ns", columnspan=2)
+        self.temp_button.grid_forget()
 
         self.btn_a = ctk.CTkButton(self, text="Calibracion por saturacion", command=self.btn_a_press)
         self.btn_a.grid(column=0, row=4, padx=15, pady=15, sticky="e")
@@ -250,6 +258,9 @@ class CalibOdWindow(ctk.CTkToplevel):
             self.label_text.configure(text="El sensor debe estar 13 mm por encima del fondo del recipiente de calibracion.")
             # TODO : Aca es donde deberiamos enviar el comando para calibrar
             ui_serial.publisher.send_data(b"#STARTCALODSAT!\n")
+            ui_serial.publisher.subscribe(self.update_rdo_value)
+            self.od_button.grid(column=0, row=3, padx=10, pady=0, sticky="ns", columnspan=2)
+            self.temp_button.grid(column=1, row=3, padx=10, pady=0, sticky="ns", columnspan=2)
             self.btn_b.configure(state="disabled")
             thread = threading.Thread(target=self.update_seconds)
             thread.start() 
@@ -267,12 +278,24 @@ class CalibOdWindow(ctk.CTkToplevel):
     
     def btn_end_press(self):
         ui_serial.publisher.send_data(b"#FINISHCALODSAT!\n")
+        ui_serial.publisher.unsubscribe(self.update_rdo_value)
+        self.od_button.grid_forget()
+        self.temp_button.grid_forget()
         self.label_title.configure(text="Verificacion")
         self.label_text.configure(text="Espere a verificar la correcta finalizacion de la calibracion")
         self.btn_a.grid_forget()
         self.btn_b.configure(text="Finalizar")
         self.btn_b.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
         self.img_label.configure(image=self.img_check)
+        
+    def update_rdo_value(self, data):
+        # TODO: el data no me esta llegando con el tipo de mensaje
+        #if data == MsgType.NEW_MEASUREMENT:
+        print("New measurement en RDO CALIB")
+        print(f"OD: {data_lists_manual['od'][-1]:.2f}")
+        print(f"Temperature: {data_lists_manual['temperature'][-1]:.2f}")
+        self.od_button.configure(text=f"{data_lists_manual['od'][-1]}")
+        self.temp_button.configure(text=f"{data_lists_manual['temperature'][-1]}")
 
 class SensorCalibrateFrame(ctk.CTkFrame):
     def __init__(self, master, sensor_name):

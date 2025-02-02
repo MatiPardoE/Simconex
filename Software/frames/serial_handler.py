@@ -29,6 +29,7 @@ class CycleStatus(Enum):
     CYCLE_PAUSED = 2 # Hay un ciclo corriendo
     CYCLE_FINISHED = 3 # Hay un ciclo terminado
     CYCLE_ERROR = 4 # El ciclo tuvo un error
+    CYCLE_MANUAL = 5 # El ciclo es manual
 
 class SerialPublisher:
     def __init__(self):
@@ -75,6 +76,7 @@ class SerialPublisher:
     
     def notify_sync(self):
         for callback in self.subscribers: 
+            print(f"Executing callback notify_sync: {callback.__name__}")
             callback(MsgType.ESP_SYNCRONIZED)
 
     def notify_disconnected(self):
@@ -91,6 +93,7 @@ class SerialPublisher:
         
     def notify_cycle_finished(self):
         for callback in self.subscribers: 
+            print(f"Executing callback ciclo finished: {callback.__name__}")
             callback(MsgType.CYCLE_FINISHED)
     
     def notify_deleted(self):
@@ -126,41 +129,49 @@ class SerialPublisher:
         pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(0|1),(0|1),(0|1),(0|1)$"
         match = re.match(pattern, data)
 
-        if match and cycle_status == CycleStatus.CYCLE_RUNNING: # TODO: tengo que corregir que esto no vaya a estas listas cuando el ciclo no esta corriendo (listas distintas para modo manual?)
-            print("Valid measurement and cycle running!")
-            data_lists['id'].append(int(match.group(1)))
-            data_lists['light'].append(int(match.group(5)))
-            data_lists['ph'].append(float(match.group(2)))
-            data_lists['od'].append(float(match.group(3)))
-            data_lists['temperature'].append(float(match.group(4)))
-            data_lists['co2'].append(int(match.group(6)))
-            data_lists['o2'].append(int(match.group(7)))
-            data_lists['n2'].append(int(match.group(8)))
-            data_lists['air'].append(int(match.group(9)))
-            self.send_data(b"#OK!\n")
 
-            self.in_range(data_lists['od'], data_lists_expected['od'], len(data_lists['od']), 'od')
-            self.in_range(data_lists['ph'], data_lists_expected['ph'], len(data_lists['ph']), 'ph')
-            self.in_range(data_lists['temperature'], data_lists_expected['temperature'], len(data_lists['temperature']), 'temperature')
+        if match:
+            if cycle_status == CycleStatus.CYCLE_RUNNING:
+                # Modo LIVE
+                print("Valid measurement and cycle running!")
+                data_lists['id'].append(int(match.group(1)))
+                data_lists['light'].append(int(match.group(5)))
+                data_lists['ph'].append(float(match.group(2)))
+                data_lists['od'].append(float(match.group(3)))
+                data_lists['temperature'].append(float(match.group(4)))
+                data_lists['co2'].append(int(match.group(6)))
+                data_lists['o2'].append(int(match.group(7)))
+                data_lists['n2'].append(int(match.group(8)))
+                data_lists['air'].append(int(match.group(9)))
+                self.send_data(b"#OK!\n")
 
-            for callback in self.subscribers: callback(MsgType.NEW_MEASUREMENT)
+                self.in_range(data_lists['od'], data_lists_expected['od'], len(data_lists['od']), 'od')
+                self.in_range(data_lists['ph'], data_lists_expected['ph'], len(data_lists['ph']), 'ph')
+                self.in_range(data_lists['temperature'], data_lists_expected['temperature'], len(data_lists['temperature']), 'temperature')
+
+                for callback in self.subscribers: callback(MsgType.NEW_MEASUREMENT)
         
-        elif match:
-            print("Valid measurement!")
-            data_lists_manual['id'].append(int(match.group(1)))
-            data_lists_manual['light'].append(int(match.group(5)))
-            data_lists_manual['ph'].append(float(match.group(2)))
-            data_lists_manual['od'].append(float(match.group(3)))
-            data_lists_manual['temperature'].append(float(match.group(4)))
-            data_lists_manual['co2'].append(int(match.group(6)))
-            data_lists_manual['o2'].append(int(match.group(7)))
-            data_lists_manual['n2'].append(int(match.group(8)))
-            data_lists_manual['air'].append(int(match.group(9)))
-            self.send_data(b"#OK!\n")
+            elif cycle_status == CycleStatus.CYCLE_MANUAL:
+                # Modo MANUAL
+                data_lists_manual['id'].append(int(match.group(1)))
+                data_lists_manual['light'].append(int(match.group(5)))
+                data_lists_manual['ph'].append(float(match.group(2)))
+                data_lists_manual['od'].append(float(match.group(3)))
+                data_lists_manual['temperature'].append(float(match.group(4)))
+                data_lists_manual['co2'].append(int(match.group(6)))
+                data_lists_manual['o2'].append(int(match.group(7)))
+                data_lists_manual['n2'].append(int(match.group(8)))
+                data_lists_manual['air'].append(int(match.group(9)))
+                self.send_data(b"#OK!\n")
 
-            for callback in self.subscribers: callback(MsgType.NEW_MEASUREMENT)
-        
+                for callback in self.subscribers: callback(MsgType.NEW_MEASUREMENT)
+            else:
+                # Modo Sync
+                print("Entre al match en modo sync")
+                for callback in self.subscribers:          
+                    callback(data)
         else:
+            # Resto de comandos que no son intervalos
             for callback in self.subscribers:          
                 callback(data)
 

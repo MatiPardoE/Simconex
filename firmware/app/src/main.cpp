@@ -50,8 +50,14 @@ void setup()
 {
     commUI.begin(230400); // Solo define el puerto y velocidad de comunicación
     Log.begin(LOG_LEVEL_VERBOSE, &Serial, true);
+    Serial1.begin(RDO_BAUD_RATE, SERIAL_8E1, RDO_RX_GPIO, RDO_TX_GPIO, false);
     ESP_LOGI(TAG, "Starting...\n");
     sensorControl.init();
+    modbus.onData(rxRDO);
+    modbus.onError(rxErrorRDO);
+    modbus.begin();
+    clearRDO();
+
     delay(350);
     if (!cm.begin(SD_CS_PIN)) // Inicializa la SD y lee el header
     {
@@ -73,6 +79,9 @@ void loop()
     cycleBundle = cm.run();
     manualBundle = manualMode.run();
     sensorControl.run(cm.cycleData.status);
+
+    unsigned long millis_init;
+
     switch (commandUI)
     {
     case CommUI::TRANSFER_FILE_START:
@@ -189,12 +198,26 @@ void loop()
         break;
     case CommUI::FINISH_CALIB_OD_SAT:
         ESP_LOGI(TAG, "Finish calibration OD saturation\n");
-        if (cm.cycleData.status == cycle_manager::CYCLE_PAUSED)
+        finishPercentSaturationCalibration(&rdo);
+
+        millis_init = millis();
+        while (millis_init + 40000 > millis())
         {
-            ESP_LOGI(TAG, "reanudo ciclo luego de calibracion de OD");
-            cm.resumeCycle();
+            //TODO Hacer maquina de estado o no bloqueante y que haga el request en el .run
+            if (isAnyCalibrationDone(&rdo))
+            {
+                ESP_LOGI(TAG, "Checked calibration OD saturation\n");
+                break;
+            }
+
+            if (_TIMEOUT_TO_RDO_REQUEST_)
+            {
+                //ESP_LOGI(TAG, "rDO Status: %d",rdo.status);
+                requestRDO(&rdo);
+                _updateTimeout_;
+            }
         }
-        // finishPercentSaturationcalibration(&rdo);
+        ESP_LOGE(TAG, "Error checking calibration OD saturation\n");
         break;
     case CommUI::START_CALIB_PH:
         ESP_LOGI(TAG, "Start calibration pH\n");
@@ -250,7 +273,6 @@ void loop()
             ESP_LOGI(TAG, "reanudo ciclo luego de calibracion de PH");
             cm.resumeCycle();
         }
-        // finishPHcalibration(&rdo);
         break;
     default:
         ESP_LOGE(TAG, "Unknown command: %s \n", outputSerial.c_str());
@@ -289,7 +311,7 @@ void loop()
     case ManualMode::NO_COMMAND:
         break;
     case ManualMode::SEND_MEASURES:
-        ESP_LOGI(TAG, "Envio mediciones desde modo manual");
+        //ESP_LOGI(TAG, "Envio mediciones desde modo manual");
         new_measure_outputs = sensorControl.takeMeasuresAndOutputs();
         cm.sendDataToUI(new_measure_outputs, 0);
         break;

@@ -29,8 +29,8 @@
 
 #include <rdoApiGlobalVariables.h>
 
-#define __DEBUG__
-#define __PC__
+//#define __DEBUG__
+//#define __PC__
 
 /***********************************************
  * @brief			: 	Function project prototype

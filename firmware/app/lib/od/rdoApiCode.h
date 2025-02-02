@@ -34,6 +34,7 @@
 void rxRDO (uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t* data, size_t length);
 void rxErrorRDO (esp32Modbus::Error error);
 
+
 /***********************************************
  * @brief			: 	Function project prototype
  **********************************************/
@@ -42,7 +43,9 @@ void rxErrorRDO (esp32Modbus::Error error);
 extern void clearRDO   ( void  );
 extern void requestRDO ( volatile rdo_t * rdo );
 
-void triggerPercentSaturationCalibration ( volatile rdo_t * rdo );
+void triggerPercentSaturationCalibration    ( volatile rdo_t * rdo );
+void finishPercentSaturationCalibration     ( volatile rdo_t * rdo );
+bool isAnyCalibrationDone                   ( volatile rdo_t * rdo );
 
 bool isRDOequilibrium ( float lastMeasure , float newMeasure );
 bool evaluateEquilibrium ( volatile rdo_t * rdo , uint8_t id , float newMeasure );
