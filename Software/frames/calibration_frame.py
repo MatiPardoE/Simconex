@@ -204,7 +204,8 @@ class CalibOdWindow(ctk.CTkToplevel):
 
         self.btn_b = ctk.CTkButton(self, text="Calibracion por concentracion", command=self.btn_b_press)
         self.btn_b.grid(column=1, row=4, padx=15, pady=15, columnspan=1, sticky="w")
-    
+        self.btn_b.grid_forget()
+
     def update_seconds(self):
         for i in range(5, 0 ,-1):
             self.btn_b.configure(text="Siguiente ({seconds})".format(seconds=i))
