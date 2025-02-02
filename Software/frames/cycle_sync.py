@@ -4,6 +4,7 @@ from enum import Enum
 import frames.serial_handler as ui_serial
 from frames.serial_handler import data_lists
 from frames.serial_handler import CycleStatus
+from frames.serial_handler import ModeStatus
 from PIL import Image, ImageTk
 import re
 import csv
@@ -62,7 +63,8 @@ class CycleSync:
         self.show_loading_window()    
        
     def start_sync_cycle(self, timeout=5):
-        try:         
+        try:
+            ui_serial.mode_status = ModeStatus.MODE_SYNC       
             ui_serial.publisher.subscribe(self.wait_for_response)
             ui_serial.publisher.send_data(b"#SYNC0!\n")
             self.wait_message(HandshakeStatus.STA, timeout)
@@ -97,9 +99,11 @@ class CycleSync:
                 self.generate_cycleout_file()
             self.success_loading_window()
             ui_serial.cycle_status = self.esp_status_reported
+            ui_serial.mode_status = ModeStatus.NOT_MODE # Ya termino la sync asi que salgo de este modo
             ui_serial.publisher.notify_sync()           
         
         except Exception as e:
+            ui_serial.mode_status = ModeStatus.NOT_MODE
             print("Syncronization of running cycle failed!")
             print(e)
             self.failed_loading_window()

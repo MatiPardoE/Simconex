@@ -13,7 +13,8 @@ from tkinter import messagebox
 import pandas as pd
 import time
 from frames.serial_handler import MsgType
-from frames.serial_handler import CycleStatus 
+from frames.serial_handler import CycleStatus
+from frames.serial_handler import ModeStatus 
 from frames.serial_handler import data_lists 
 from frames.serial_handler import data_lists_expected 
 
@@ -369,10 +370,10 @@ class ControlCycleFrame(ctk.CTkFrame):
             ui_serial.cycle_status = CycleStatus.CYCLE_PAUSED
             ui_serial.publisher.notify_paused()
 
-        elif (ui_serial.cycle_status == CycleStatus.CYCLE_PAUSED or ui_serial.cycle_status == CycleStatus.CYCLE_MANUAL):
+        elif (ui_serial.cycle_status == CycleStatus.CYCLE_PAUSED):
             self.play_pause_image_label.configure(image=self.pause_image)
             self.enable_bin(False)
-
+            ui_serial.mode_status = ModeStatus.NOT_MODE # Si hay un ciclo corriendo no deberia estar en un modo activo
             ui_serial.publisher.send_data(b"#PLAY!\n")
             ui_serial.cycle_status = CycleStatus.CYCLE_RUNNING
             ui_serial.publisher.notify_played()
@@ -491,6 +492,7 @@ class ControlCycleFrame(ctk.CTkFrame):
             self.load_expected_lists("input_csv/"+id+"/data_"+id+".csv")
             ui_serial.publisher.notify_new_cycle_started()
             ui_serial.cycle_status = CycleStatus.CYCLE_RUNNING
+            ui_serial.mode_status = ModeStatus.NOT_MODE # Si hay un ciclo corriendo no deberia estar en un modo activo
         except Exception as e:
             print(e)
             messagebox.showerror("Error", "Se produjo un error durante la transferencia del ciclo!")
