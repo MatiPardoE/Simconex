@@ -109,7 +109,7 @@ class LogFrame(ctk.CTkFrame):
                 self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['ph'][i]), corner_radius=0, width=150)
                 self.label_ph.pack(side='left')
 
-                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists_manual['light'][i]}", corner_radius=0, width=150)
+                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists_manual['light_t'][i]}", corner_radius=0, width=150)
                 self.label_light.pack(side='left')
 
                 self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['temperature'][i]), corner_radius=0, width=200)
@@ -145,7 +145,7 @@ class LogFrame(ctk.CTkFrame):
             self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['ph'][last_index]), corner_radius=0, width=150)
             self.label_ph.pack(side='left')
 
-            self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists_manual['light'][last_index]}", corner_radius=0, width=150)
+            self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists_manual['light_t'][last_index]}", corner_radius=0, width=150)
             self.label_light.pack(side='left')
 
             self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['temperature'][last_index]), corner_radius=0, width=200)
@@ -240,7 +240,7 @@ class InstantValuesFrame(ctk.CTkFrame):
             self.esp_disconnected() 
 
         if data == MsgType.NEW_MEASUREMENT and ui_serial.mode_status == ModeStatus.MODE_MANUAL: 
-            self.light_button.configure(text = f"{data_lists_manual['light'][-1]}")
+            self.light_button.configure(text = f"{data_lists_manual['light_t'][-1]}")
             self.ph_button.configure(text = "{0:.2f}".format(data_lists_manual['ph'][-1]))
             self.do_button.configure(text = "{0:.2f}".format(data_lists_manual['od'][-1]))
             self.temp_button.configure(text = "{0:.2f}".format(data_lists_manual['temperature'][-1]))             

@@ -44,13 +44,6 @@
 #define __O2_LOWER_SAT__ (measuresAndOutputs.oxygen < goalValues.oxygen + __UMBRAL_O2__)
 #define __O2_HIGHER_SAT__ (measuresAndOutputs.oxygen > goalValues.oxygen - __UMBRAL_O2__)
 
-#define set_light_duty_all(x)        \
-    ledStrip1.setDuty(x);      \
-    ledStrip2.setDuty(x >> 1); \
-    ledStrip3.setDuty(x >> 2); \
-    ledStrip4.setDuty(x >> 3); \
-    ledStrip5.setDuty(x >> 4);
-
 
 extern cycle_manager cm;
 
@@ -75,14 +68,18 @@ private:
         float ph;
         float oxygen;
         float temperature;
-        int light;
+        int light_top;
+        int light_mid_top;
+        int light_mid_mid;
+        int light_mid_low;
+        int light_low;
     };
     // Add private members if needed
     cycle_manager::MeasuresAndOutputs measuresAndOutputs;
     GoalValues goalValues;
 
     // SENSORS
-    LedStrip ledStrip1, ledStrip2, ledStrip3, ledStrip4, ledStrip5;
+    LedStrip ledStripT, ledStripMT, ledStripMM, ledStripML, ledStripL;
     ShiftRegister74HC595 shiftRegister;
 };
 

@@ -60,7 +60,11 @@ class SerialPublisher:
 
     def notify_new_cycle_started(self):
         data_lists['id'] = []
-        data_lists['light'] = []
+        data_lists['light_t'] = []
+        data_lists['light_mt'] = []
+        data_lists['light_mm'] = []
+        data_lists['light_ml'] = []
+        data_lists['light_l'] = []
         data_lists['ph'] = []
         data_lists['od'] = []
         data_lists['temperature'] = []
@@ -70,7 +74,11 @@ class SerialPublisher:
         data_lists['air'] = []
 
         data_lists_expected['id'] = []
-        data_lists_expected['light'] = []
+        data_lists_expected['light_t'] = []
+        data_lists_expected['light_mt'] = []
+        data_lists_expected['light_mm'] = []
+        data_lists_expected['light_ml'] = []
+        data_lists_expected['light_l'] = []
         data_lists_expected['ph'] = []
         data_lists_expected['od'] = []
         data_lists_expected['temperature'] = []
@@ -134,7 +142,7 @@ class SerialPublisher:
         if "#Z1!" in data:
             for callback in self.subscribers: callback(MsgType.ESP_DISCONNECTED)
         
-        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(0|1),(0|1),(0|1),(0|1)$"
+        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(0|1),(0|1),(0|1),(0|1)$"
         match = re.match(pattern, data)
 
 
@@ -143,14 +151,18 @@ class SerialPublisher:
                 # Modo LIVE
                 print("Valid measurement and cycle running!")
                 data_lists['id'].append(int(match.group(1)))
-                data_lists['light'].append(int(match.group(5)))
+                data_lists['light_t'].append(int(match.group(5)))
+                data_lists['light_mt'].append(int(match.group(6)))
+                data_lists['light_mm'].append(int(match.group(7)))
+                data_lists['light_ml'].append(int(match.group(8)))
+                data_lists['light_l'].append(int(match.group(9)))
                 data_lists['ph'].append(float(match.group(2)))
                 data_lists['od'].append(float(match.group(3)))
                 data_lists['temperature'].append(float(match.group(4)))
-                data_lists['co2'].append(int(match.group(6)))
-                data_lists['o2'].append(int(match.group(7)))
-                data_lists['n2'].append(int(match.group(8)))
-                data_lists['air'].append(int(match.group(9)))
+                data_lists['co2'].append(int(match.group(10)))
+                data_lists['o2'].append(int(match.group(11)))
+                data_lists['n2'].append(int(match.group(12)))
+                data_lists['air'].append(int(match.group(13)))
                 self.send_data(b"#OK!\n")
 
                 self.in_range(data_lists['od'], data_lists_expected['od'], len(data_lists['od']), 'od')
@@ -162,14 +174,18 @@ class SerialPublisher:
             elif mode_status == ModeStatus.MODE_MANUAL: # Si el estado del ciclo no esta corriendo, pero el modo es manual, guardo en data_lists_manual
                 # Modo MANUAL
                 data_lists_manual['id'].append(int(match.group(1)))
-                data_lists_manual['light'].append(int(match.group(5)))
+                data_lists_manual['light_t'].append(int(match.group(5)))
+                data_lists_manual['light_mt'].append(int(match.group(6)))
+                data_lists_manual['light_mm'].append(int(match.group(7)))
+                data_lists_manual['light_ml'].append(int(match.group(8)))
+                data_lists_manual['light_l'].append(int(match.group(9)))
                 data_lists_manual['ph'].append(float(match.group(2)))
                 data_lists_manual['od'].append(float(match.group(3)))
                 data_lists_manual['temperature'].append(float(match.group(4)))
-                data_lists_manual['co2'].append(int(match.group(6)))
-                data_lists_manual['o2'].append(int(match.group(7)))
-                data_lists_manual['n2'].append(int(match.group(8)))
-                data_lists_manual['air'].append(int(match.group(9)))
+                data_lists_manual['co2'].append(int(match.group(10)))
+                data_lists_manual['o2'].append(int(match.group(11)))
+                data_lists_manual['n2'].append(int(match.group(12)))
+                data_lists_manual['air'].append(int(match.group(13)))
                 self.send_data(b"#OK!\n")
 
                 for callback in self.subscribers: callback(MsgType.NEW_MEASUREMENT)
@@ -182,7 +198,7 @@ class SerialPublisher:
                 
                 for callback in self.subscribers: callback(MsgType.NEW_MEASURE_CALIB)
 
-            elif mode_status == ModeStatus.MODE_SYNC: # Si el estado del ciclo no esta corriendo, pero el modo es sincronización, guardo en data_lists_expected
+            elif mode_status == ModeStatus.MODE_SYNC: # Si el estado del ciclo no esta corriendo, pero el modo es sincronización, guardo
                     for callback in self.subscribers:          
                         callback(data)
         else:
@@ -360,7 +376,11 @@ data_lists = {
     "ph": [],
     "od": [],
     "temperature": [],
-    "light": [],
+    "light_t": [],
+    "light_mt": [],
+    "light_mm": [],
+    "light_ml": [],
+    "light_l": [],
     "co2": [],
     "o2": [],
     "n2": [],
@@ -372,7 +392,11 @@ data_lists_manual = {
     "ph": [],
     "od": [],
     "temperature": [],
-    "light": [],
+    "light_t": [],
+    "light_mt": [],
+    "light_mm": [],
+    "light_ml": [],
+    "light_l": [],
     "co2": [],
     "o2": [],
     "n2": [],
@@ -390,5 +414,9 @@ data_lists_expected = {
     "ph": [],
     "od": [],
     "temperature": [],
-    "light": []
+    "light_t": [],
+    "light_mt": [],
+    "light_mm": [],
+    "light_ml": [],
+    "light_l": [],
 }

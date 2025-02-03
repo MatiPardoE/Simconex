@@ -391,21 +391,49 @@ class ControlCycleFrame(ctk.CTkFrame):
             self.excel_to_csv(self.fname, os.path.join(self.cycle_path, "data_"+self.timestamp+".csv"))
     
     def excel_to_csv(self, fname_excel, fname_csv):
-        df = pd.read_excel(fname_excel, skiprows=1, header=None)
+        df = pd.read_excel(fname_excel, skiprows=0)  # No saltar filas para leer los encabezados
+        column_map = {
+            "Numero de muestra": "sample_number",
+            "pH": "ph",
+            "Oxígeno Disuelto": "oxygen",
+            "Temperatura": "temperature",
+            "Luz Top": "light_top",
+            "Luz Mid Top": "light_mid_top",
+            "Luz Mid Mid": "light_mid_mid",
+            "Luz Mid Low": "light_mid_low",
+            "Luz Low": "light_low"
+        }
+
+        # Renombrar columnas según el mapeo, ignorando las que no estén en el archivo
+        df = df.rename(columns={key: value for key, value in column_map.items() if key in df.columns})
+
+        # Verificar si todas las columnas necesarias están presentes
+        missing_columns = [name for name in column_map.values() if name not in df.columns]
+        if missing_columns:
+            print(f"Faltan columnas en el archivo: {missing_columns}")
+            return
+
         formatted_lines = []
         self.total_data_lines = 0
 
-        for index, row in df.iterrows():
-            field1 = f"{int(row[0]):08d}"
-            field2 = f"{float(row[1]):05.2f}"
-            field3 = f"{float(row[2]):06.2f}"
-            field4 = f"{float(row[3]):05.2f}"
-            field5 = f"{int(row[4]):02d}"
+        for _, row in df.iterrows():
+            try:
+                field1 = f"{int(row['sample_number']):08d}"
+                field2 = f"{float(row['ph']):05.2f}"
+                field3 = f"{float(row['oxygen']):06.2f}"
+                field4 = f"{float(row['temperature']):05.2f}"
+                field5 = f"{int(row['light_top']):03d}"
+                field6 = f"{int(row['light_mid_top']):03d}"
+                field7 = f"{int(row['light_mid_mid']):03d}"
+                field8 = f"{int(row['light_mid_low']):03d}"
+                field9 = f"{int(row['light_low']):03d}"
 
-            line = f"{field1},{field2},{field3},{field4},{field5}"
-            formatted_lines.append(line)
+                line = f"{field1},{field2},{field3},{field4},{field5},{field6},{field7},{field8},{field9}"
+                formatted_lines.append(line)
+            except (ValueError, KeyError) as e:
+                print(f"Error en la conversión de datos: {e}")
 
-        with open(fname_csv, 'w', newline='') as f:
+        with open(fname_csv, 'w', newline='', encoding='utf-8') as f:
             for line in formatted_lines:
                 f.write(line + '\n')
                 self.total_data_lines += 1
@@ -567,12 +595,16 @@ class ControlCycleFrame(ctk.CTkFrame):
     def load_expected_lists(self, fname):
         with open(fname, "r") as file:
             for linea in file:
-                pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$"
+                pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(\d{3})$"
                 match = re.match(pattern, linea)
 
                 if match: 
                     data_lists_expected['id'].append(int(match.group(1)))
-                    data_lists_expected['light'].append(int(match.group(5)))
+                    data_lists_expected['light_t'].append(int(match.group(5)))
+                    data_lists_expected['light_mt'].append(int(match.group(6)))
+                    data_lists_expected['light_mm'].append(int(match.group(7)))
+                    data_lists_expected['light_ml'].append(int(match.group(8)))
+                    data_lists_expected['light_l'].append(int(match.group(9)))    
                     data_lists_expected['ph'].append(float(match.group(2)))
                     data_lists_expected['od'].append(float(match.group(3)))
                     data_lists_expected['temperature'].append(float(match.group(4)))
@@ -709,7 +741,7 @@ class LogFrame(ctk.CTkFrame):
                 self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['ph'][i]), corner_radius=0, width=150)
                 self.label_ph.pack(side='left')
 
-                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light'][i]}", corner_radius=0, width=150)
+                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light_t'][i]}", corner_radius=0, width=150)
                 self.label_light.pack(side='left')
 
                 self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][i]), corner_radius=0, width=200)
@@ -747,7 +779,7 @@ class LogFrame(ctk.CTkFrame):
             self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['ph'][last_index]), corner_radius=0, width=150)
             self.label_ph.pack(side='left')
 
-            self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light'][last_index]}", corner_radius=0, width=150)
+            self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light_t'][last_index]}", corner_radius=0, width=150)
             self.label_light.pack(side='left')
 
             self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][last_index]), corner_radius=0, width=200)
