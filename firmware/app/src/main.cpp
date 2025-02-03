@@ -193,8 +193,8 @@ void loop()
         {
             ESP_LOGI(TAG, "Ciclo corriendo, pauso ciclo para iniciar la calibracion de OD");
             cm.pauseCycle();
-            sensorControl.turnOffOutputs();
         }
+        sensorControl.turnOffOutputs();
         triggerPercentSaturationCalibration(&rdo);
         break;
     case CommUI::FINISH_CALIB_OD_SAT:
@@ -207,6 +207,7 @@ void loop()
             // TODO Hacer maquina de estado o no bloqueante y que haga el request en el .run
             if (isAnyCalibrationDone(&rdo))
             {
+                Serial.println("#OKCALIBODSAT!");
                 ESP_LOGI(TAG, "Checked calibration OD saturation\n");
                 break;
             }
@@ -218,7 +219,13 @@ void loop()
                 _updateTimeout_;
             }
         }
-        ESP_LOGE(TAG, "Error checking calibration OD saturation\n");
+
+        if( millis_init + 40000  < millis()){
+            Serial.println("#FAILCALIBODSAT!");
+            ESP_LOGE(TAG, "Error checking calibration OD saturation\n");
+        }
+
+
         break;
     case CommUI::START_CALIB_PH:
         ESP_LOGI(TAG, "Start calibration pH\n");
