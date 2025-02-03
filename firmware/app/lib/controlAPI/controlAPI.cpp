@@ -4,7 +4,7 @@
 
 ControlAPI::ControlAPI()
 {
-    measuresAndOutputs = {7.2, 0, 0, 0, false, false, false, false}; // ph = 7.2 to force change in led, oxygen, temperature, light, EV-1, EV-2, EV-3, EV-4
+    measuresAndOutputs = {0, 0, 0, 0, false, false, false, false};
     goalValues = {0, 0, 0, 0};
 }
 
@@ -77,9 +77,25 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
             shiftRegister.setOutput(N2, LOW);
         }
 
-        if (ledStrip1.getDuty() != goalValues.light)
+        if (ledStripT.getDuty() != goalValues.light_top)
         {
-            set_light_duty_all(goalValues.light);
+            ledStripT.setDuty(goalValues.light_top);
+        }
+        if (ledStripMT.getDuty() != goalValues.light_mid_top)
+        {
+            ledStripMT.setDuty(goalValues.light_mid_top);
+        }
+        if (ledStripMM.getDuty() != goalValues.light_mid_mid)
+        {
+            ledStripMM.setDuty(goalValues.light_mid_mid);
+        }
+        if (ledStripML.getDuty() != goalValues.light_mid_low)
+        {
+            ledStripML.setDuty(goalValues.light_mid_low);
+        }
+        if (ledStripL.getDuty() != goalValues.light_low)
+        {
+            ledStripL.setDuty(goalValues.light_low);
         }
         break;
     default:
@@ -154,7 +170,11 @@ bool ControlAPI::modeManualsetOutputs(String command)
     else if (command.startsWith("#L"))
     {
         int value = command.substring(2).toInt();
-        set_light_duty_all(value);
+        ledStripT.setDuty(value);
+        ledStripMT.setDuty(value);
+        ledStripMM.setDuty(value);
+        ledStripML.setDuty(value);
+        ledStripL.setDuty(value);
         ESP_LOGI("Manual", "Set light to: %d", value);
     }
     return true;
@@ -180,11 +200,11 @@ bool ControlAPI::init()
     {
         ESP_LOGE("PH", "pH probe not initialized");
     }
-    ledStrip1.begin(PIN_LED_STRIP_1, 0, 5000, 8); // Configura el pin 5, canal 0, frecuencia de 5000 Hz, resolución de 8 bits
-    ledStrip2.begin(PIN_LED_STRIP_2, 1, 5000, 8); // Configura el pin 18, canal 1, frecuencia de 5000 Hz, resolución de 8 bits
-    ledStrip3.begin(PIN_LED_STRIP_3, 2, 5000, 8); // Configura el pin 19, canal 2, frecuencia de 5000 Hz, resolución de 8 bits
-    ledStrip4.begin(PIN_LED_STRIP_4, 3, 5000, 8); // Configura el pin 21, canal 3, frecuencia de 5000 Hz, resolución de 8 bits
-    ledStrip5.begin(PIN_LED_STRIP_5, 4, 5000, 8); // Configura el pin 22, canal 4, frecuencia de 5000 Hz, resolución de 8 bits
+    ledStripT.begin(PIN_LED_STRIP_1, 0, 5000, 8); // Configura el pin 5, canal 0, frecuencia de 5000 Hz, resolución de 8 bits
+    ledStripMT.begin(PIN_LED_STRIP_2, 1, 5000, 8); // Configura el pin 18, canal 1, frecuencia de 5000 Hz, resolución de 8 bits
+    ledStripMM.begin(PIN_LED_STRIP_3, 2, 5000, 8); // Configura el pin 19, canal 2, frecuencia de 5000 Hz, resolución de 8 bits
+    ledStripML.begin(PIN_LED_STRIP_4, 3, 5000, 8); // Configura el pin 21, canal 3, frecuencia de 5000 Hz, resolución de 8 bits
+    ledStripL.begin(PIN_LED_STRIP_5, 4, 5000, 8); // Configura el pin 22, canal 4, frecuencia de 5000 Hz, resolución de 8 bits
 
     shiftRegister.begin(SR_DATA_PIN, SR_LATCH_PIN, SR_CLOCK_PIN);
     shiftRegister.setOutput(0, LOW);
@@ -206,7 +226,7 @@ cycle_manager::MeasuresAndOutputs ControlAPI::takeMeasuresAndOutputs()
     measuresAndOutputs.EV_oxygen = (output_shift & 0x02) == 0x02;
     measuresAndOutputs.EV_nitrogen = (output_shift & 0x04) == 0x04;
     measuresAndOutputs.EV_co2 = (output_shift & 0x08) == 0x08;
-    measuresAndOutputs.light = ledStrip1.getDuty();
+    measuresAndOutputs.light = ledStripT.getDuty();
     measuresAndOutputs.temperature = rdo.temperature.measuredValue;
     measuresAndOutputs.oxygen = rdo.doSaturation.measuredValue;
     // la medicion de ph se actualiza en el .run()
@@ -217,7 +237,11 @@ cycle_manager::MeasuresAndOutputs ControlAPI::takeMeasuresAndOutputs()
 bool ControlAPI::set_control_var(cycle_manager::IntervalData intervalData)
 {
     // TODO: Impkemnet max and min for each variable.
-    goalValues.light = intervalData.light;
+    goalValues.light_top = intervalData.light_top;
+    goalValues.light_mid_top = intervalData.light_mid_top;
+    goalValues.light_mid_mid = intervalData.light_mid_mid;
+    goalValues.light_mid_low = intervalData.light_mid_low;
+    goalValues.light_low = intervalData.light_low;
     goalValues.oxygen = intervalData.oxygen;
     goalValues.ph = intervalData.ph;
     goalValues.temperature = intervalData.temperature;

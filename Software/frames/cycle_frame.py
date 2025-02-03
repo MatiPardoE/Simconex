@@ -391,21 +391,49 @@ class ControlCycleFrame(ctk.CTkFrame):
             self.excel_to_csv(self.fname, os.path.join(self.cycle_path, "data_"+self.timestamp+".csv"))
     
     def excel_to_csv(self, fname_excel, fname_csv):
-        df = pd.read_excel(fname_excel, skiprows=1, header=None)
+        df = pd.read_excel(fname_excel, skiprows=0)  # No saltar filas para leer los encabezados
+        column_map = {
+            "Numero de muestra": "sample_number",
+            "pH": "ph",
+            "Oxígeno Disuelto": "oxygen",
+            "Temperatura": "temperature",
+            "Luz Top": "light_top",
+            "Luz Mid Top": "light_mid_top",
+            "Luz Mid Mid": "light_mid_mid",
+            "Luz Mid Low": "light_mid_low",
+            "Luz Low": "light_low"
+        }
+
+        # Renombrar columnas según el mapeo, ignorando las que no estén en el archivo
+        df = df.rename(columns={key: value for key, value in column_map.items() if key in df.columns})
+
+        # Verificar si todas las columnas necesarias están presentes
+        missing_columns = [name for name in column_map.values() if name not in df.columns]
+        if missing_columns:
+            print(f"Faltan columnas en el archivo: {missing_columns}")
+            return
+
         formatted_lines = []
         self.total_data_lines = 0
 
-        for index, row in df.iterrows():
-            field1 = f"{int(row[0]):08d}"
-            field2 = f"{float(row[1]):05.2f}"
-            field3 = f"{float(row[2]):06.2f}"
-            field4 = f"{float(row[3]):05.2f}"
-            field5 = f"{int(row[4]):02d}"
+        for _, row in df.iterrows():
+            try:
+                field1 = f"{int(row['sample_number']):08d}"
+                field2 = f"{float(row['ph']):05.2f}"
+                field3 = f"{float(row['oxygen']):06.2f}"
+                field4 = f"{float(row['temperature']):05.2f}"
+                field5 = f"{int(row['light_top']):03d}"
+                field6 = f"{int(row['light_mid_top']):03d}"
+                field7 = f"{int(row['light_mid_mid']):03d}"
+                field8 = f"{int(row['light_mid_low']):03d}"
+                field9 = f"{int(row['light_low']):03d}"
 
-            line = f"{field1},{field2},{field3},{field4},{field5}"
-            formatted_lines.append(line)
+                line = f"{field1},{field2},{field3},{field4},{field5},{field6},{field7},{field8},{field9}"
+                formatted_lines.append(line)
+            except (ValueError, KeyError) as e:
+                print(f"Error en la conversión de datos: {e}")
 
-        with open(fname_csv, 'w', newline='') as f:
+        with open(fname_csv, 'w', newline='', encoding='utf-8') as f:
             for line in formatted_lines:
                 f.write(line + '\n')
                 self.total_data_lines += 1

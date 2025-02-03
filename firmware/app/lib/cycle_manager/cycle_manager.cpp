@@ -461,9 +461,28 @@ bool cycle_manager::readInterval()
         start = end + 1;
         end = line.indexOf(',', start);
 
-        // Parse light
-        String light_str = line.substring(start);
-        intervalData.light = light_str.toInt();
+        // Parse light_top
+        intervalData.light_top = line.substring(start, end).toInt();
+        start = end + 1;
+        end = line.indexOf(',', start);
+
+        // Parse light_mid_top
+        intervalData.light_mid_top = line.substring(start, end).toInt();
+        start = end + 1;
+        end = line.indexOf(',', start);
+
+        // Parse light_mid_mid
+        intervalData.light_mid_mid = line.substring(start, end).toInt();
+        start = end + 1;
+        end = line.indexOf(',', start);
+
+        // Parse light_mid_low
+        intervalData.light_mid_low = line.substring(start, end).toInt();
+        start = end + 1;
+        end = line.indexOf(',', start);
+
+        // Parse light_low
+        intervalData.light_low = line.substring(start).toInt();
 
         file.close();
 
@@ -497,12 +516,16 @@ bool cycle_manager::finishCycle()
 
 void cycle_manager::logIntervalDataforDebug(const IntervalData &intervalData)
 {
-    ESP_LOGI(TAG,"ID: %d pH: %F Oxygen: %F Temp: %F Light: %d",
+    ESP_LOGI(TAG,"ID: %d pH: %F Oxygen: %F Temp: %F LT: %d LMT: %d LMM: %d LML: %d LL: %d",
                  intervalData.interval_id,
                  intervalData.ph,
                  intervalData.oxygen,
                  intervalData.temperature,
-                 intervalData.light);
+                 intervalData.light_top,
+                 intervalData.light_mid_top,
+                 intervalData.light_mid_mid,
+                 intervalData.light_mid_low,
+                 intervalData.light_low);
 }
 
 void cycle_manager::onAlarm(void *arg)

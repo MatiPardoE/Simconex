@@ -70,7 +70,6 @@ FileTransfer::TransferStatus FileTransfer::transferCycle(const char *destPathHea
 
                 //_serial.println("#DATAOUT1!");
                 syncCycleStatus = WAIT_SYNC_1;
-                //.infoln("Voy a esperar el OK\n");
                 startTime = millis(); // reset timeout
             }
             break;
@@ -78,7 +77,6 @@ FileTransfer::TransferStatus FileTransfer::transferCycle(const char *destPathHea
             response = _serial.readStringUntil('\n');
             if (response == "#OK!")
             {
-                // Log.infoln("Me llego el OK\n");
                 syncCycleStatus = WAIT_SYNC_1;
                 startTime = millis(); // reset timeout
             }
@@ -87,7 +85,6 @@ FileTransfer::TransferStatus FileTransfer::transferCycle(const char *destPathHea
             response = _serial.readStringUntil('\n');
             if (response == "#SYNC1!")
             { // termino el proceso de sincronizacion
-                // Log.infoln("Me llego el SYNC1\n");
                 _serial.println("#OK!");
                 startTime = millis(); // reset timeout
 
@@ -111,13 +108,11 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
     if (SD.exists(destPathHeader))
     {
         SD.remove(destPathHeader);
-        // Log.infoln("Removed existing header file");
     }
 
     if (SD.exists(destPathData))
     {
         SD.remove(destPathData);
-        // Log.infoln("Removed existing header file");
     }
 
     if (SD.exists(outPath))
@@ -131,7 +126,7 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
     {
         if (!SD.mkdir(directoryPath.c_str()))
         {
-            Log.errorln("Failed to create directory: %s", directoryPath.c_str());
+            ESP_LOGE("FILE_TRANSFER","Failed to create directory: %s", directoryPath.c_str());
             return FILE_TRANSFER_ERROR;
         }
     }
@@ -209,7 +204,7 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
                 destFileHeader = SD.open(destPathHeader, FILE_WRITE);
                 if (!destFileHeader)
                 {
-                    Log.errorln("Failed to open header file for writing 3");
+                    ESP_LOGE("FILE_TRANSFER","Failed to open header file for writing 3");
                     return FILE_TRANSFER_ERROR;
                 }
                 headerOpen = true;
@@ -226,7 +221,7 @@ FileTransfer::TransferStatus FileTransfer::transferFiles(const char *destPathHea
                 destFileData = SD.open(destPathData, FILE_WRITE);
                 if (!destFileData)
                 {
-                    Log.errorln("Failed to open data file for writing");
+                    ESP_LOGE("FILE_TRANSFER","Failed to open data file for writing");
                     return FILE_TRANSFER_ERROR;
                 }
                 dataOpen = true;
@@ -273,7 +268,6 @@ bool FileTransfer::sendDataOutput(const char *filename)
 
     if (lineCount > 0)
     {
-        // Log.infoln("Termine el bloque antes de 160");
         if (!sendBlock(blockContent, false))
         {
             ret = false;
@@ -291,7 +285,6 @@ bool FileTransfer::sendBlock(String blockContent, bool wait)
 
     while (retryCount < MAX_RETRIES)
     {
-        // Log.infoln("Intento numero %d de %d", retryCount, MAX_RETRIES);
         Serial.print(blockContent);
 
         if (!wait)
@@ -307,7 +300,6 @@ bool FileTransfer::sendBlock(String blockContent, bool wait)
             if (Serial.available() > 0)
             {
                 String response = Serial.readStringUntil('\n');
-                // Log.infoln("Llego algo al puerto serie: %s", response.c_str());
 
                 if (response == "#OK!")
                 {
@@ -391,23 +383,24 @@ bool FileTransfer::validateLine(const String &line)
     // Check if line ends with newline and has correct length
     if (line.length() != LINE_LENGTH)
     {
-        Log.errorln("Error in lenght: %s ", line.c_str());
+        ESP_LOGE("FILE_TRANSFER","Error in lenght: %s ", line.c_str());
         return false;
     }
 
-    // Validate format: 8 digits, comma, 5 chars, comma, 6 chars, comma, 5 chars, comma, 2-3 chars
-    // Example: 00000000,07.00,080.00,20.00,20
+    // Validate format: 8 digits, comma, 5 chars, comma, 6 chars, comma, 5 chars, comma, 3 chars, comma, 3 chars, comma, 3 chars, comma, 3 chars, comma, 3 chars
+    // Example: 00000017,02.00,000.00,21.13,100,075,020,000,095
 
     if (!isDigit(line[0]))
     {
-        Log.errorln("Error en primer caracter: %s ", line.c_str());
+        ESP_LOGE("FILE_TRANSFER","Error en primer caracter: %s ", line.c_str());
         return false; // First char must be digit
     }
 
-    // Basic structure check esto esta mal solo chequea en
-    if (line[8] != ',' || line[14] != ',' || line[21] != ',' || line[27] != ',')
+    // Basic structure check
+    if (line[8] != ',' || line[14] != ',' || line[21] != ',' || line[27] != ',' || line[31] != ',' ||
+        line[35] != ',' || line[39] != ',' || line[43] != ',' || line[47] != ',')
     {
-        Log.errorln("Error en estructura: %s ", line.c_str());
+        ESP_LOGE("FILE_TRANSFER","Error en estructura: %s ", line.c_str());
         return false;
     }
     return true;
