@@ -4,13 +4,13 @@
 
 ControlAPI::ControlAPI()
 {
-    measuresAndOutputs = {0, 0, 0, 0, false, false, false, false};
-    goalValues = {0, 0, 0, 0};
+    measuresAndOutputs = {0, 0, 0, 0, 0, 0, 0, 0, false, false, false, false};
+    goalValues = {0, 0, 0, 0, 0, 0, 0, 0};
 }
 
 bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
 {
-    static cycle_manager::MeasuresAndOutputs new_measure_calib = {0, 0, 0, 0, false, false, false, false};
+    static cycle_manager::MeasuresAndOutputs new_measure_calib = {0, 0, 0, 0, 0, 0, 0, 0, false, false, false, false};
 
     float ph_response = 0;
     // Medicion de ph
@@ -19,7 +19,7 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
         ph_response = get_ph();
         if (ph_response != -1)
         {
-            //ESP_LOGI("PH", "Valor de pH: %.2f", ph_response);
+            // ESP_LOGI("PH", "Valor de pH: %.2f", ph_response);
             measuresAndOutputs.ph = ph_response;
         }
     }
@@ -31,16 +31,16 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
         _updateTimeout_;
     }
 
-    //para calibrar y ver valores
-    if( rdo.onCalibration == true ){
-        if(new_measure_calib.oxygen != rdo.doSaturation.measuredValue || new_measure_calib.temperature != rdo.temperature.measuredValue){
+    // para calibrar y ver valores
+    if (rdo.onCalibration == true)
+    {
+        if (new_measure_calib.oxygen != rdo.doSaturation.measuredValue || new_measure_calib.temperature != rdo.temperature.measuredValue)
+        {
             new_measure_calib.oxygen = rdo.doSaturation.measuredValue;
             new_measure_calib.temperature = rdo.temperature.measuredValue;
             cm.sendDataToUI(new_measure_calib, 0);
         }
     }
-
-
 
     switch (cycleStatus)
     {
@@ -57,11 +57,14 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
             {
                 shiftRegister.setOutput(CO2, HIGH);
             }
-        }else{
+        }
+        else
+        {
             shiftRegister.setOutput(CO2, LOW);
         }
 
-        if(__OD_IS_WORKING__ && __NOT_FREE_OD__){
+        if (__OD_IS_WORKING__ && __NOT_FREE_OD__)
+        {
             if (__O2_LOWER_SAT__)
             {
                 shiftRegister.setOutput(O2, HIGH);
@@ -72,7 +75,9 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
                 shiftRegister.setOutput(O2, LOW);
                 shiftRegister.setOutput(N2, HIGH);
             }
-        }else{
+        }
+        else
+        {
             shiftRegister.setOutput(O2, LOW);
             shiftRegister.setOutput(N2, LOW);
         }
@@ -200,11 +205,11 @@ bool ControlAPI::init()
     {
         ESP_LOGE("PH", "pH probe not initialized");
     }
-    ledStripT.begin(PIN_LED_STRIP_1, 0, 5000, 8); // Configura el pin 5, canal 0, frecuencia de 5000 Hz, resolución de 8 bits
+    ledStripT.begin(PIN_LED_STRIP_1, 0, 5000, 8);  // Configura el pin 5, canal 0, frecuencia de 5000 Hz, resolución de 8 bits
     ledStripMT.begin(PIN_LED_STRIP_2, 1, 5000, 8); // Configura el pin 18, canal 1, frecuencia de 5000 Hz, resolución de 8 bits
     ledStripMM.begin(PIN_LED_STRIP_3, 2, 5000, 8); // Configura el pin 19, canal 2, frecuencia de 5000 Hz, resolución de 8 bits
     ledStripML.begin(PIN_LED_STRIP_4, 3, 5000, 8); // Configura el pin 21, canal 3, frecuencia de 5000 Hz, resolución de 8 bits
-    ledStripL.begin(PIN_LED_STRIP_5, 4, 5000, 8); // Configura el pin 22, canal 4, frecuencia de 5000 Hz, resolución de 8 bits
+    ledStripL.begin(PIN_LED_STRIP_5, 4, 5000, 8);  // Configura el pin 22, canal 4, frecuencia de 5000 Hz, resolución de 8 bits
 
     shiftRegister.begin(SR_DATA_PIN, SR_LATCH_PIN, SR_CLOCK_PIN);
     shiftRegister.setOutput(0, LOW);
@@ -226,7 +231,11 @@ cycle_manager::MeasuresAndOutputs ControlAPI::takeMeasuresAndOutputs()
     measuresAndOutputs.EV_oxygen = (output_shift & 0x02) == 0x02;
     measuresAndOutputs.EV_nitrogen = (output_shift & 0x04) == 0x04;
     measuresAndOutputs.EV_co2 = (output_shift & 0x08) == 0x08;
-    measuresAndOutputs.light = ledStripT.getDuty();
+    measuresAndOutputs.light_top = ledStripT.getDuty();
+    measuresAndOutputs.light_mid_top = ledStripMT.getDuty();
+    measuresAndOutputs.light_mid_mid = ledStripMM.getDuty();
+    measuresAndOutputs.light_mid_low = ledStripML.getDuty();
+    measuresAndOutputs.light_low = ledStripL.getDuty();
     measuresAndOutputs.temperature = rdo.temperature.measuredValue;
     measuresAndOutputs.oxygen = rdo.doSaturation.measuredValue;
     // la medicion de ph se actualiza en el .run()
