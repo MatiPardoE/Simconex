@@ -37,12 +37,12 @@ void LedStrip::setDuty(int duty) {
         duty = 100;
         Log.error("Duty cannot be greater than 100.\n");
     }
-    _currentDuty = map(duty, 0, 100, 0, _maxDuty);
+    _currentDuty = duty;
     ledcWrite(_channel, _currentDuty);
     //Log.verbose("Duty set to %d%% (PWM value: %d)\n", duty, _currentDuty);
 }
 
 int LedStrip::getDuty()
 {
-    return map(_currentDuty, 0, _maxDuty, 0, 100);
+    return _currentDuty;
 }

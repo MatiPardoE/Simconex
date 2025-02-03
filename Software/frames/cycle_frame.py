@@ -595,12 +595,16 @@ class ControlCycleFrame(ctk.CTkFrame):
     def load_expected_lists(self, fname):
         with open(fname, "r") as file:
             for linea in file:
-                pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2})$"
+                pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(\d{3})$"
                 match = re.match(pattern, linea)
 
                 if match: 
                     data_lists_expected['id'].append(int(match.group(1)))
-                    data_lists_expected['light'].append(int(match.group(5)))
+                    data_lists_expected['light_t'].append(int(match.group(5)))
+                    data_lists_expected['light_mt'].append(int(match.group(6)))
+                    data_lists_expected['light_mm'].append(int(match.group(7)))
+                    data_lists_expected['light_ml'].append(int(match.group(8)))
+                    data_lists_expected['light_l'].append(int(match.group(9)))    
                     data_lists_expected['ph'].append(float(match.group(2)))
                     data_lists_expected['od'].append(float(match.group(3)))
                     data_lists_expected['temperature'].append(float(match.group(4)))
@@ -737,7 +741,7 @@ class LogFrame(ctk.CTkFrame):
                 self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['ph'][i]), corner_radius=0, width=150)
                 self.label_ph.pack(side='left')
 
-                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light'][i]}", corner_radius=0, width=150)
+                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light_t'][i]}", corner_radius=0, width=150)
                 self.label_light.pack(side='left')
 
                 self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][i]), corner_radius=0, width=200)
@@ -775,7 +779,7 @@ class LogFrame(ctk.CTkFrame):
             self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['ph'][last_index]), corner_radius=0, width=150)
             self.label_ph.pack(side='left')
 
-            self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light'][last_index]}", corner_radius=0, width=150)
+            self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists['light_t'][last_index]}", corner_radius=0, width=150)
             self.label_light.pack(side='left')
 
             self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][last_index]), corner_radius=0, width=200)

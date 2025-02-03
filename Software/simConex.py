@@ -225,12 +225,17 @@ def backend(data):
         with open(fname, "r") as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
-                if len(row) == 5:
+                if len(row) == 9:
                     data_lists_expected['id'].append(int(row[0]))
                     data_lists_expected['ph'].append(float(row[1]))
                     data_lists_expected['od'].append(float(row[2]))
                     data_lists_expected['temperature'].append(float(row[3]))
-                    data_lists_expected['light'].append(int(row[4]))
+                    data_lists_expected['light_t'].append(int(row[4]))
+                    data_lists_expected['light_mt'].append(int(row[5]))
+                    data_lists_expected['light_mm'].append(int(row[6]))
+                    data_lists_expected['light_ml'].append(int(row[7]))
+                    data_lists_expected['light_l'].append(int(row[8]))
+                    
         
         fname = os.path.join(os.getcwd(), "input_csv", ui_serial.cycle_id, "header_"+ui_serial.cycle_id+".csv")
         with open(fname, newline='') as csvfile:
@@ -251,7 +256,11 @@ def backend(data):
         app.alert_counter = 0
 
         data_lists['id'] = []
-        data_lists['light'] = []
+        data_lists['light_t'] = []
+        data_lists['light_mt'] = []
+        data_lists['light_mm'] = []
+        data_lists['light_ml'] = []
+        data_lists['light_l'] = []
         data_lists['ph'] = []
         data_lists['od'] = []
         data_lists['temperature'] = []
@@ -261,7 +270,11 @@ def backend(data):
         data_lists['air'] = []
 
         data_lists_expected['id'] = []
-        data_lists_expected['light'] = []
+        data_lists_expected['light_t'] = []
+        data_lists_expected['light_mt'] = []
+        data_lists_expected['light_mm'] = []
+        data_lists_expected['light_ml'] = []
+        data_lists_expected['light_l'] = []
         data_lists_expected['ph'] = []
         data_lists_expected['od'] = []
         data_lists_expected['temperature'] = []

@@ -398,7 +398,7 @@ bool FileTransfer::validateLine(const String &line)
 
     // Basic structure check
     if (line[8] != ',' || line[14] != ',' || line[21] != ',' || line[27] != ',' || line[31] != ',' ||
-        line[35] != ',' || line[39] != ',' || line[43] != ',' || line[47] != ',')
+        line[35] != ',' || line[39] != ',' || line[43] != ',')
     {
         ESP_LOGE("FILE_TRANSFER","Error en estructura: %s ", line.c_str());
         return false;
