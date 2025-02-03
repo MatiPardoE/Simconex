@@ -225,6 +225,7 @@ class CalibOdWindow(ctk.CTkToplevel):
             self.btn_a.grid_forget()
             self.btn_b.configure(text="Siguiente")
             self.btn_b.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
+            ui_serial.mode_status = ModeStatus.MODE_CALIB
 
     def btn_b_press(self):
         if self.label_title.cget("text") == "Como es el proceso de calibracion del sensor de OD":
@@ -274,6 +275,7 @@ class CalibOdWindow(ctk.CTkToplevel):
             self.btn_b.configure(text="Finalizar")
             self.btn_b.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
             self.img_label.configure(image=self.img_check)
+            self.btn_b.grid_forget()
         
         elif self.label_title.cget("text") == "Retire la esponja del recipiente de calibración":
             self.label_title.configure(text="Coloque la sonda en la solución")
@@ -299,13 +301,15 @@ class CalibOdWindow(ctk.CTkToplevel):
             self.btn_b.configure(text="Finalizar")
             self.btn_b.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
             self.img_label.configure(image=self.img_check)
+            self.btn_b.grid_forget()
 
         elif self.label_title.cget("text") == "Verificacion":
+            ui_serial.publisher.unsubscribe(self.update_rdo_value)
+            ui_serial.mode_status = ModeStatus.NOT_MODE
             self.destroy()
     
     def btn_end_press(self):
         ui_serial.publisher.send_data(b"#FINISHCALODSAT!\n")
-        ui_serial.publisher.unsubscribe(self.update_rdo_value)
         self.od_button.grid_forget()
         self.temp_button.grid_forget()
         self.label_title.configure(text="Verificacion")
@@ -313,16 +317,27 @@ class CalibOdWindow(ctk.CTkToplevel):
         self.btn_a.grid_forget()
         self.btn_b.configure(text="Finalizar")
         self.btn_b.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
+        self.btn_b.grid_forget()
         self.img_label.configure(image=self.img_check)
         
     def update_rdo_value(self, data):
-        # TODO: el data no me esta llegando con el tipo de mensaje
-        #if data == MsgType.NEW_MEASUREMENT:
         print("New measurement en RDO CALIB")
-        print(f"OD: {data_lists_manual['od'][-1]:.2f}")
-        print(f"Temperature: {data_lists_manual['temperature'][-1]:.2f}")
-        self.od_button.configure(text=f"{data_lists_manual['od'][-1]}")
-        self.temp_button.configure(text=f"{data_lists_manual['temperature'][-1]}")
+        print(f"OD: {data_calib['od']:.2f}")
+        print(f"Temp: {data_calib['temperature']:.2f}")
+
+        if data == MsgType.NEW_MEASURE_CALIB:
+            self.od_button.configure(text=f"OD: {data_calib['od']:.2f}")
+            self.temp_button.configure(text=f"Temp: {data_calib['temperature']:.2f}")
+        elif data.strip() == "#OKCALIBODSAT!":
+            # TODO : Hacer mas bonita la UI para estos casos
+            self.btn_b.configure(text="Cerrar ventana", fg_color="green")
+            self.btn_b.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
+        elif data.strip() == "#FAILCALIBODSAT!":
+            print("Calibracion Fail")
+            self.btn_b.configure(text="Cerrar ventana", fg_color="red")
+            self.btn_b.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
+
+
 
 class SensorCalibrateFrame(ctk.CTkFrame):
     def __init__(self, master, sensor_name):

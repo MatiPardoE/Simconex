@@ -10,11 +10,13 @@ ControlAPI::ControlAPI()
 
 bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
 {
+    static cycle_manager::MeasuresAndOutputs new_measure_calib = {0, 0, 0, 0, false, false, false, false};
+
     float ph_response = 0;
     // Medicion de ph
     if (can_ph_read())
     {
-        ph_response = get_ph();
+        //ph_response = get_ph();
         if (ph_response != -1)
         {
             //ESP_LOGI("PH", "Valor de pH: %.2f", ph_response);
@@ -28,6 +30,17 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
         requestRDO(&rdo);
         _updateTimeout_;
     }
+
+    //para calibrar y ver valores
+    if( rdo.onCalibration == true ){
+        if(new_measure_calib.oxygen != rdo.doSaturation.measuredValue || new_measure_calib.temperature != rdo.temperature.measuredValue){
+            new_measure_calib.oxygen = rdo.doSaturation.measuredValue;
+            new_measure_calib.temperature = rdo.temperature.measuredValue;
+            cm.sendDataToUI(new_measure_calib, 0);
+        }
+    }
+
+
 
     switch (cycleStatus)
     {

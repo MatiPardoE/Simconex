@@ -50,6 +50,10 @@
     ledStrip3.setDuty(x >> 2); \
     ledStrip4.setDuty(x >> 3); \
     ledStrip5.setDuty(x >> 4);
+
+
+extern cycle_manager cm;
+
 class ControlAPI
 {
 public:
