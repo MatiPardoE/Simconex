@@ -65,6 +65,13 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
         {
             set_light_duty_all(goalValues.light);
         }
+
+
+        do_control_temp(measuresAndOutputs.temperature);
+
+
+        
+
         break;
     default:
         break;
@@ -115,25 +122,37 @@ bool ControlAPI::modeManualsetOutputs(String command)
         shiftRegister.setOutput(AIR, HIGH);
         ESP_LOGI("Manual", "Set EV_air to 1");
     }
-    else if (command.startsWith("#COLD0"))
+    else if (command.startsWith("#WCOLD0"))
     {
-        shiftRegister.setOutput(COOLER, LOW);
-        ESP_LOGI("Manual", "Set CoolerBomb to 0");
+        //de forma manual, hago que sean inversos
+        shiftRegister.setOutput(W_COLD, LOW);
+        ESP_LOGI("Manual", "Set WaterCold to 0");
+        shiftRegister.setOutput(W_HOT, HIGH);
+        ESP_LOGI("Manual", "Set WaterHot to 1");
     }
-    else if (command.startsWith("#COLD1"))
+    else if (command.startsWith("#WCOLD1"))
     {
-        shiftRegister.setOutput(COOLER, HIGH);
-        ESP_LOGI("Manual", "Set CoolerBomb to 1");
+        //de forma manual, hago que sean inversos
+        shiftRegister.setOutput(W_COLD, HIGH);
+        ESP_LOGI("Manual", "Set WaterCold to 1");
+        shiftRegister.setOutput(W_HOT, LOW);
+        ESP_LOGI("Manual", "Set WaterHot to 0");
     }
-    else if (command.startsWith("#HOT0"))
+    else if (command.startsWith("#WHOT0"))
     {
-        shiftRegister.setOutput(HEATER, LOW);
-        ESP_LOGI("Manual", "Set HeaterBomb to 0");
+        //de forma manual, hago que sean inversos
+        shiftRegister.setOutput(W_COLD, HIGH);
+        ESP_LOGI("Manual", "Set WaterCold to 1");
+        shiftRegister.setOutput(W_HOT, LOW);
+        ESP_LOGI("Manual", "Set WaterHot to 0");
     }
-    else if (command.startsWith("#HOT1"))
+    else if (command.startsWith("#WHOT1"))
     {
-        shiftRegister.setOutput(HEATER, HIGH);
-        ESP_LOGI("Manual", "Set HeaterBomb to 1");
+        //de forma manual, hago que sean inversos
+        shiftRegister.setOutput(W_COLD, LOW);
+        ESP_LOGI("Manual", "Set WaterCold to 0");
+        shiftRegister.setOutput(W_HOT, HIGH);
+        ESP_LOGI("Manual", "Set WaterHot to 1");
     }
     else if (command.startsWith("#L"))
     {
@@ -200,4 +219,24 @@ bool ControlAPI::set_control_var(cycle_manager::IntervalData intervalData)
     goalValues.temperature = intervalData.temperature;
 
     return true;
+}
+
+bool ControlAPI::do_control_temp( float temp ){
+    //devuelve true si esta en equilibrio
+    if( __TempisLower__(temp) ){
+        shiftRegister.setOutput(W_COLD, LOW);
+        shiftRegister.setOutput(W_HOT, HIGH);
+        return false;
+    }
+    else if( __TempisHigher__(temp) ){
+        shiftRegister.setOutput(W_COLD, HIGH);
+        shiftRegister.setOutput(W_HOT, LOW);
+        return false;
+    }
+    else{
+        shiftRegister.setOutput(W_COLD, LOW);
+        shiftRegister.setOutput(W_HOT, LOW);
+        return true;
+    }
+
 }

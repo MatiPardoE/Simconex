@@ -25,8 +25,8 @@
 #define O2 1
 #define N2 2
 #define CO2 3
-#define HEATER 4
-#define COOLER 5
+#define W_COLD  4
+#define W_HOT   5
 #define EV_1 6
 #define EV_2 7
 
@@ -43,6 +43,11 @@
 #define __UMBRAL_O2__ 2
 #define __O2_LOWER_SAT__ (measuresAndOutputs.oxygen < goalValues.oxygen + __UMBRAL_O2__)
 #define __O2_HIGHER_SAT__ (measuresAndOutputs.oxygen > goalValues.oxygen - __UMBRAL_O2__)
+
+#define __UMBRAL_TEMP__ 5
+#define __TempisLower__(x)     (x < goalValues.temperature - __UMBRAL_O2__)
+#define __TempisHigher__(x)    (x > goalValues.temperature + __UMBRAL_O2__)
+
 
 #define set_light_duty_all(x)        \
     ledStrip1.setDuty(x);      \
@@ -64,6 +69,8 @@ public:
     cycle_manager::MeasuresAndOutputs takeMeasuresAndOutputs();
     bool turnOffOutputs();
     bool set_control_var(cycle_manager::IntervalData intervalData);
+    
+    bool ControlAPI::do_control_temp( float temp );
 
 private:
     struct GoalValues

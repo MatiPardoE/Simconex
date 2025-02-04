@@ -480,14 +480,14 @@ class SetPointsFrame(ctk.CTkFrame):
         if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
             ui_serial.cycle_status = CycleStatus.CYCLE_MANUAL
             if self.cold_button.cget("text") == "Encendido":
-                ui_serial.publisher.send_data(b"#COLD0$")
+                ui_serial.publisher.send_data(b"#WCOLD0$")
                 self.cold_button.configure(text="Apagado")
                 self.cold_button.configure(fg_color="red")
             elif self.cold_button.cget("text") == "Apagado":
-                ui_serial.publisher.send_data(b"#HOT0$")
+                ui_serial.publisher.send_data(b"#WHOT0$")
                 self.hot_button.configure(text="Apagado")
                 self.hot_button.configure(fg_color="red")
-                ui_serial.publisher.send_data(b"#COLD1$")
+                ui_serial.publisher.send_data(b"#WCOLD1$")
                 self.cold_button.configure(text="Encendido")
                 self.cold_button.configure(fg_color="green")
         else: 
@@ -497,14 +497,14 @@ class SetPointsFrame(ctk.CTkFrame):
         if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
             ui_serial.cycle_status = CycleStatus.CYCLE_MANUAL
             if self.hot_button.cget("text") == "Encendido":
-                ui_serial.publisher.send_data(b"#HOT0$")
+                ui_serial.publisher.send_data(b"#WHOT0$")
                 self.hot_button.configure(text="Apagado")
                 self.hot_button.configure(fg_color="red")
             elif self.hot_button.cget("text") == "Apagado":
-                ui_serial.publisher.send_data(b"#COLD0$")
+                ui_serial.publisher.send_data(b"#WCOLD0$")
                 self.cold_button.configure(text="Apagado")
                 self.cold_button.configure(fg_color="red")
-                ui_serial.publisher.send_data(b"#HOT1$")
+                ui_serial.publisher.send_data(b"#WHOT1$")
                 self.hot_button.configure(text="Encendido")
                 self.hot_button.configure(fg_color="green")
         else: 
