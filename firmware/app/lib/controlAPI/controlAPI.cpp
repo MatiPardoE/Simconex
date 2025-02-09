@@ -127,8 +127,6 @@ bool ControlAPI::modeManualsetOutputs(String command)
         //de forma manual, hago que sean inversos
         shiftRegister.setOutput(W_COLD, LOW);
         ESP_LOGI("Manual", "Set WaterCold to 0");
-        shiftRegister.setOutput(W_HOT, HIGH);
-        ESP_LOGI("Manual", "Set WaterHot to 1");
     }
     else if (command.startsWith("#WCOLD1"))
     {
@@ -141,8 +139,6 @@ bool ControlAPI::modeManualsetOutputs(String command)
     else if (command.startsWith("#WHOT0"))
     {
         //de forma manual, hago que sean inversos
-        shiftRegister.setOutput(W_COLD, HIGH);
-        ESP_LOGI("Manual", "Set WaterCold to 1");
         shiftRegister.setOutput(W_HOT, LOW);
         ESP_LOGI("Manual", "Set WaterHot to 0");
     }
