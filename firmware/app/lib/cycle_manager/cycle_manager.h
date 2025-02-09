@@ -23,7 +23,7 @@ public:
         bool EV_oxygen;
         bool EV_co2;
         bool EV_nitrogen;
-        bool EV_air;
+        bool air_pump;
     };
     struct IntervalData
     {
