@@ -114,12 +114,12 @@ bool ControlAPI::modeManualsetOutputs(String command)
     }
     else if (command.startsWith("#A0"))
     {
-        shiftRegister.setOutput(AIR, LOW);
+        digitalWrite(AIR_PUMP, LOW);
         ESP_LOGI("Manual", "Set EV_air to 0");
     }
     else if (command.startsWith("#A1"))
     {
-        shiftRegister.setOutput(AIR, HIGH);
+        digitalWrite(AIR_PUMP, HIGH);
         ESP_LOGI("Manual", "Set EV_air to 1");
     }
     else if (command.startsWith("#WCOLD0"))
@@ -188,21 +188,23 @@ bool ControlAPI::init()
     shiftRegister.setOutput(6, LOW);
     shiftRegister.setOutput(7, LOW);
 
+    pinMode(AIR_PUMP, OUTPUT);
+    digitalWrite(AIR_PUMP, HIGH);
+
     return true;
 }
 
 cycle_manager::MeasuresAndOutputs ControlAPI::takeMeasuresAndOutputs()
 {
     byte output_shift = shiftRegister.getOutputState();
-    measuresAndOutputs.EV_air = (output_shift & 0x01) == 0x01;
     measuresAndOutputs.EV_oxygen = (output_shift & 0x02) == 0x02;
     measuresAndOutputs.EV_nitrogen = (output_shift & 0x04) == 0x04;
     measuresAndOutputs.EV_co2 = (output_shift & 0x08) == 0x08;
     measuresAndOutputs.light = ledStrip1.getDuty();
     measuresAndOutputs.temperature = rdo.temperature.measuredValue;
     measuresAndOutputs.oxygen = rdo.doSaturation.measuredValue;
+    measuresAndOutputs.air_pump = digitalRead(AIR_PUMP);
     // la medicion de ph se actualiza en el .run()
-
     return measuresAndOutputs;
 }
 

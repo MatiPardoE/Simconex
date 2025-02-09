@@ -53,7 +53,7 @@ CommUI::CommandFromUI CommUI::run(String &outputSerial)
 
 CommUI::CommandFromUI CommUI::parseCommandManual(const String &input)
 {
-    const String commands[] = {"#C0", "#C1", "#O0", "#O1", "#N0", "#N1", "#A0", "#A1", "#COLD0", "#COLD1", "#HOT0", "#HOT1"};
+    const String commands[] = {"#C0", "#C1", "#O0", "#O1", "#N0", "#N1", "#A0", "#A1", "#WCOLD0", "#WCOLD1", "#WHOT0", "#WHOT1"};
     for (const String &command : commands)
     {
         if (input == command)
