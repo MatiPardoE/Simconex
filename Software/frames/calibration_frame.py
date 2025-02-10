@@ -272,7 +272,7 @@ class CalibOdWindow(ctk.CTkToplevel):
             self.destroy()
     
     def btn_end_press(self):
-        ui_serial.publisher.send_data(b"#FINISHCALODSAT!\n")
+        ui_serial.publisher.send_data(b"#FINISHCALODSAT1P!\n")
         ui_serial.publisher.unsubscribe(self.update_rdo_value)
         self.od_button.grid_forget()
         self.temp_button.grid_forget()
