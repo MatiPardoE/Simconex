@@ -245,6 +245,10 @@ typedef enum
     SET_100_SAT_CONCENTRATION,
     SET_100_SAT_TEMPERATURE,
 
+    //NUEVO
+    SET_0_SAT_CONCENTRATION,
+    SET_0_SAT_TEMPERATURE,
+
     UPDATE_CALIBRATION_COMMAND,
 
     WRITE_CALIBRATION_COMMAND_OFF,
@@ -257,6 +261,11 @@ typedef enum
     TEMPERATURE_ID = 1,
     DO_SATURATION_ID = 21,
 } rdoParameterId_t;
+
+typedef enum{
+    CALIB_SAT_1P = 0,
+    CALIB_SAT_2P    ,
+} rdoCalibSat_t;
 
 /***********************************************
  * @brief			: Macros

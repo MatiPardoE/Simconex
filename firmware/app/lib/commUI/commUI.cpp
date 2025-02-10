@@ -97,7 +97,7 @@ CommUI::CommandFromUI CommUI::parseCommand(const String &input)
     }
     else if (input == "#FINISHCALODSAT!")
     {
-        return FINISH_CALIB_OD_SAT;
+        return FINISH_CALIB_OD_SAT_1P;
     }
     else if (input == "#STARTCALPH!")
     {

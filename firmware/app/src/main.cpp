@@ -188,7 +188,7 @@ void loop()
         ESP_LOGI(TAG, "Start calibration OD saturation\n");
         triggerPercentSaturationCalibration(&rdo);
         break;
-    case CommUI::FINISH_CALIB_OD_SAT:
+    case CommUI::FINISH_CALIB_OD_SAT_1P:
         ESP_LOGI(TAG, "Finish calibration OD saturation\n");
         finishPercentSaturationCalibration(&rdo);
 

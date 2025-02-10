@@ -58,7 +58,8 @@ void clearRDO(void)
     rdo.temperature.measuredValue = 0;
     rdo.doSaturation.measuredValue = 0;
 
-    rdo.onCalibration = false;
+    rdo.onCalibration   = false;
+    rdo.points          = CALIB_SAT_1P; 
 }
 
 /***********************************************************************************
