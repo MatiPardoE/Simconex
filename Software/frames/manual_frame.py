@@ -210,6 +210,8 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.right_frame.grid_rowconfigure(6, weight=1)
         self.right_frame.grid_rowconfigure(7, weight=1)
         self.right_frame.grid_rowconfigure(8, weight=1)
+        self.right_frame.grid_rowconfigure(9, weight=1)
+        self.right_frame.grid_rowconfigure(10, weight=1)
         self.right_frame.grid_columnconfigure(0, weight=1)   
 
         self.label_control = ctk.CTkLabel(self.right_frame, text="Estado Variables", font=ctk.CTkFont(size=20, weight="bold"))
@@ -234,6 +236,12 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.label_temp.grid(row=7, column=0, padx=10, pady=(10,0), sticky="nsew")
         self.temp_button = ctk.CTkButton(self.right_frame, text="--", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.temp_button.grid(row=8, column=0, padx=10, pady=(0, 10), sticky="ns")
+
+        self.label_conc = ctk.CTkLabel(self.right_frame, text="Concentracion [mg/L]", font=ctk.CTkFont(weight="bold"))
+        self.label_conc.grid(row=9, column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.conc_button = ctk.CTkButton(self.right_frame, text="--", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
+        self.conc_button.grid(row=10, column=0, padx=10, pady=(0, 10), sticky="ns")
+
 
     def process_data_instant_values(self, data):
         if data == MsgType.ESP_DISCONNECTED:
@@ -331,6 +339,8 @@ class SetPointsFrame(ctk.CTkFrame):
         self.label_light.grid(row=5, column=0, padx=10, pady=(10,0), sticky="nsew")
         self.entry_light = ctk.CTkEntry(self.right_frame, textvariable=self.light_text_var, justify="center", width=100, state="disabled", validate="key", validatecommand=(self.validate, "%P"))
         self.entry_light.grid(row=6, column=0, padx=10, pady=0, sticky="ns")
+
+
 
         self.send_button = ctk.CTkButton(self.right_frame, text="Enviar", command=self.send_button_event, width=100, state="disabled")
         self.send_button.grid(row=7, column=0, padx=10, pady=(20, 10), sticky="ns")
@@ -481,14 +491,14 @@ class SetPointsFrame(ctk.CTkFrame):
         if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
             ui_serial.mode_status = ModeStatus.MODE_MANUAL
             if self.cold_button.cget("text") == "Encendido":
-                ui_serial.publisher.send_data(b"#COLD0$")
+                ui_serial.publisher.send_data(b"#WCOLD0$")
                 self.cold_button.configure(text="Apagado")
                 self.cold_button.configure(fg_color="red")
             elif self.cold_button.cget("text") == "Apagado":
-                ui_serial.publisher.send_data(b"#HOT0$")
+                ui_serial.publisher.send_data(b"#WHOT0$")
                 self.hot_button.configure(text="Apagado")
                 self.hot_button.configure(fg_color="red")
-                ui_serial.publisher.send_data(b"#COLD1$")
+                ui_serial.publisher.send_data(b"#WCOLD1$")
                 self.cold_button.configure(text="Encendido")
                 self.cold_button.configure(fg_color="green")
         else: 
@@ -498,14 +508,14 @@ class SetPointsFrame(ctk.CTkFrame):
         if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
             ui_serial.mode_status = ModeStatus.MODE_MANUAL
             if self.hot_button.cget("text") == "Encendido":
-                ui_serial.publisher.send_data(b"#HOT0$")
+                ui_serial.publisher.send_data(b"#WHOT0$")
                 self.hot_button.configure(text="Apagado")
                 self.hot_button.configure(fg_color="red")
             elif self.hot_button.cget("text") == "Apagado":
-                ui_serial.publisher.send_data(b"#COLD0$")
+                ui_serial.publisher.send_data(b"#WCOLD0$")
                 self.cold_button.configure(text="Apagado")
                 self.cold_button.configure(fg_color="red")
-                ui_serial.publisher.send_data(b"#HOT1$")
+                ui_serial.publisher.send_data(b"#WHOT1$")
                 self.hot_button.configure(text="Encendido")
                 self.hot_button.configure(fg_color="green")
         else: 

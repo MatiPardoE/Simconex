@@ -53,7 +53,7 @@ CommUI::CommandFromUI CommUI::run(String &outputSerial)
 
 CommUI::CommandFromUI CommUI::parseCommandManual(const String &input)
 {
-    const String commands[] = {"#C0", "#C1", "#O0", "#O1", "#N0", "#N1", "#A0", "#A1", "#COLD0", "#COLD1", "#HOT0", "#HOT1"};
+    const String commands[] = {"#C0", "#C1", "#O0", "#O1", "#N0", "#N1", "#A0", "#A1", "#WCOLD0", "#WCOLD1", "#WHOT0", "#WHOT1"};
     for (const String &command : commands)
     {
         if (input == command)
@@ -95,10 +95,24 @@ CommUI::CommandFromUI CommUI::parseCommand(const String &input)
     {
         return START_CALIB_OD_SAT;
     }
-    else if (input == "#FINISHCALODSAT!")
+    
+
+    //
+    else if (input == "#FINISHCALODSAT1P!")
     {
-        return FINISH_CALIB_OD_SAT;
+        return FINISH_CALIB_OD_SAT_1P;
     }
+    else if (input == "#STARTCALODSAT2P!")
+    {
+        return GOTO_CALIB_OD_SAT_2P;
+    }
+    else if (input == "#FINISHCALODSAT2P!")
+    {
+        return FINISH_CALIB_OD_SAT_2P;
+    }
+    //
+
+
     else if (input == "#STARTCALPH!")
     {
         return START_CALIB_PH;

@@ -268,6 +268,7 @@ def backend(data):
         data_lists['o2'] = []
         data_lists['n2'] = []
         data_lists['air'] = []
+        data_lists['conc'] = []
 
         data_lists_expected['id'] = []
         data_lists_expected['light_t'] = []

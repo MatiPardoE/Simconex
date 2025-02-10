@@ -21,14 +21,15 @@
 #define SR_LATCH_PIN 2
 #define SR_CLOCK_PIN 0
 /////////// Shift Register //////
-#define AIR 0
 #define O2 1
 #define N2 2
 #define CO2 3
-#define HEATER 4
-#define COOLER 5
-#define EV_1 6
-#define EV_2 7
+#define W_COLD  0
+#define W_HOT   6
+#define EV_1 5
+#define EV_2 4
+////// Bomba de Aire ///////
+#define AIR_PUMP 23
 
 #define __UMBRAL_PH__ 0.1
 #define __PH_LOWER__ (measuresAndOutputs.ph < goalValues.ph - __UMBRAL_PH__)
@@ -44,6 +45,14 @@
 #define __O2_LOWER_SAT__ (measuresAndOutputs.oxygen < goalValues.oxygen + __UMBRAL_O2__)
 #define __O2_HIGHER_SAT__ (measuresAndOutputs.oxygen > goalValues.oxygen - __UMBRAL_O2__)
 
+#define __UMBRAL_TEMP__ 5
+#define __TempisLower__(x)     (x < goalValues.temperature - __UMBRAL_O2__)
+#define __TempisHigher__(x)    (x > goalValues.temperature + __UMBRAL_O2__)
+
+
+#define __UMBRAL_TEMP__ 5
+#define __TempisLower__(x)     (x < goalValues.temperature - __UMBRAL_O2__)
+#define __TempisHigher__(x)    (x > goalValues.temperature + __UMBRAL_O2__)
 
 extern cycle_manager cm;
 
@@ -61,6 +70,8 @@ public:
     cycle_manager::MeasuresAndOutputs takeMeasuresAndOutputs();
     bool turnOffOutputs();
     bool set_control_var(cycle_manager::IntervalData intervalData);
+    
+    bool do_control_temp( float temp );
 
 private:
     struct GoalValues
