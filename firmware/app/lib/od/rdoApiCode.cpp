@@ -34,8 +34,6 @@
 /***********************************************
  * @brief			: 	Function project prototype
  **********************************************/
-// no entiendo por que no puedo hacerlo en el .h
-bool evaluateEquilibrium(volatile rdo_t *rdo, uint8_t id, float newMeasure);
 
 /***********************************************************************************
  * @function 	clearRDO
@@ -154,6 +152,34 @@ void requestRDO(volatile rdo_t *rdo)
         memcpy(&tmpData, (void *)&(rdo->temperature.measuredValue), sizeof(float));
         std::reverse(tmpData, tmpData + 4);
         modbus.writeMultHoldingRegisters(RDO_SLAVE_ID, _SATURATION_TEMP_100_, _SATURATION_TEMP_100_SIZE_, tmpData);
+        rdo->requests++;
+        break;
+
+    case SET_0_SAT_CONCENTRATION:
+#ifdef __DEBUG__
+        Serial.print("\n\t<--- ESP -> RDO: ESTADO: SET_0_SAT_CONCENTRATION --->\n");
+#endif
+        rdo->calibration._0saturationConcentration = rdo->doConcentration.measuredValue;
+#ifdef __DEBUG__
+        Serial.printf("\n\t<--- CALIBRE 0% CON %f\n", rdo->doConcentration.measuredValue);
+#endif
+        memcpy(&tmpData, (void *)&(rdo->doConcentration.measuredValue), sizeof(float));
+        std::reverse(tmpData, tmpData + 4);
+        modbus.writeMultHoldingRegisters(RDO_SLAVE_ID, _SATURATION_CONC_0_, _SATURATION_CONC_0_SIZE_, tmpData);
+        rdo->requests++;
+        break;
+
+    case SET_0_SAT_TEMPERATURE:
+#ifdef __DEBUG__
+        Serial.print("\n\t<--- ESP -> RDO: ESTADO: SET_0_SAT_TEMPERATURE --->\n");
+#endif
+        rdo->calibration._0saturationTemperature = rdo->temperature.measuredValue;
+#ifdef __DEBUG__
+        Serial.printf("\n\t<--- CALIBRE 0% CON %f\n", rdo->temperature.measuredValue);
+#endif
+        memcpy(&tmpData, (void *)&(rdo->temperature.measuredValue), sizeof(float));
+        std::reverse(tmpData, tmpData + 4);
+        modbus.writeMultHoldingRegisters(RDO_SLAVE_ID, _SATURATION_TEMP_0_, _SATURATION_TEMP_0_SIZE_, tmpData);
         rdo->requests++;
         break;
 
@@ -372,8 +398,29 @@ void rxRDO(uint8_t serverAddress, esp32Modbus::FunctionCode fc, uint8_t *data, s
             Serial.print("RDO -> ESP :SET_100_SAT_TEMPERATURE");
 #endif
             rdo.replies++;
+            if(rdo.points == CALIB_SAT_1P)
+                rdo.status = UPDATE_CALIBRATION_COMMAND;
+            else if(rdo.points == CALIB_SAT_2P)
+                rdo.status = GET_DO;
+            break;
+
+//
+            case SET_0_SAT_CONCENTRATION:
+#ifdef __DEBUG__
+            Serial.print("RDO -> ESP :SET_0_SAT_CONCENTRATION");
+#endif
+            rdo.replies++;
+            rdo.status = SET_0_SAT_TEMPERATURE;
+            break;
+
+        case SET_0_SAT_TEMPERATURE:
+#ifdef __DEBUG__
+            Serial.print("RDO -> ESP :SET_0_SAT_TEMPERATURE");
+#endif
+            rdo.replies++;
             rdo.status = UPDATE_CALIBRATION_COMMAND;
             break;
+//
 
         case UPDATE_CALIBRATION_COMMAND:
 #ifdef __DEBUG__
@@ -431,12 +478,12 @@ void rxErrorRDO(esp32Modbus::Error error)
 }
 
 /***********************************************************************************
- * @function 	triggerPercentSaturationCalibration
+ * @function 	triggerPercentSaturationCalibration100
  * @brief
  * @param
  * @retval
  **********************************************************************************/
-void triggerPercentSaturationCalibration(volatile rdo_t *rdo)
+void triggerPercentSaturationCalibration100(volatile rdo_t *rdo)
 {
     rdo->status = WRITE_CALIBRATION_COMMAND;
     rdo->onCalibration = true;
@@ -454,14 +501,28 @@ bool isAnyCalibrationDone(volatile rdo_t *rdo)
 }
 
 /***********************************************************************************
- * @function 	finishPercentSaturationCalibration
+ * @function 	setRdoCalibrationPoints
+ * @brief
+ * @param
+ * @retval       true si hay alguna calibracion hecha
+ **********************************************************************************/
+rdoCalibSat_t setRdoCalibrationPoints(volatile rdo_t *rdo , rdoCalibSat_t points)
+{
+    rdo->points = points;
+    return (rdo->points);
+}
+
+
+
+/***********************************************************************************
+ * @function 	finishPercentSaturationCalibration100
  * @brief
  * @param
  * @retval
  **********************************************************************************/
-void finishPercentSaturationCalibration(volatile rdo_t *rdo)
+void finishPercentSaturationCalibration100(volatile rdo_t *rdo)
 {
-    ESP_LOGI("OD", "En Calibracion? %d", rdo->onCalibration);
+    ESP_LOGI("OD", "En Calibracion 100? %d", rdo->onCalibration);
     if (rdo->onCalibration == true)
     {
         rdo->status = SET_LIVE_BAR_PRESSURE; // cambio de estado para finalizar
@@ -469,68 +530,18 @@ void finishPercentSaturationCalibration(volatile rdo_t *rdo)
 }
 
 /***********************************************************************************
- * @function 	isRDOequilibrium
+ * @function 	finishPercentSaturationCalibration100
  * @brief
  * @param
  * @retval
  **********************************************************************************/
-bool isRDOequilibrium(float lastMeasure, float newMeasure)
+void finishPercentSaturationCalibration0(volatile rdo_t *rdo)
 {
-    if (abs(lastMeasure - newMeasure) < EPSILON_MEASURE)
-        return true;
-    else
-        return false;
-}
-
-/***********************************************************************************
- * @function 	evaluateEquilibrium
- * @brief
- * @param
- * @retval
- **********************************************************************************/
-bool evaluateEquilibrium(volatile rdo_t *rdo, uint8_t id, float newMeasure)
-{
-
+    ESP_LOGI("OD", "En Calibracion 0? %d", rdo->onCalibration);
     if (rdo->onCalibration == true)
     {
-        switch (id)
-        {
-        case DO_CONCENTRATION_ID:
-            if (isRDOequilibrium(rdo->doConcentration.measuredValue, newMeasure) == true)
-                rdo->equilibrium++;
-            else
-                rdo->equilibrium = 0;
-            break;
-
-        case TEMPERATURE_ID:
-            if (isRDOequilibrium(rdo->temperature.measuredValue, newMeasure) == true)
-                rdo->equilibrium++;
-            else
-                rdo->equilibrium = 0;
-            break;
-
-        case DO_SATURATION_ID:
-            if (isRDOequilibrium(rdo->doSaturation.measuredValue, newMeasure) == true)
-                rdo->equilibrium++;
-            else
-                rdo->equilibrium = 0;
-            break;
-
-        default:
-            rdo->equilibrium = 0;
-            break;
-        }
-
-        Serial.printf("\tEQUILIBRIO : %d \n", rdo->equilibrium);
-
-        if (rdo->equilibrium == EQUILIBRIUM_ACHIEVED)
-        {
-            rdo->equilibrium = 0;
-            return true;
-        }
-        else
-            return false;
+        rdo->status = SET_0_SAT_CONCENTRATION; // cambio de estado para finalizar
     }
-
-    return false;
 }
+
+

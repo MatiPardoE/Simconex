@@ -185,32 +185,67 @@ void loop()
         manualMode.activate();
         break;
     case CommUI::START_CALIB_OD_SAT:
-        ESP_LOGI(TAG, "Start calibration OD saturation\n");
-        triggerPercentSaturationCalibration(&rdo);
+        ESP_LOGI(TAG, "Start calibration OD saturation 100%\n");
+        triggerPercentSaturationCalibration100(&rdo);
         break;
-    case CommUI::FINISH_CALIB_OD_SAT_1P:
-        ESP_LOGI(TAG, "Finish calibration OD saturation\n");
-        finishPercentSaturationCalibration(&rdo);
 
+    //
+    case CommUI::FINISH_CALIB_OD_SAT_1P:
+        ESP_LOGI(TAG, "Finish calibration OD saturation 100%\n");
+        setRdoCalibrationPoints(&rdo,CALIB_SAT_1P);
+        finishPercentSaturationCalibration100(&rdo);
         millis_init = millis();
         while (millis_init + 40000 > millis())
         {
-            //TODO Hacer maquina de estado o no bloqueante y que haga el request en el .run
             if (isAnyCalibrationDone(&rdo))
             {
-                ESP_LOGI(TAG, "Checked calibration OD saturation\n");
+                ESP_LOGI(TAG, "Checked calibration OD saturation 100%\n");
                 break;
             }
-
             if (_TIMEOUT_TO_RDO_REQUEST_)
             {
-                //ESP_LOGI(TAG, "rDO Status: %d",rdo.status);
                 requestRDO(&rdo);
                 _updateTimeout_;
             }
         }
-        ESP_LOGE(TAG, "Error checking calibration OD saturation\n");
+        ESP_LOGE(TAG, "Error checking calibration OD saturation 100%\n");
         break;
+
+
+    case CommUI::GOTO_CALIB_OD_SAT_2P:
+        ESP_LOGI(TAG, "Continue calibration OD saturation 0%\n");
+        setRdoCalibrationPoints(&rdo,CALIB_SAT_2P);
+        //dispara la escritura de los registros de 100%
+        //pero no hara el update command
+        //porque sabe que le falta un punto de calib
+        //y volvera a medir
+        finishPercentSaturationCalibration100(&rdo); 
+        break;
+
+    //
+    case CommUI::FINISH_CALIB_OD_SAT_2P:
+        ESP_LOGI(TAG, "Finish calibration OD saturation 0%\n");
+        finishPercentSaturationCalibration0(&rdo);
+        millis_init = millis();
+        while (millis_init + 40000 > millis())
+        {
+            if (isAnyCalibrationDone(&rdo))
+            {
+                ESP_LOGI(TAG, "Checked calibration OD saturation 0%\n");
+                break;
+            }
+            if (_TIMEOUT_TO_RDO_REQUEST_)
+            {
+                requestRDO(&rdo);
+                _updateTimeout_;
+            }
+        }
+        ESP_LOGE(TAG, "Error checking calibration OD saturation 0%\n");
+        break;
+
+    
+    //
+    
     // case CommUI::START_CALIB_PH:
     //     ESP_LOGI(TAG, "Start calibration pH\n");
     //     //startPHcalibration(&rdo);
