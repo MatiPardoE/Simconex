@@ -125,7 +125,7 @@ class SerialPublisher:
     def notify_subscribers(self, data):
         if "#Z1!" in data:
             for callback in self.subscribers: callback(MsgType.ESP_DISCONNECTED)
-        
+        #TODO: AGREGAR LA CONCENTRACION
         pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(0|1),(0|1),(0|1),(0|1)$"
         match = re.match(pattern, data)
 
@@ -348,19 +348,21 @@ data_lists = {
     "co2": [],
     "o2": [],
     "n2": [],
-    "air": []
+    "air": [],
+    "conc": [],
 }
 
 data_lists_manual = {
-    "id": [],
-    "ph": [],
-    "od": [],
-    "temperature": [],
-    "light": [],
-    "co2": [],
-    "o2": [],
-    "n2": [],
-    "air": []
+    "id"            : [],
+    "ph"            : [],
+    "od"            : [],
+    "temperature"   : [],
+    "light"         : [],
+    "co2"   : [],
+    "o2"    : [],
+    "n2"    : [],
+    "air"   : [],
+    "conc"  : [],
 }
 
 data_lists_expected = {

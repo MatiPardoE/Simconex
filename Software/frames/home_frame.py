@@ -58,6 +58,8 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.left_frame.grid_rowconfigure(6, weight=1)
         self.left_frame.grid_rowconfigure(7, weight=1)
         self.left_frame.grid_rowconfigure(8, weight=1)
+        self.left_frame.grid_rowconfigure(9, weight=1)
+        self.left_frame.grid_rowconfigure(10, weight=1)
         self.left_frame.grid_columnconfigure(0, weight=1)
 
         self.label_control = ctk.CTkLabel(self.left_frame, text="Estado Salidas", font=ctk.CTkFont(size=20, weight="bold"))
@@ -129,6 +131,11 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.label_temp.grid(row=7  , column=0, padx=10, pady=(10,0), sticky="nsew")
         self.temp_button = ctk.CTkButton(self.right_frame, text="--°C", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.temp_button.grid(row=8, column=0, padx=10, pady=(0,10), sticky="ns")
+
+        self.label_conc = ctk.CTkLabel(self.right_frame, text="Concentracion", font=ctk.CTkFont(weight="bold"))
+        self.label_conc.grid(row=9  , column=0, padx=10, pady=(10,0), sticky="nsew")
+        self.conc_button = ctk.CTkButton(self.right_frame, text="-- mg/L", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
+        self.conc_button.grid(row=10, column=0, padx=10, pady=(0,10), sticky="ns")
     
     def process_data_instant_values(self, data):
         if data == MsgType.ESP_DISCONNECTED:
@@ -138,7 +145,8 @@ class InstantValuesFrame(ctk.CTkFrame):
             self.light_button.configure(text = f"{data_lists['light'][-1]}")
             self.ph_button.configure(text = "{0:.2f}".format(data_lists['ph'][-1]))
             self.do_button.configure(text = "{0:.2f}".format(data_lists['od'][-1]))
-            self.temp_button.configure(text = "{0:.2f}".format(data_lists['temperature'][-1]))   
+            self.temp_button.configure(text = "{0:.2f}".format(data_lists['temperature'][-1]))
+            self.conc_button.configure(text = "{0:.2f}".format(data_lists['conc'][-1]))   
 
             if data_lists['co2'][-1] == 0:
                 self.co2_button.configure(text="Apagado")

@@ -354,6 +354,14 @@ class SensorCalibrateFrame(ctk.CTkFrame):
         self.calib_window.mainloop()  
 
     def get_calib_file(self, sensor):
+        if not os.path.exists("calib"):
+            os.makedirs("calib")
+        if not os.path.exists("calib/calib_data.csv"):
+            with open("calib/calib_data.csv", mode="w", encoding="utf-8") as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(["ph", "01/01/2000"])
+                writer.writerow(["od", "01/01/2000"])
+
         with open("calib/calib_data.csv", mode="r", encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
@@ -364,6 +372,14 @@ class SensorCalibrateFrame(ctk.CTkFrame):
                         return str(date_obj.strftime('%d/%m/%Y'))
     
     def read_calib_file(self):
+        if not os.path.exists("calib"):
+            os.makedirs("calib")
+        if not os.path.exists("calib/calib_data.csv"):
+            with open("calib/calib_data.csv", mode="w", encoding="utf-8") as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(["ph", "01/01/2000"])
+                writer.writerow(["od", "01/01/2000"])
+
         with open("calib/calib_data.csv", mode="r", encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
@@ -385,6 +401,14 @@ class SensorCalibrateFrame(ctk.CTkFrame):
                 print("Advertencia", "El sensor de " + name + " requiere calibración")
     
     def update_date(self, sensor_name):
+        if not os.path.exists("calib"):
+            os.makedirs("calib")
+        if not os.path.exists("calib/calib_data.csv"):
+            with open("calib/calib_data.csv", mode="w", encoding="utf-8") as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(["ph", "01/01/2000"])
+                writer.writerow(["od", "01/01/2000"])
+
         data = []
         with open("calib/calib_data.csv", mode="r", encoding="utf-8") as csvfile:
             reader = csv.reader(csvfile)

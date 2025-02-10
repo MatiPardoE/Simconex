@@ -713,6 +713,9 @@ class LogFrame(ctk.CTkFrame):
                 self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][i]), corner_radius=0, width=200)
                 self.label_temp.pack(side='left')
 
+                self.label_conc = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['conc'][i]), corner_radius=0, width=200)
+                self.label_conc.pack(side='left')
+
                 self.label_cycle = ctk.CTkLabel(self.in_frame, text=ui_serial.cycle_alias, corner_radius=0, width=150) 
                 self.label_cycle.pack(side='left')
 
@@ -750,6 +753,9 @@ class LogFrame(ctk.CTkFrame):
 
             self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['temperature'][last_index]), corner_radius=0, width=200)
             self.label_temp.pack(side='left')
+
+            self.label_conc = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists['conc'][last_index]), corner_radius=0, width=200)
+            self.label_conc.pack(side='left')
 
             self.label_cycle = ctk.CTkLabel(self.in_frame, text=ui_serial.cycle_alias, corner_radius=0, width=150)
             self.label_cycle.pack(side='left')
