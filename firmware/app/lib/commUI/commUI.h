@@ -9,21 +9,27 @@ class CommUI
 public:
     enum CommandFromUI
     {
-        UNKNOWN_COMMAND,
-        TRANSFER_FILE_START,
-        INIT_COMM_UI,
-        SYNC_CYCLE_START,
-        PAUSE_CYCLE,
-        RESUME_CYCLE,
-        MANUAL_MODE,
-        START_CALIB_OD_SAT,
-        FINISH_CALIB_OD_SAT,
-        START_CALIB_PH,
+        UNKNOWN_COMMAND         ,
+        TRANSFER_FILE_START     ,
+        INIT_COMM_UI            ,
+        SYNC_CYCLE_START        ,
+        PAUSE_CYCLE             ,
+        RESUME_CYCLE            ,
+        MANUAL_MODE             ,
+        START_CALIB_OD_SAT      ,
+
+        //
+        FINISH_CALIB_OD_SAT_1P  ,
+        GOTO_CALIB_OD_SAT_2P    ,
+        FINISH_CALIB_OD_SAT_2P  ,
+        //        
+
+        START_CALIB_PH          ,
         CLEAR_CALIB_PH,
         SET_MID_POINT_PH,
         SET_LOW_POINT_PH,
         SET_HIGH_POINT_PH,
-        FINISH_CALIB_PH
+        FINISH_CALIB_PH         
     };
     CommUI();
     ~CommUI();

@@ -130,6 +130,7 @@ typedef struct{
     //! auxiliar
     bool onCalibration;
     uint16_t equilibrium;
+    rdoCalibSat_t points;
 
 } rdo_t;
 
