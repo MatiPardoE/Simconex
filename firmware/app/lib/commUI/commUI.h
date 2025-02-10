@@ -19,6 +19,10 @@ public:
         START_CALIB_OD_SAT,
         FINISH_CALIB_OD_SAT,
         START_CALIB_PH,
+        CLEAR_CALIB_PH,
+        SET_MID_POINT_PH,
+        SET_LOW_POINT_PH,
+        SET_HIGH_POINT_PH,
         FINISH_CALIB_PH
     };
     CommUI();

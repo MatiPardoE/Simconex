@@ -103,6 +103,22 @@ CommUI::CommandFromUI CommUI::parseCommand(const String &input)
     {
         return START_CALIB_PH;
     }
+    else if (input == "#CLEARCALPH!")
+    {
+        return CLEAR_CALIB_PH;
+    }
+    else if (input == "#SETMIDCALPH!")
+    {
+        return SET_MID_POINT_PH;
+    }
+    else if (input == "#SETLOWCALPH!")
+    {
+        return SET_LOW_POINT_PH;
+    }
+    else if (input == "#SETHIGHCALPH!")
+    {
+        return SET_HIGH_POINT_PH;
+    }
     else if (input == "#FINISHCALPH!")
     {
         return FINISH_CALIB_PH;

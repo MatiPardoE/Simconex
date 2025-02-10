@@ -138,3 +138,38 @@ enum pH::errors pH::receive_cmd( char * sensordata_buffer, uint8_t buffer_len) {
   return this->error;
   
 }
+
+bool pH::is_on_calibration()
+{
+    return this->on_calibration;
+}
+
+bool pH::start_calibration()
+{
+    if (!this->on_calibration)
+    {
+        this->on_calibration = true;
+        this->state_calib = INIT_CALIB;
+        return true;
+    }else{
+      // ya esta en modo calibracion
+        return false;
+    }
+}
+
+bool pH::finish_calibration()
+{
+    if (this->on_calibration)
+    {
+        this->on_calibration = false;
+        return true;
+    }else{
+      // No esta en modo calibracion  de pH
+        return false;
+    }
+}
+
+state_calib_t pH::get_state_calib()
+{
+    return this->state_calib;
+}

@@ -4,6 +4,7 @@ from enum import Enum
 import frames.serial_handler as ui_serial
 from frames.serial_handler import data_lists
 from frames.serial_handler import CycleStatus
+from frames.serial_handler import ModeStatus
 from PIL import Image, ImageTk
 import re
 import csv
@@ -38,7 +39,11 @@ class CycleSync:
         self.ph_list = []
         self.od_list = []
         self.temp_list = []
-        self.light_list = []
+        self.light_t_list = []
+        self.light_mt_list = []
+        self.light_mm_list = []
+        self.light_ml_list = []
+        self.light_l_list = []    
         self.co2_list = []
         self.o2_list = []
         self.n2_list = []
@@ -49,7 +54,11 @@ class CycleSync:
         self.ph_list_tmp = []
         self.od_list_tmp = []
         self.temp_list_tmp = []
-        self.light_list_tmp = []
+        self.light_t_list_tmp = []
+        self.light_mt_list_tmp = []
+        self.light_mm_list_tmp = []
+        self.light_ml_list_tmp = []
+        self.light_l_list_tmp = [] 
         self.co2_list_tmp = []
         self.o2_list_tmp = []
         self.n2_list_tmp = []
@@ -62,7 +71,8 @@ class CycleSync:
         self.show_loading_window()    
        
     def start_sync_cycle(self, timeout=5):
-        try:         
+        try:
+            ui_serial.mode_status = ModeStatus.MODE_SYNC       
             ui_serial.publisher.subscribe(self.wait_for_response)
             ui_serial.publisher.send_data(b"#SYNC0!\n")
             self.wait_message(HandshakeStatus.STA, timeout)
@@ -97,9 +107,11 @@ class CycleSync:
                 self.generate_cycleout_file()
             self.success_loading_window()
             ui_serial.cycle_status = self.esp_status_reported
+            ui_serial.mode_status = ModeStatus.NOT_MODE # Ya termino la sync asi que salgo de este modo
             ui_serial.publisher.notify_sync()           
         
         except Exception as e:
+            ui_serial.mode_status = ModeStatus.NOT_MODE
             print("Syncronization of running cycle failed!")
             print(e)
             self.failed_loading_window()
@@ -134,10 +146,14 @@ class CycleSync:
                 raise TimeoutError("Timeout waiting for handshake from ESP")
 
     def wait_for_dataout(self, data):
-        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{2}),(0|1),(0|1),(0|1),(0|1)$"
+        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(0|1),(0|1),(0|1),(0|1)$"
         if data == "#DATAOUT1!":
             self.id_list += self.id_list_tmp
-            self.light_list += self.light_list_tmp
+            self.light_t_list += self.light_t_list_tmp
+            self.light_mt_list += self.light_mt_list_tmp
+            self.light_mm_list += self.light_mm_list_tmp
+            self.light_ml_list += self.light_ml_list_tmp
+            self.light_l_list += self.light_l_list_tmp
             self.ph_list += self.ph_list_tmp
             self.od_list += self.od_list_tmp
             self.temp_list += self.temp_list_tmp
@@ -147,7 +163,11 @@ class CycleSync:
             self.air_list += self.air_list_tmp
         
             data_lists['id'] = self.id_list
-            data_lists['light'] = self.light_list
+            data_lists['light_t'] = self.light_t_list
+            data_lists['light_mt'] = self.light_mt_list
+            data_lists['light_mm'] = self.light_mm_list
+            data_lists['light_ml'] = self.light_ml_list
+            data_lists['light_l'] = self.light_l_list
             data_lists['ph'] = self.ph_list
             data_lists['od'] = self.od_list
             data_lists['temperature'] = self.temp_list
@@ -163,14 +183,18 @@ class CycleSync:
         if match: 
             self.line_count += 1
             self.id_list_tmp.append(int(match.group(1)))
-            self.light_list_tmp.append(int(match.group(5)))
+            self.light_t_list_tmp.append(int(match.group(5)))
+            self.light_mt_list_tmp.append(int(match.group(6)))
+            self.light_mm_list_tmp.append(int(match.group(7)))
+            self.light_ml_list_tmp.append(int(match.group(8)))
+            self.light_l_list_tmp.append(int(match.group(9)))
             self.ph_list_tmp.append(float(match.group(2)))
             self.od_list_tmp.append(float(match.group(3)))
             self.temp_list_tmp.append(float(match.group(4)))
-            self.co2_list_tmp.append(int(match.group(6)))
-            self.o2_list_tmp.append(int(match.group(7)))
-            self.n2_list_tmp.append(int(match.group(8)))
-            self.air_list_tmp.append(int(match.group(9)))
+            self.co2_list_tmp.append(int(match.group(10)))
+            self.o2_list_tmp.append(int(match.group(11)))
+            self.n2_list_tmp.append(int(match.group(12)))
+            self.air_list_tmp.append(int(match.group(13)))
             self.handshake_status = HandshakeStatus.MSG_VALID
 
             if self.line_count == 160:
@@ -178,7 +202,11 @@ class CycleSync:
                 self.line_count = 0
 
                 self.id_list += self.id_list_tmp
-                self.light_list += self.light_list_tmp
+                self.light_t_list += self.light_t_list_tmp
+                self.light_mt_list += self.light_mt_list_tmp
+                self.light_mm_list += self.light_mm_list_tmp
+                self.light_ml_list += self.light_ml_list_tmp
+                self.light_l_list += self.light_l_list_tmp
                 self.ph_list += self.ph_list_tmp
                 self.od_list += self.od_list_tmp
                 self.temp_list += self.temp_list_tmp
@@ -191,7 +219,11 @@ class CycleSync:
                 self.ph_list_tmp = []
                 self.od_list_tmp = []
                 self.temp_list_tmp = []
-                self.light_list_tmp = []
+                self.light_t_list_tmp = []
+                self.light_mt_list_tmp = []
+                self.light_mm_list_tmp = []
+                self.light_ml_list_tmp = []
+                self.light_l_list_tmp = []
                 self.co2_list_tmp = []
                 self.o2_list_tmp = []
                 self.n2_list_tmp = []
@@ -204,8 +236,12 @@ class CycleSync:
             self.id_list_tmp = []
             self.ph_list_tmp = []
             self.od_list_tmp = []
-            self.temp_list_tmp = []  
-            self.light_list_tmp = []
+            self.temp_list_tmp = []
+            self.light_t_list_tmp = []
+            self.light_mt_list_tmp = []
+            self.light_mm_list_tmp = []
+            self.light_ml_list_tmp = []
+            self.light_l_list_tmp = []
             self.co2_list_tmp = []
             self.o2_list_tmp = []
             self.n2_list_tmp = []
@@ -291,7 +327,11 @@ class CycleSync:
                     f"{data_lists['ph'][i]:05.2f}",       
                     f"{data_lists['od'][i]:06.2f}",     
                     f"{data_lists['temperature'][i]:05.2f}",  
-                    f"{data_lists['light'][i]:02d}",
+                    f"{data_lists['light_t'][i]:03d}",
+                    f"{data_lists['light_mt'][i]:03d}",
+                    f"{data_lists['light_mm'][i]:03d}",
+                    f"{data_lists['light_ml'][i]:03d}",
+                    f"{data_lists['light_l'][i]:03d}",
                     data_lists['co2'][i],
                     data_lists['o2'][i],
                     data_lists['n2'][i],

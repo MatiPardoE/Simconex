@@ -19,7 +19,11 @@ public:
         float ph;
         float oxygen;
         float temperature;
-        int light;
+        int light_top;
+        int light_mid_top;
+        int light_mid_mid;
+        int light_mid_low;
+        int light_low;
         bool EV_oxygen;
         bool EV_co2;
         bool EV_nitrogen;
@@ -31,7 +35,11 @@ public:
         float ph;
         float oxygen;
         float temperature;
-        int light;
+        int light_top;
+        int light_mid_top;
+        int light_mid_mid;
+        int light_mid_low;
+        int light_low;
     };
     enum CommandBundle
     {

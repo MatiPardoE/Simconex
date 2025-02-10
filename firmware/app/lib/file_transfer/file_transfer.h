@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #include <SD.h>
-#include <ArduinoLog.h>
+#include "esp_log.h"
 #include <vector>
 
 class FileTransfer
@@ -62,7 +62,7 @@ private:
     int message_block = 0;
 
     static const int BLOCK_SIZE = 160;          // Number of lines to buffer
-    static const int LINE_LENGTH = 30;         // Expected length of each line
+    static const int LINE_LENGTH = 47;         // Expected length of each line
     static const unsigned long TIMEOUT = 5000; // 5 seconds timeout
     static const int MAX_RETRIES = 5;
 };

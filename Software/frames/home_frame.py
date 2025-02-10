@@ -135,7 +135,7 @@ class InstantValuesFrame(ctk.CTkFrame):
             self.esp_disconnected()
 
         if (data == MsgType.NEW_MEASUREMENT and  ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING) or (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)): 
-            self.light_button.configure(text = f"{data_lists['light'][-1]}")
+            self.light_button.configure(text = f"{data_lists['light_t'][-1]}")
             self.ph_button.configure(text = "{0:.2f}".format(data_lists['ph'][-1]))
             self.do_button.configure(text = "{0:.2f}".format(data_lists['od'][-1]))
             self.temp_button.configure(text = "{0:.2f}".format(data_lists['temperature'][-1]))   
@@ -363,7 +363,7 @@ class MyPlot(ctk.CTkFrame):
         elif var=="temperature":
             self.ax.set_ylabel("[°C]")
             self.ax.set_ylim(10, 30)
-        elif var=="light":
+        elif var=="light_t":
             self.ax.set_ylabel("[%]")
             self.ax.set_ylim(0, 100)
         
@@ -474,7 +474,7 @@ class PlotFrame(ctk.CTkFrame):
         self.tabview.tab("OD").grid_columnconfigure(0, weight=1)
         self.tabview.tab("Temperatura").grid_columnconfigure(0, weight=1)
 
-        self.plot_light = MyPlot(self.tabview.tab("Luz"), "light")
+        self.plot_light = MyPlot(self.tabview.tab("Luz"), "light_t")
         self.plot_ph = MyPlot(self.tabview.tab("pH"), "ph")
         self.plot_od = MyPlot(self.tabview.tab("OD"), "od")
         self.plot_temp = MyPlot(self.tabview.tab("Temperatura"), "temperature")
