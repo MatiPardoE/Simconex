@@ -28,6 +28,7 @@ public:
         bool EV_co2;
         bool EV_nitrogen;
         bool air_pump;
+        float concentration;
     };
     struct IntervalData
     {

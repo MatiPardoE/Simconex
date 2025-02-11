@@ -48,5 +48,6 @@ bool isAnyCalibrationDone                   ( volatile rdo_t * rdo );
 void triggerPercentSaturationCalibration100     ( volatile rdo_t * rdo );
 void finishPercentSaturationCalibration100      ( volatile rdo_t * rdo );
 void finishPercentSaturationCalibration0        (volatile rdo_t *rdo);
+rdoCalibSat_t setRdoCalibrationPoints(volatile rdo_t *rdo , rdoCalibSat_t points);
 
 #endif

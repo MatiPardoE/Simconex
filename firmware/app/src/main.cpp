@@ -195,7 +195,7 @@ void loop()
             cm.pauseCycle();
         }
         sensorControl.turnOffOutputs();
-        triggerPercentSaturationCalibration(&rdo);
+        triggerPercentSaturationCalibration100(&rdo);
         break;
 
     //

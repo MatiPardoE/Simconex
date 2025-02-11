@@ -38,6 +38,7 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
         {
             new_measure_calib.oxygen = rdo.doSaturation.measuredValue;
             new_measure_calib.temperature = rdo.temperature.measuredValue;
+            new_measure_calib.concentration = rdo.doConcentration.measuredValue;
             cm.sendDataToUI(new_measure_calib, 0);
         }
     }
@@ -206,6 +207,11 @@ bool ControlAPI::turnOffOutputs()
     shiftRegister.setOutput(1, LOW);
     shiftRegister.setOutput(2, LOW);
     shiftRegister.setOutput(3, LOW);
+    ledStripT.setDuty(0);
+    ledStripMT.setDuty(0);
+    ledStripMM.setDuty(0);
+    ledStripML.setDuty(0);
+    ledStripL.setDuty(0);
     return true;
 }
 
@@ -255,6 +261,7 @@ cycle_manager::MeasuresAndOutputs ControlAPI::takeMeasuresAndOutputs()
     measuresAndOutputs.light_low = ledStripL.getDuty();
     measuresAndOutputs.temperature = rdo.temperature.measuredValue;
     measuresAndOutputs.oxygen = rdo.doSaturation.measuredValue;
+    measuresAndOutputs.concentration = rdo.doConcentration.measuredValue;
     measuresAndOutputs.air_pump = digitalRead(AIR_PUMP);
     // la medicion de ph se actualiza en el .run()
     return measuresAndOutputs;
