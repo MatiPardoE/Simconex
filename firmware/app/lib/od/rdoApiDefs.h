@@ -282,8 +282,7 @@ typedef enum{
                                     rdo.status != SET_100_SAT_CONCENTRATION     &&  \
                                     rdo.status != SET_100_SAT_TEMPERATURE       &&  \
                                     rdo.status != SET_0_SAT_CONCENTRATION       &&  \
-                                    rdo.status != SET_0_SAT_TEMPERATURE                                        
-                                )
+                                    rdo.status != SET_0_SAT_TEMPERATURE)
 
 #define _HAS_MORE_ERRORS_THAN_(x) rdo.errors > x
 

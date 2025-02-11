@@ -132,7 +132,7 @@ bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uin
                 measuresAndOutputs.EV_co2, 
                 measuresAndOutputs.EV_oxygen, 
                 measuresAndOutputs.EV_nitrogen, 
-                measuresAndOutputs.EV_air);
+                measuresAndOutputs.air_pump);
     file.println();
     file.close();
 
@@ -154,7 +154,7 @@ bool cycle_manager::sendDataToUI(MeasuresAndOutputs measuresAndOutputs, uint32_t
                   measuresAndOutputs.EV_co2, 
                   measuresAndOutputs.EV_oxygen, 
                   measuresAndOutputs.EV_nitrogen, 
-                  measuresAndOutputs.EV_air);
+                  measuresAndOutputs.air_pump);
     Serial.println();
     return true;
 }

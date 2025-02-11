@@ -195,13 +195,12 @@ void loop()
             cm.pauseCycle();
         }
         sensorControl.turnOffOutputs();
-        triggerPercentSaturationCalibration(&rdo);
+        triggerPercentSaturationCalibration100(&rdo);
         break;
 
     //
     case CommUI::FINISH_CALIB_OD_SAT_1P:
         ESP_LOGI(TAG, "Finish calibration OD saturation 100%\n");
-        setRdoCalibrationPoints(&rdo,CALIB_SAT_1P);
         finishPercentSaturationCalibration100(&rdo);
         millis_init = millis();
         while (millis_init + 40000 > millis())
