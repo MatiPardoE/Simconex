@@ -243,7 +243,7 @@ bool ControlAPI::init()
     shiftRegister.setOutput(7, LOW);
 
     pinMode(AIR_PUMP, OUTPUT);
-    digitalWrite(AIR_PUMP, HIGH);
+    digitalWrite(AIR_PUMP, LOW);
 
     return true;
 }
@@ -284,6 +284,9 @@ bool ControlAPI::set_control_var(cycle_manager::IntervalData intervalData)
 
 bool ControlAPI::do_control_temp( float temp ){
     //devuelve true si esta en equilibrio
+    if(goalValues.temperature == 0){
+        return false;
+    }
     if( __TempisLower__(temp) ){
         shiftRegister.setOutput(W_COLD, LOW);
         shiftRegister.setOutput(W_HOT, HIGH);
