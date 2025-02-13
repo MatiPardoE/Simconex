@@ -15,7 +15,7 @@ void ManualMode::activate()
     }
     ESP_LOGI("ManualMode", "Activating manual mode");
     active = true;
-    manualAlarm.setAlarm(2, onManualAlarm);
+    manualAlarm.setAlarm(30, onManualAlarm);
 }
 
 bool ManualMode::isActive()
