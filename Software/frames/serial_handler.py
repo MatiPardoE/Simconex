@@ -72,6 +72,7 @@ class SerialPublisher:
         data_lists['o2'] = []
         data_lists['n2'] = []
         data_lists['air'] = []
+        data_lists['conc'] = []
 
         data_lists_expected['id'] = []
         data_lists_expected['light_t'] = []
@@ -142,7 +143,7 @@ class SerialPublisher:
         if "#Z1!" in data:
             for callback in self.subscribers: callback(MsgType.ESP_DISCONNECTED)
         #TODO: AGREGAR LA CONCENTRACION
-        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(0|1),(0|1),(0|1),(0|1)$"
+        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(0|1),(0|1),(0|1),(0|1),(\d{2}\.\d{2})$"
         match = re.match(pattern, data)
 
 
@@ -163,6 +164,7 @@ class SerialPublisher:
                 data_lists['o2'].append(int(match.group(11)))
                 data_lists['n2'].append(int(match.group(12)))
                 data_lists['air'].append(int(match.group(13)))
+                data_lists['conc'].append(float(match.group(14)))
                 self.send_data(b"#OK!\n")
 
                 self.in_range(data_lists['od'], data_lists_expected['od'], len(data_lists['od']), 'od')
@@ -186,6 +188,7 @@ class SerialPublisher:
                 data_lists_manual['o2'].append(int(match.group(11)))
                 data_lists_manual['n2'].append(int(match.group(12)))
                 data_lists_manual['air'].append(int(match.group(13)))
+                data_lists_manual['conc'].append(float(match.group(14)))
                 self.send_data(b"#OK!\n")
 
                 for callback in self.subscribers: callback(MsgType.NEW_MEASUREMENT)

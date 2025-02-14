@@ -119,7 +119,7 @@ bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uin
         return false;
     }
     // Write the measures to the file
-    file.printf("%08d,%05.2f,%06.2f,%05.2f,%03d,%03d,%03d,%03d,%03d,%d,%d,%d,%d",
+    file.printf("%08d,%05.2f,%06.2f,%05.2f,%03d,%03d,%03d,%03d,%03d,%d,%d,%d,%d,%05.2f",
                 interval_id_measure, 
                 measuresAndOutputs.ph, 
                 measuresAndOutputs.oxygen, 
@@ -132,7 +132,8 @@ bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uin
                 measuresAndOutputs.EV_co2, 
                 measuresAndOutputs.EV_oxygen, 
                 measuresAndOutputs.EV_nitrogen, 
-                measuresAndOutputs.air_pump);
+                measuresAndOutputs.air_pump,
+                measuresAndOutputs.concentration);
     file.println();
     file.close();
 
@@ -141,7 +142,7 @@ bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uin
 
 bool cycle_manager::sendDataToUI(MeasuresAndOutputs measuresAndOutputs, uint32_t interval_id_measure)
 {
-    Serial.printf("%08d,%05.2f,%06.2f,%05.2f,%03d,%03d,%03d,%03d,%03d,%d,%d,%d,%d",
+    Serial.printf("%08d,%05.2f,%06.2f,%05.2f,%03d,%03d,%03d,%03d,%03d,%d,%d,%d,%d,%05.2f",
                   interval_id_measure, 
                   measuresAndOutputs.ph, 
                   measuresAndOutputs.oxygen, 
@@ -154,7 +155,8 @@ bool cycle_manager::sendDataToUI(MeasuresAndOutputs measuresAndOutputs, uint32_t
                   measuresAndOutputs.EV_co2, 
                   measuresAndOutputs.EV_oxygen, 
                   measuresAndOutputs.EV_nitrogen, 
-                  measuresAndOutputs.air_pump);
+                  measuresAndOutputs.air_pump,
+                  measuresAndOutputs.concentration);
     Serial.println();
     return true;
 }
