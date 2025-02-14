@@ -48,6 +48,7 @@ class CycleSync:
         self.o2_list = []
         self.n2_list = []
         self.air_list = []
+        self.conc_list = []
 
         # Listas temporales acumuladoras de cada bloque
         self.id_list_tmp = []
@@ -63,6 +64,7 @@ class CycleSync:
         self.o2_list_tmp = []
         self.n2_list_tmp = []
         self.air_list_tmp = []
+        self.conc_list_tmp = []
 
         self.line_count = 0
 
@@ -146,7 +148,7 @@ class CycleSync:
                 raise TimeoutError("Timeout waiting for handshake from ESP")
 
     def wait_for_dataout(self, data):
-        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(0|1),(0|1),(0|1),(0|1)$"
+        pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(0|1),(0|1),(0|1),(0|1),(\d{2}\.\d{2})$"
         if data == "#DATAOUT1!":
             self.id_list += self.id_list_tmp
             self.light_t_list += self.light_t_list_tmp
@@ -161,6 +163,7 @@ class CycleSync:
             self.o2_list += self.o2_list_tmp
             self.n2_list += self.n2_list_tmp
             self.air_list += self.air_list_tmp
+            self.conc_list += self.conc_list_tmp
         
             data_lists['id'] = self.id_list
             data_lists['light_t'] = self.light_t_list
@@ -175,6 +178,7 @@ class CycleSync:
             data_lists['o2'] = self.o2_list
             data_lists['n2'] = self.n2_list
             data_lists['air'] = self.air_list
+            data_lists['conc'] = self.conc_list
             print("Valid block of data received")
             ui_serial.publisher.send_data(b"#OK!\n")
             self.handshake_status = HandshakeStatus.DATAOUT1
@@ -195,6 +199,7 @@ class CycleSync:
             self.o2_list_tmp.append(int(match.group(11)))
             self.n2_list_tmp.append(int(match.group(12)))
             self.air_list_tmp.append(int(match.group(13)))
+            self.conc_list_tmp.append(float(match.group(14)))
             self.handshake_status = HandshakeStatus.MSG_VALID
 
             if self.line_count == 160:
@@ -214,6 +219,7 @@ class CycleSync:
                 self.o2_list += self.o2_list_tmp
                 self.n2_list += self.n2_list_tmp
                 self.air_list += self.air_list_tmp
+                self.conc_list += self.conc_list_tmp
 
                 self.id_list_tmp = []
                 self.ph_list_tmp = []
@@ -228,6 +234,7 @@ class CycleSync:
                 self.o2_list_tmp = []
                 self.n2_list_tmp = []
                 self.air_list_tmp = []
+                self.conc_list_tmp = []
                 ui_serial.publisher.send_data(b"#OK!\n")
         else: 
             self.line_count = 0                   
@@ -246,6 +253,7 @@ class CycleSync:
             self.o2_list_tmp = []
             self.n2_list_tmp = []
             self.air_list_tmp = []
+            self.conc_list_tmp = []
 
             ui_serial.publisher.send_data("#FAIL!\n")
     
@@ -335,7 +343,8 @@ class CycleSync:
                     data_lists['co2'][i],
                     data_lists['o2'][i],
                     data_lists['n2'][i],
-                    data_lists['air'][i] 
+                    data_lists['air'][i],
+                    data_lists['conc'][i] 
                 ]
                 writer.writerow(row)
     

@@ -1,6 +1,7 @@
 import customtkinter as ctk
 import frames.serial_handler as ui_serial
 from frames.serial_handler import MsgType
+from datetime import datetime
 
 class LogFrame(ctk.CTkScrollableFrame):
 
@@ -56,16 +57,19 @@ class LogFrame(ctk.CTkScrollableFrame):
             return 
         
         if data == MsgType.PH_OUT_OF_CALIB or data == MsgType.OD_OUT_OF_CALIB:
+
+            now = datetime.now()
+
             self.frame_line = ctk.CTkFrame(self.scrollable_frame)
             self.frame_line.pack(fill="x")
 
             self.in_frame = ctk.CTkFrame(self.frame_line)
             self.in_frame.pack(fill="x")
             
-            self.label_time = ctk.CTkLabel(self.in_frame, text="hour", corner_radius=0, width=150) 
+            self.label_time = ctk.CTkLabel(self.in_frame, text=now.strftime("%H:%M"), corner_radius=0, width=150) 
             self.label_time.pack(side='left')
 
-            self.label_date = ctk.CTkLabel(self.in_frame, text="date", corner_radius=0, width=200) 
+            self.label_date = ctk.CTkLabel(self.in_frame, text=now.strftime("%d/%m"), corner_radius=0, width=200) 
             self.label_date.pack(side='left')
 
             if data == MsgType.PH_OUT_OF_CALIB:
@@ -81,16 +85,18 @@ class LogFrame(ctk.CTkScrollableFrame):
             self.scrollable_frame._parent_canvas.yview_moveto(1.0)
         
         if data == MsgType.PH_OUT_OF_RANGE or data == MsgType.OD_OUT_OF_RANGE or data == MsgType.TEMP_OUT_OF_RANGE:
+            now = datetime.now()
+            
             self.frame_line = ctk.CTkFrame(self.scrollable_frame)
             self.frame_line.pack(fill="x")
 
             self.in_frame = ctk.CTkFrame(self.frame_line)
             self.in_frame.pack(fill="x")
             
-            self.label_time = ctk.CTkLabel(self.in_frame, text="hour", corner_radius=0, width=150) 
+            self.label_time = ctk.CTkLabel(self.in_frame, text=now.strftime("%H:%M"), corner_radius=0, width=150) 
             self.label_time.pack(side='left')
 
-            self.label_date = ctk.CTkLabel(self.in_frame, text="date", corner_radius=0, width=200) 
+            self.label_date = ctk.CTkLabel(self.in_frame, text=now.strftime("%d/%m"), corner_radius=0, width=200) 
             self.label_date.pack(side='left')
 
             if data == MsgType.PH_OUT_OF_RANGE:

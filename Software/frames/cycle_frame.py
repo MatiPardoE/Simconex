@@ -676,6 +676,7 @@ class LogFrame(ctk.CTkFrame):
         self.frame_line.grid_columnconfigure(4, weight=1)
         self.frame_line.grid_columnconfigure(5, weight=1)
         self.frame_line.grid_columnconfigure(6, weight=1)
+        self.frame_line.grid_columnconfigure(7, weight=1)
 
         self.label_time = ctk.CTkLabel(self.frame_line, text="Hora", corner_radius=0, width=150, font=ctk.CTkFont(size=15, weight="bold"))
         self.label_time.grid(row=0, column=0, padx=5, pady=0, sticky="ns")
@@ -695,8 +696,11 @@ class LogFrame(ctk.CTkFrame):
         self.label_time = ctk.CTkLabel(self.frame_line, text="Temperatura [°C]", corner_radius=0, width=200, font=ctk.CTkFont(size=15, weight="bold"))
         self.label_time.grid(row=0, column=5, padx=5, pady=0, sticky="ns")
 
-        self.label_time = ctk.CTkLabel(self.frame_line, text="Ciclo", corner_radius=0, width=150, font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_time = ctk.CTkLabel(self.frame_line, text="Concentracion [mg/L]", corner_radius=0, width=200, font=ctk.CTkFont(size=15, weight="bold"))
         self.label_time.grid(row=0, column=6, padx=5, pady=0, sticky="ns")
+
+        self.label_time = ctk.CTkLabel(self.frame_line, text="Ciclo", corner_radius=0, width=150, font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_time.grid(row=0, column=7, padx=5, pady=0, sticky="ns")
 
         self.frame_log = ctk.CTkFrame(self.frame_lines)
         self.frame_log.grid(row=1, column=0, padx=5, pady=0, sticky="ew")

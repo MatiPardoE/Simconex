@@ -50,6 +50,7 @@ class LogFrame(ctk.CTkFrame):
         self.frame_line.grid_columnconfigure(4, weight=1)
         self.frame_line.grid_columnconfigure(5, weight=1)
         self.frame_line.grid_columnconfigure(6, weight=1)
+        self.frame_line.grid_columnconfigure(7, weight=1)
 
         self.label_time = ctk.CTkLabel(self.frame_line, text="Hora", corner_radius=0, width=150, font=ctk.CTkFont(size=15, weight="bold"))
         self.label_time.grid(row=0, column=0, padx=5, pady=0, sticky="ns")
@@ -69,8 +70,11 @@ class LogFrame(ctk.CTkFrame):
         self.label_time = ctk.CTkLabel(self.frame_line, text="Temperatura [°C]", corner_radius=0, width=200, font=ctk.CTkFont(size=15, weight="bold"))
         self.label_time.grid(row=0, column=5, padx=5, pady=0, sticky="ns")
 
-        self.label_time = ctk.CTkLabel(self.frame_line, text="Ciclo", corner_radius=0, width=150, font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_time = ctk.CTkLabel(self.frame_line, text="Concentracion [mg/L]", corner_radius=0, width=200, font=ctk.CTkFont(size=15, weight="bold"))
         self.label_time.grid(row=0, column=6, padx=5, pady=0, sticky="ns")
+
+        self.label_time = ctk.CTkLabel(self.frame_line, text="Ciclo", corner_radius=0, width=150, font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_time.grid(row=0, column=7, padx=5, pady=0, sticky="ns")
 
         self.frame_log = ctk.CTkFrame(self.frame_lines)
         self.frame_log.grid(row=1, column=0, padx=5, pady=0, sticky="ew")
@@ -115,6 +119,9 @@ class LogFrame(ctk.CTkFrame):
                 self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['temperature'][i]), corner_radius=0, width=200)
                 self.label_temp.pack(side='left')
 
+                self.label_conc = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['conc'][i]), corner_radius=0, width=200)
+                self.label_conc.pack(side='left')
+
                 self.label_cycle = ctk.CTkLabel(self.in_frame, text=ui_serial.cycle_alias, corner_radius=0, width=150) 
                 self.label_cycle.pack(side='left')
 
@@ -150,6 +157,9 @@ class LogFrame(ctk.CTkFrame):
 
             self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['temperature'][last_index]), corner_radius=0, width=200)
             self.label_temp.pack(side='left')
+
+            self.label_conc = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['conc'][i]), corner_radius=0, width=200)
+            self.label_conc.pack(side='left')
 
             if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING:
                 self.label_cycle = ctk.CTkLabel(self.in_frame, text=ui_serial.cycle_alias, corner_radius=0, width=150)
@@ -251,7 +261,8 @@ class InstantValuesFrame(ctk.CTkFrame):
             self.light_button.configure(text = f"{data_lists_manual['light_t'][-1]}")
             self.ph_button.configure(text = "{0:.2f}".format(data_lists_manual['ph'][-1]))
             self.do_button.configure(text = "{0:.2f}".format(data_lists_manual['od'][-1]))
-            self.temp_button.configure(text = "{0:.2f}".format(data_lists_manual['temperature'][-1]))             
+            self.temp_button.configure(text = "{0:.2f}".format(data_lists_manual['temperature'][-1]))
+            self.conc_button.configure(text = "{0:.2f}".format(data_lists_manual['conc'][-1]))             
 
     def esp_disconnected(self):
         self.light_button.configure(text = "--")
@@ -352,6 +363,12 @@ class SetPointsFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
 
+        if data == MsgType.ESP_PAUSED:
+            self.esp_paused() 
+        
+        if data == MsgType.ESP_PLAYED:
+            self.esp_played() 
+
         if data == MsgType.NEW_MEASUREMENT and ui_serial.mode_status == ModeStatus.MODE_MANUAL:
             self.update_buttons()
 
@@ -366,6 +383,27 @@ class SetPointsFrame(ctk.CTkFrame):
         self.air_button.configure(state = "normal")
         self.n2_button.configure(state = "normal")
 
+        if ui_serial.cycle_status != CycleStatus.CYCLE_RUNNING:
+            self.esp_paused()
+        else:
+            self.esp_played()
+
+    def esp_played(self):
+        self.hot_button.configure(text="En curso")
+        self.hot_button.configure(fg_color="orange") 
+        self.cold_button.configure(text="En curso")
+        self.cold_button.configure(fg_color="orange")  
+
+        self.co2_button.configure(text="En curso")
+        self.co2_button.configure(fg_color="orange") 
+        self.o2_button.configure(text="En curso")
+        self.o2_button.configure(fg_color="orange") 
+        self.air_button.configure(text="En curso")
+        self.air_button.configure(fg_color="orange") 
+        self.n2_button.configure(text="En curso")
+        self.n2_button.configure(fg_color="orange")  
+
+    def esp_paused(self):
         self.hot_button.configure(text="Apagado")
         self.hot_button.configure(fg_color="red")
         self.cold_button.configure(text="Apagado")
