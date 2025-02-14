@@ -7,6 +7,8 @@ import re
 import tkinter
 from tkinter import messagebox
 
+__COUNTER_ALARM_INTERVAL__ = 15
+
 class MsgType(Enum):
     ESP_DISCONNECTED = 0
     ESP_CONNECTED = 1
@@ -335,14 +337,14 @@ class SerialPublisher:
         for callback in self.subscribers: callback(MsgType.ESP_SYNCRONIZED)
 
     def in_range(self, list_1, list_2, index, variable):
-        if index-3 < 0:
+        if index-__COUNTER_ALARM_INTERVAL__ < 0:
             return True
-        last_list_1 = list_1[-3:]
-        last_list_2 = list_2[index-3:index]
+        last_list_1 = list_1[-__COUNTER_ALARM_INTERVAL__:]
+        last_list_2 = list_2[index-__COUNTER_ALARM_INTERVAL__:index]
 
         # Comparar los valores
         for v1, v2 in zip(last_list_1, last_list_2):
-            if abs(v2 - v1) < 0.1 * v1:
+            if abs(v2 - v1) < 0.2 * v1:
                 if variable == "ph":
                     self.noti_ph = False
                 if variable == "od":
