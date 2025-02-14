@@ -338,7 +338,7 @@ void loop()
         ESP_LOGI(TAG, "Cycle FINISIHED");
         break;
     case cycle_manager::NEW_INTERVAL:
-        //neoPixel.setState(NeoPixel::CYCLE_RUNNING);
+        neoPixel.setState(NeoPixel::NEW_INTERVAL);
         sensorControl.set_control_var(cycleBundle.intervalData);
         if (first_interval)
         {
@@ -348,6 +348,7 @@ void loop()
         new_measure_outputs = sensorControl.takeMeasuresAndOutputs();                          // No deberia tardar mucho
         cm.writeMeasuresToSD(new_measure_outputs, (cycleBundle.intervalData.interval_id - 1)); // Envio el ID-1 porque el ID es el siguiente intervalo
         cm.sendDataToUI(new_measure_outputs, (cycleBundle.intervalData.interval_id - 1));
+        neoPixel.setState(NeoPixel::CYCLE_RUNNING);
         break;
     default:
         break;
