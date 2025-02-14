@@ -17,7 +17,8 @@ public:
         CYCLE_COMPLETED,
         CYCLE_ERROR,
         CALIB_PH,
-        CALIB_OD
+        CALIB_OD,
+        NEW_INTERVAL
     };
     NeoPixel(int pin, int numPixels);
     ~NeoPixel();

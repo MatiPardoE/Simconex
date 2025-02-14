@@ -51,6 +51,10 @@ void NeoPixel::setState(neoPixelState state)
         for (int i = 0; i < numPixels; i++)
             pixels.setPixelColor(i, pixels.Color(148, 3, 252)); // Example color
         break;
+    case NEW_INTERVAL:
+        for (int i = 0; i < numPixels; i++)
+            pixels.setPixelColor(i, pixels.Color(256, 128, 0)); // Example color
+        break;
     default:
         break;
     }
