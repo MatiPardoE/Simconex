@@ -141,6 +141,7 @@ void loop()
             Serial.println("#OK!");
             cm.pauseCycle();
             sensorControl.turnOffOutputs();
+            neoPixel.setState(NeoPixel::CYCLE_PAUSED);
         }
         else if (cm.cycleData.status == cycle_manager::CYCLE_COMPLETED)
         {
@@ -172,8 +173,8 @@ void loop()
         else if (cm.cycleData.status == cycle_manager::CYCLE_PAUSED)
         {
             Serial.println("#OK!");
-            cm.resumeCycle();
             manualMode.deactivate();
+            cm.resumeCycle();
         }
         break;
     case CommUI::MANUAL_MODE:

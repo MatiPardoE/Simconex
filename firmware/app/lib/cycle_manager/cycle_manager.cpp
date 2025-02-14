@@ -357,6 +357,7 @@ bool cycle_manager::pauseCycle()
     cycleAlarm.pauseAlarm();
     cycleData.status = CYCLE_PAUSED;
     alarmFlag = false;
+    neoPixel.setState(NeoPixel::CYCLE_PAUSED);
     return true;
 }
 
@@ -364,6 +365,7 @@ bool cycle_manager::resumeCycle()
 {
     cycleAlarm.resumeAlarm();
     cycleData.status = CYCLE_RUNNING;
+    neoPixel.setState(NeoPixel::CYCLE_RUNNING);
     return true;
 }
 
