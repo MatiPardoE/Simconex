@@ -569,21 +569,25 @@ bool cycle_manager::evaluateAlarmStatus()
         ESP_LOGI(TAG, "Cycle running, setting alarm");
         cycleAlarm.setAlarm(cycleData.interval_time, cycle_manager::onAlarm);
         alarmFlag = true;
+        neoPixel.setState(NeoPixel::CYCLE_RUNNING);
         break;
     case CYCLE_PAUSED:
         // Handle cycle paused
         ESP_LOGI(TAG, "Cycle paused, pausing alarm");
         cycleAlarm.pauseAlarm();
+        neoPixel.setState(NeoPixel::CYCLE_PAUSED);
         break;
     case CYCLE_COMPLETED:
         ESP_LOGI(TAG, "Cycle completed, stop alarm");
         // Handle cycle completed
         cycleAlarm.stopAndDeleteAlarm();
+        neoPixel.setState(NeoPixel::CYCLE_COMPLETED);
         break;
     case CYCLE_ERROR:
         ESP_LOGI(TAG, "Cycle in error, stop alarm");
         // Handle cycle error
         cycleAlarm.stopAndDeleteAlarm();
+        neoPixel.setState(NeoPixel::CYCLE_ERROR);
         break;
     default:
         // Handle unknown status

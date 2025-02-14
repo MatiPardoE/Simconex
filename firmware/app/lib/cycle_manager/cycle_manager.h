@@ -5,7 +5,11 @@
 #include <Arduino.h>
 #include <SD.h>
 #include <alarm.h>
+#include <neo_pixel.h>
 
+
+
+extern NeoPixel neoPixel;
 class cycle_manager
 {
 public:

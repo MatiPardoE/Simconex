@@ -7,6 +7,7 @@
 #include "esp_log.h"
 #include <manualMode.h>
 #include "ezo_ph.h"
+#include "neo_pixel.h"
 
 // cosas RDO
 #include <rdoApiCode.h>
@@ -27,6 +28,7 @@ CommUI commUI;
 FileTransfer fileTransfer(Serial, SD_CS_PIN);
 ControlAPI sensorControl;
 ManualMode manualMode;
+NeoPixel neoPixel(4, 4); // Pin 4, 4 pixel
 
 pH pH_Device = pH(20, "EZO pH probe");
 bool first_interval = false;
@@ -57,6 +59,8 @@ void setup()
     modbus.onError(rxErrorRDO);
     modbus.begin();
     clearRDO();
+    neoPixel.begin();
+    neoPixel.initFun();
 
     delay(350);
     if (!cm.begin(SD_CS_PIN)) // Inicializa la SD y lee el header
