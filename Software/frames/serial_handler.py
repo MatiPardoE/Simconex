@@ -1,3 +1,5 @@
+import csv
+import os
 import serial
 import threading
 import queue
@@ -172,6 +174,30 @@ class SerialPublisher:
                 self.in_range(data_lists['od'], data_lists_expected['od'], len(data_lists['od']), 'od')
                 self.in_range(data_lists['ph'], data_lists_expected['ph'], len(data_lists['ph']), 'ph')
                 self.in_range(data_lists['temperature'], data_lists_expected['temperature'], len(data_lists['temperature']), 'temperature')
+
+                self.cycle_out_path = os.path.join(os.getcwd(), "Log", cycle_id)
+                os.makedirs(self.cycle_out_path, exist_ok=True) 
+                fname = os.path.join(os.getcwd(), "Log", cycle_id, "cycle_out_"+cycle_id+".csv")
+                with open(fname, mode="a", newline="") as csvfile:
+                    writer = csv.writer(csvfile)
+
+                    row = [
+                        f"{data_lists['id'][-1]:08d}",      
+                        f"{data_lists['ph'][-1]:05.2f}",       
+                        f"{data_lists['od'][-1]:06.2f}",     
+                        f"{data_lists['temperature'][-1]:05.2f}",  
+                        f"{data_lists['light_t'][-1]:03d}",
+                        f"{data_lists['light_mt'][-1]:03d}",
+                        f"{data_lists['light_mm'][-1]:03d}",
+                        f"{data_lists['light_ml'][-1]:03d}",
+                        f"{data_lists['light_l'][-1]:03d}",
+                        data_lists['co2'][-1],
+                        data_lists['o2'][-1],
+                        data_lists['n2'][-1],
+                        data_lists['air'][-1],
+                        data_lists['conc'][-1] 
+                    ]
+                    writer.writerow(row)
 
                 for callback in self.subscribers: callback(MsgType.NEW_MEASUREMENT)
         

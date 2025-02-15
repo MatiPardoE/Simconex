@@ -834,7 +834,7 @@ class LogFrame(ctk.CTkFrame):
         )
         if file: 
             df = pd.read_csv(os.path.join(os.getcwd(), "Log", ui_serial.cycle_id, "cycle_out_"+ui_serial.cycle_id+".csv"), header=None)
-            header = ["ID", "pH", "OD [%]", "Temperatura [°C]", "Luz [%]", "CO2", "O2", "N2", "Aire"]
+            header = ["Numero de muestra", "pH", "Oxigeno Disuelto", "Temperatura", "Luz Top", "Luz Mid Top", "Luz Mid Mid", "Luz Mid Low", "Luz Low", "CO2", "O2", "N2", "Aire", "Concentracion Oxigeno"]
             df.columns = header
             date_time = df[header[0]].apply(self.calculate_datetime) # Aplica la función calculate_datetime a cada valor de la primera columna
             df['Fecha'], df['Hora'] = zip(*date_time) # Añade las columnas de fecha y hora al DataFrame
