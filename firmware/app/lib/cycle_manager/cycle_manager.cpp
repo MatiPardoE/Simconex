@@ -529,7 +529,7 @@ bool cycle_manager::readInterval()
 
 bool cycle_manager::finishCycle()
 {
-    ESP_LOGI(TAG, "Cycle finished.id: %s, %d intervals processed.", cycleData.cycle_id.c_str(), cycleData.interval_current);
+    //ESP_LOGI(TAG, "Cycle finished.id: %s, %d intervals processed.", cycleData.cycle_id.c_str(), cycleData.interval_current);
     cycleData.status = CYCLE_COMPLETED;
     if (!evaluateAlarmStatus())
     {
