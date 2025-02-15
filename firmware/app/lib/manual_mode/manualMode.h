@@ -4,6 +4,10 @@
 #include <Arduino.h>
 #include "esp_log.h"
 #include <alarm.h>
+#include <neo_pixel.h>
+
+
+extern NeoPixel neoPixel;
 
 class ManualMode
 {

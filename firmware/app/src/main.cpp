@@ -7,6 +7,7 @@
 #include "esp_log.h"
 #include <manualMode.h>
 #include "ezo_ph.h"
+#include "neo_pixel.h"
 
 // cosas RDO
 #include <rdoApiCode.h>
@@ -27,6 +28,7 @@ CommUI commUI;
 FileTransfer fileTransfer(Serial, SD_CS_PIN);
 ControlAPI sensorControl;
 ManualMode manualMode;
+NeoPixel neoPixel(4, 4); // Pin 4, 4 pixel
 
 pH pH_Device = pH(20, "EZO pH probe");
 bool first_interval = false;
@@ -57,6 +59,8 @@ void setup()
     modbus.onError(rxErrorRDO);
     modbus.begin();
     clearRDO();
+    neoPixel.begin();
+    neoPixel.initFun();
 
     delay(350);
     if (!cm.begin(SD_CS_PIN)) // Inicializa la SD y lee el header
@@ -137,6 +141,7 @@ void loop()
             Serial.println("#OK!");
             cm.pauseCycle();
             sensorControl.turnOffOutputs();
+            neoPixel.setState(NeoPixel::CYCLE_PAUSED);
         }
         else if (cm.cycleData.status == cycle_manager::CYCLE_COMPLETED)
         {
@@ -168,8 +173,8 @@ void loop()
         else if (cm.cycleData.status == cycle_manager::CYCLE_PAUSED)
         {
             Serial.println("#OK!");
-            cm.resumeCycle();
             manualMode.deactivate();
+            cm.resumeCycle();
         }
         break;
     case CommUI::MANUAL_MODE:
@@ -329,9 +334,11 @@ void loop()
         new_measure_outputs = sensorControl.takeMeasuresAndOutputs();                          // No deberia tardar mucho
         cm.writeMeasuresToSD(new_measure_outputs, (cycleBundle.intervalData.interval_id - 1)); // Envio el ID-1 porque el ID es el siguiente intervalo
         cm.sendDataToUI(new_measure_outputs, (cycleBundle.intervalData.interval_id - 1));
-        ESP_LOGI(TAG, "Cycle FINISIHED");
+        sensorControl.turnOffOutputs();
+        //ESP_LOGI(TAG, "Cycle FINISIHED");
         break;
     case cycle_manager::NEW_INTERVAL:
+        neoPixel.setState(NeoPixel::NEW_INTERVAL);
         sensorControl.set_control_var(cycleBundle.intervalData);
         if (first_interval)
         {
@@ -341,6 +348,7 @@ void loop()
         new_measure_outputs = sensorControl.takeMeasuresAndOutputs();                          // No deberia tardar mucho
         cm.writeMeasuresToSD(new_measure_outputs, (cycleBundle.intervalData.interval_id - 1)); // Envio el ID-1 porque el ID es el siguiente intervalo
         cm.sendDataToUI(new_measure_outputs, (cycleBundle.intervalData.interval_id - 1));
+        neoPixel.setState(NeoPixel::CYCLE_RUNNING);
         break;
     default:
         break;

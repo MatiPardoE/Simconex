@@ -120,18 +120,18 @@ bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uin
     }
     // Write the measures to the file
     file.printf("%08d,%05.2f,%06.2f,%05.2f,%03d,%03d,%03d,%03d,%03d,%d,%d,%d,%d,%05.2f",
-                interval_id_measure, 
-                measuresAndOutputs.ph, 
-                measuresAndOutputs.oxygen, 
+                interval_id_measure,
+                measuresAndOutputs.ph,
+                measuresAndOutputs.oxygen,
                 measuresAndOutputs.temperature,
-                measuresAndOutputs.light_top, 
-                measuresAndOutputs.light_mid_top, 
+                measuresAndOutputs.light_top,
+                measuresAndOutputs.light_mid_top,
                 measuresAndOutputs.light_mid_mid,
-                measuresAndOutputs.light_mid_low, 
+                measuresAndOutputs.light_mid_low,
                 measuresAndOutputs.light_low,
-                measuresAndOutputs.EV_co2, 
-                measuresAndOutputs.EV_oxygen, 
-                measuresAndOutputs.EV_nitrogen, 
+                measuresAndOutputs.EV_co2,
+                measuresAndOutputs.EV_oxygen,
+                measuresAndOutputs.EV_nitrogen,
                 measuresAndOutputs.air_pump,
                 measuresAndOutputs.concentration);
     file.println();
@@ -143,18 +143,18 @@ bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uin
 bool cycle_manager::sendDataToUI(MeasuresAndOutputs measuresAndOutputs, uint32_t interval_id_measure)
 {
     Serial.printf("%08d,%05.2f,%06.2f,%05.2f,%03d,%03d,%03d,%03d,%03d,%d,%d,%d,%d,%05.2f",
-                  interval_id_measure, 
-                  measuresAndOutputs.ph, 
-                  measuresAndOutputs.oxygen, 
+                  interval_id_measure,
+                  measuresAndOutputs.ph,
+                  measuresAndOutputs.oxygen,
                   measuresAndOutputs.temperature,
-                  measuresAndOutputs.light_top, 
+                  measuresAndOutputs.light_top,
                   measuresAndOutputs.light_mid_top,
-                  measuresAndOutputs.light_mid_mid, 
-                  measuresAndOutputs.light_mid_low, 
+                  measuresAndOutputs.light_mid_mid,
+                  measuresAndOutputs.light_mid_low,
                   measuresAndOutputs.light_low,
-                  measuresAndOutputs.EV_co2, 
-                  measuresAndOutputs.EV_oxygen, 
-                  measuresAndOutputs.EV_nitrogen, 
+                  measuresAndOutputs.EV_co2,
+                  measuresAndOutputs.EV_oxygen,
+                  measuresAndOutputs.EV_nitrogen,
                   measuresAndOutputs.air_pump,
                   measuresAndOutputs.concentration);
     Serial.println();
@@ -357,6 +357,8 @@ bool cycle_manager::pauseCycle()
     cycleAlarm.pauseAlarm();
     cycleData.status = CYCLE_PAUSED;
     alarmFlag = false;
+    writeHeaderToSD();
+    neoPixel.setState(NeoPixel::CYCLE_PAUSED);
     return true;
 }
 
@@ -364,6 +366,8 @@ bool cycle_manager::resumeCycle()
 {
     cycleAlarm.resumeAlarm();
     cycleData.status = CYCLE_RUNNING;
+    writeHeaderToSD();
+    neoPixel.setState(NeoPixel::CYCLE_RUNNING);
     return true;
 }
 
@@ -525,7 +529,7 @@ bool cycle_manager::readInterval()
 
 bool cycle_manager::finishCycle()
 {
-    ESP_LOGI(TAG, "Cycle finished.id: %s, %d intervals processed.", cycleData.cycle_id.c_str(), cycleData.interval_current);
+    //ESP_LOGI(TAG, "Cycle finished.id: %s, %d intervals processed.", cycleData.cycle_id.c_str(), cycleData.interval_current);
     cycleData.status = CYCLE_COMPLETED;
     if (!evaluateAlarmStatus())
     {
@@ -571,21 +575,25 @@ bool cycle_manager::evaluateAlarmStatus()
         ESP_LOGI(TAG, "Cycle running, setting alarm");
         cycleAlarm.setAlarm(cycleData.interval_time, cycle_manager::onAlarm);
         alarmFlag = true;
+        neoPixel.setState(NeoPixel::CYCLE_RUNNING);
         break;
     case CYCLE_PAUSED:
         // Handle cycle paused
         ESP_LOGI(TAG, "Cycle paused, pausing alarm");
         cycleAlarm.pauseAlarm();
+        neoPixel.setState(NeoPixel::CYCLE_PAUSED);
         break;
     case CYCLE_COMPLETED:
         ESP_LOGI(TAG, "Cycle completed, stop alarm");
         // Handle cycle completed
         cycleAlarm.stopAndDeleteAlarm();
+        neoPixel.setState(NeoPixel::CYCLE_COMPLETED);
         break;
     case CYCLE_ERROR:
         ESP_LOGI(TAG, "Cycle in error, stop alarm");
         // Handle cycle error
         cycleAlarm.stopAndDeleteAlarm();
+        neoPixel.setState(NeoPixel::CYCLE_ERROR);
         break;
     default:
         // Handle unknown status
