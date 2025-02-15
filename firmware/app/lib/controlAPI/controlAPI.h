@@ -36,14 +36,14 @@
 #define __PH_HIGHER__ (measuresAndOutputs.ph > goalValues.ph + __UMBRAL_PH__)
 
 #define __PH_IS_WORKING__ (measuresAndOutputs.ph != 0)
-#define __OD_IS_WORKING__ (measuresAndOutputs.oxygen != 0)
+#define __OD_IS_WORKING__ (rdo.doSaturation.measuredValue != 0)
 
 #define __NOT_FREE_PH__ (goalValues.ph != 0)
 #define __NOT_FREE_OD__ (goalValues.oxygen != 0)
 
-#define __UMBRAL_O2__ 2
-#define __O2_LOWER_SAT__ (measuresAndOutputs.oxygen < goalValues.oxygen + __UMBRAL_O2__)
-#define __O2_HIGHER_SAT__ (measuresAndOutputs.oxygen > goalValues.oxygen - __UMBRAL_O2__)
+#define __UMBRAL_O2__ 5
+#define __O2_LOWER_SAT__ (measuresAndOutputs.oxygen < goalValues.oxygen - __UMBRAL_O2__)
+#define __O2_HIGHER_SAT__ (measuresAndOutputs.oxygen > goalValues.oxygen + __UMBRAL_O2__)
 
 #define __UMBRAL_TEMP__ 5
 #define __TempisLower__(x)     (x < goalValues.temperature - __UMBRAL_O2__)
@@ -53,6 +53,8 @@
 #define __UMBRAL_TEMP__ 5
 #define __TempisLower__(x)     (x < goalValues.temperature - __UMBRAL_O2__)
 #define __TempisHigher__(x)    (x > goalValues.temperature + __UMBRAL_O2__)
+
+#define O2_DELTA_1S (40) // 2.2% es lo que sube el oxigeno por segundo (pasado a milisegundo)
 
 extern cycle_manager cm;
 
@@ -85,13 +87,32 @@ private:
         int light_mid_low;
         int light_low;
     };
+    struct NewMeasureFlags
+    {
+        bool ph;
+        bool oxygen;
+        bool temperature;
+        bool light_top;
+        bool light_mid_top;
+        bool light_mid_mid;
+        bool light_mid_low;
+        bool light_low;
+        bool concentration;
+    };
     // Add private members if needed
     cycle_manager::MeasuresAndOutputs measuresAndOutputs;
+    cycle_manager::MeasuresAndOutputs measuresAndOutputs_prev;
     GoalValues goalValues;
-
+    NewMeasureFlags newMeasureFlag;
     // SENSORS
     LedStrip ledStripT, ledStripMT, ledStripMM, ledStripML, ledStripL;
     ShiftRegister74HC595 shiftRegister;
+
+    bool OD_modulation_control(float current, float goal);
+    bool OD_modulation_run();
+    bool o2_modulation_on = false;
+    uint16_t time_o2_on_ms = 0;
+    unsigned long timestamp_o2_on = 0;
 };
 
 #endif // SENSOR_CONTROL_H
