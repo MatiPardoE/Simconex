@@ -314,25 +314,37 @@ class ControlCycleFrame(ctk.CTkFrame):
 
     def enable_play_pause(self, bool):
         if bool:
-            self.play_pause_image_label.bind("<Enter>", self.on_hover)
-            self.play_pause_image_label.bind("<Leave>", self.off_hover)
-            self.play_pause_image_label.bind("<Button-1>", self.play_pause_event)
-            self.is_playing = True
+            if not self.play_pause_image_label.bindtags().__contains__("bound"):
+                self.play_pause_image_label.bind("<Enter>", self.on_hover)
+                self.play_pause_image_label.bind("<Leave>", self.off_hover)
+                self.play_pause_image_label.bind("<Button-1>", self.play_pause_event)
+                self.is_playing = True
+
+                self.play_pause_image_label.bindtags(self.play_pause_image_label.bindtags() + ("bound",))
         else:
             self.play_pause_image_label.unbind("<Enter>")
             self.play_pause_image_label.unbind("<Leave>")
             self.play_pause_image_label.unbind("<Button-1>")
             self.is_playing = False
 
+            self.play_pause_image_label.bindtags(tuple(tag for tag in self.play_pause_image_label.bindtags() if tag != "bound"))
+
     def enable_bin(self, bool):
         if bool:
-            self.bin_image_label.bind("<Enter>", self.on_hover)
-            self.bin_image_label.bind("<Leave>", self.off_hover)
-            self.bin_image_label.bind("<Button-1>", self.delete_cycle_event)
+            if not self.bin_image_label.bindtags().__contains__("bound"):
+                self.bin_image_label.bind("<Enter>", self.on_hover)
+                self.bin_image_label.bind("<Leave>", self.off_hover)
+                self.bin_image_label.bind("<Button-1>", self.delete_cycle_event)
+                self.is_bin = True
+
+                self.bin_image_label.bindtags(self.bin_image_label.bindtags() + ("bound",))
+
         else:
             self.bin_image_label.unbind("<Enter>")
             self.bin_image_label.unbind("<Leave>")
             self.bin_image_label.unbind("<Button-1>")
+
+            self.bin_image_label.bindtags(tuple(tag for tag in self.bin_image_label.bindtags() if tag != "bound"))
 
     def esp_connected(self):
         self.enable_load_file(True)

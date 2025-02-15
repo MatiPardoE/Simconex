@@ -158,7 +158,7 @@ class LogFrame(ctk.CTkFrame):
             self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['temperature'][last_index]), corner_radius=0, width=200)
             self.label_temp.pack(side='left')
 
-            self.label_conc = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['conc'][i]), corner_radius=0, width=200)
+            self.label_conc = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['conc'][last_index]), corner_radius=0, width=200)
             self.label_conc.pack(side='left')
 
             if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING:
@@ -357,16 +357,16 @@ class SetPointsFrame(ctk.CTkFrame):
         self.send_button.grid(row=7, column=0, padx=10, pady=(20, 10), sticky="ns")
 
     def process_data_set_points(self, data):
-        if data == MsgType.ESP_CONNECTED:
+        if data == MsgType.ESP_SYNCRONIZED:
             self.esp_connected()        
         
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected() 
 
-        if data == MsgType.ESP_PAUSED:
+        if data == MsgType.ESP_PAUSED or data == MsgType.CYCLE_FINISHED:
             self.esp_paused() 
         
-        if data == MsgType.ESP_PLAYED:
+        if data == MsgType.ESP_PLAYED or data == MsgType.NEW_CYCLE_SENT:
             self.esp_played() 
 
         if data == MsgType.NEW_MEASUREMENT and ui_serial.mode_status == ModeStatus.MODE_MANUAL:
@@ -389,6 +389,16 @@ class SetPointsFrame(ctk.CTkFrame):
             self.esp_played()
 
     def esp_played(self):
+        self.entry_light.configure(state = "disabled")
+        self.cold_button.configure(state = "disabled")
+        self.hot_button.configure(state = "disabled")
+        self.send_button.configure(state = "disabled")
+
+        self.co2_button.configure(state = "disabled")
+        self.o2_button.configure(state = "disabled")
+        self.air_button.configure(state = "disabled")
+        self.n2_button.configure(state = "disabled")
+
         self.hot_button.configure(text="En curso")
         self.hot_button.configure(fg_color="orange") 
         self.cold_button.configure(text="En curso")
@@ -404,6 +414,16 @@ class SetPointsFrame(ctk.CTkFrame):
         self.n2_button.configure(fg_color="orange")  
 
     def esp_paused(self):
+        self.entry_light.configure(state = "normal")
+        self.cold_button.configure(state = "normal")
+        self.hot_button.configure(state = "normal")
+        self.send_button.configure(state = "normal")
+
+        self.co2_button.configure(state = "normal")
+        self.o2_button.configure(state = "normal")
+        self.air_button.configure(state = "normal")
+        self.n2_button.configure(state = "normal")
+
         self.hot_button.configure(text="Apagado")
         self.hot_button.configure(fg_color="red")
         self.cold_button.configure(text="Apagado")
