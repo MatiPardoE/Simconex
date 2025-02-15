@@ -207,11 +207,14 @@ bool ControlAPI::turnOffOutputs()
     shiftRegister.setOutput(1, LOW);
     shiftRegister.setOutput(2, LOW);
     shiftRegister.setOutput(3, LOW);
+    shiftRegister.setOutput(W_HOT, LOW);
+    shiftRegister.setOutput(W_COLD,LOW);
     ledStripT.setDuty(0);
     ledStripMT.setDuty(0);
     ledStripMM.setDuty(0);
     ledStripML.setDuty(0);
     ledStripL.setDuty(0);
+
     return true;
 }
 
