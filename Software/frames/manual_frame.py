@@ -88,7 +88,7 @@ class LogFrame(ctk.CTkFrame):
                 widget.destroy()
             return    
         
-        if data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED):
+        if data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED or ui_serial.cycle_status == CycleStatus.CYCLE_PAUSED):
             num_measurements = len(data_lists_manual['id'])
             start_index = max(0, num_measurements - 50)
 

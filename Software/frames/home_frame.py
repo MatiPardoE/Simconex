@@ -141,7 +141,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         if data == MsgType.ESP_DISCONNECTED:
             self.esp_disconnected()
 
-        if (data == MsgType.NEW_MEASUREMENT and  ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING) or (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)): 
+        if (data == MsgType.NEW_MEASUREMENT and  ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING) or (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED or ui_serial.cycle_status == CycleStatus.CYCLE_PAUSED)): 
             self.light_button.configure(text = f"{data_lists['light_t'][-1]}")
             self.ph_button.configure(text = "{0:.2f}".format(data_lists['ph'][-1]))
             self.do_button.configure(text = "{0:.2f}".format(data_lists['od'][-1]))
@@ -241,7 +241,7 @@ class ActualCycleFrame(ctk.CTkFrame):
         if data == MsgType.ESP_PLAYED:
             self.label_actual.configure(text="Ciclo Actual: " + ui_serial.cycle_alias + " (en curso)")
             
-        if (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)) or data == MsgType.NEW_CYCLE_SENT:
+        if (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED or ui_serial.cycle_status == CycleStatus.CYCLE_PAUSED)) or data == MsgType.NEW_CYCLE_SENT:
             self.progressbar_actual.configure(progress_color="blue")
             
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
@@ -256,6 +256,9 @@ class ActualCycleFrame(ctk.CTkFrame):
             else:
                 if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING:
                     self.label_actual.configure(text="Ciclo Actual: {} (en curso)".format(ui_serial.cycle_alias))
+                    self.update_progressbar(total_time, elapsed_time, restant_time)
+                elif ui_serial.cycle_status == CycleStatus.CYCLE_PAUSED:
+                    self.label_actual.configure(text="Ciclo Actual: {} (pausado)".format(ui_serial.cycle_alias))
                     self.update_progressbar(total_time, elapsed_time, restant_time)
                 else:
                     self.label_actual.configure(text="Ciclo Actual: {} (terminado)".format(ui_serial.cycle_alias))
@@ -348,6 +351,7 @@ class ActualCycleFrame(ctk.CTkFrame):
 class MyPlot(ctk.CTkFrame):
     def __init__(self, master, var):
         super().__init__(master)
+        self.valores_esperado_flag = False
         self.resize_plot_flag = True
         ui_serial.publisher.subscribe(self.update_plot)
         self.var = var
@@ -405,14 +409,16 @@ class MyPlot(ctk.CTkFrame):
             self.initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")  
             self.reset_data() 
             self.ax.clear()
-            self.line_expected, = self.ax.plot(self.datetime_axis, [], label="Valores esperados")
+            if data_lists_expected[self.var][0] != 0 and self.var != "light_t":
+                self.valores_esperado_flag = True
+                self.line_expected, = self.ax.plot(self.datetime_axis, [], label="Valores esperados")
             self.line, = self.ax.plot(self.datetime_axis, [], label="Valores medidos")
             self.fig.canvas.draw()
             self.ax.legend()
             self.fig.canvas.mpl_connect("button_press_event", self.check_active_tool)
             self.resize_plot_flag = True
         
-        if data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED): # Aca es que grafico un ciclo que esta empezado y sigue funcionando
+        if data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED or ui_serial.cycle_status == CycleStatus.CYCLE_PAUSED): # Aca es que grafico un ciclo que esta empezado y sigue funcionando
             self.initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
             self.reset_data() 
             self.ax.clear()
@@ -420,7 +426,10 @@ class MyPlot(ctk.CTkFrame):
             num_measurements = len(data_lists['id'])
             self.datetime_axis = [self.initial_time + timedelta(seconds=i * ui_serial.cycle_interval) for i in range(num_measurements)]
 
-            self.line_expected, = self.ax.plot(self.datetime_axis[:num_measurements], data_lists_expected[self.var][:num_measurements], label="Valores esperados")
+            if data_lists_expected[self.var][0] != 0 and self.var != "light_t":
+                self.valores_esperado_flag = True
+                self.line_expected, = self.ax.plot(self.datetime_axis[:num_measurements], data_lists_expected[self.var][:num_measurements], label="Valores esperados")
+            
             self.line, = self.ax.plot(self.datetime_axis[:num_measurements], data_lists[self.var][:num_measurements], label="Valores medidos")
 
             self.fig.canvas.draw()
@@ -443,13 +452,18 @@ class MyPlot(ctk.CTkFrame):
             self.datetime_axis.append(new_time)
 
             self.line.set_data(self.datetime_axis[:num_measurements], data_lists[self.var][:num_measurements])
-            self.line_expected.set_data(self.datetime_axis[:num_measurements], data_lists_expected[self.var][:num_measurements])
+            if self.valores_esperado_flag and self.var != "light_t":
+                self.line_expected.set_data(self.datetime_axis[:num_measurements], data_lists_expected[self.var][:num_measurements])
 
             if self.resize_plot_flag:
                 self.ax.set_xlim(self.datetime_axis[0], self.datetime_axis[-1])
 
-                y_min = min(min(data_lists[self.var]), min(data_lists_expected[self.var]))*0.9
-                y_max = max(max(data_lists[self.var]), max(data_lists_expected[self.var]))*1.1
+                if self.valores_esperado_flag and self.var != "light_t":
+                    y_min = min(min(data_lists[self.var]), min(data_lists_expected[self.var]))*0.9
+                    y_max = max(max(data_lists[self.var]), max(data_lists_expected[self.var]))*1.1
+                else:
+                    y_min = min(data_lists[self.var])*0.9
+                    y_max = max(data_lists[self.var])*1.1
                 self.ax.set_ylim(y_min, y_max)
 
             self.fig.canvas.draw_idle()    

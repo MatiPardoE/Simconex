@@ -273,6 +273,9 @@ class CycleSync:
         elif data.strip() == "#STA2!":
             self.esp_status_reported = CycleStatus.CYCLE_FINISHED
             self.handshake_status = HandshakeStatus.STA
+        elif data.strip() == "#STA3!":
+            self.esp_status_reported = CycleStatus.CYCLE_PAUSED
+            self.handshake_status = HandshakeStatus.STA
         elif data.strip() == "#ID0!":
             self.handshake_status = HandshakeStatus.ID0
         elif data.strip() == "#ID1!":

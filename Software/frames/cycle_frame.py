@@ -71,7 +71,7 @@ class ActualCycleFrame(ctk.CTkFrame):
         if data == MsgType.ESP_PLAYED:
             self.label_actual.configure(text="Ciclo Actual: " + ui_serial.cycle_alias + " (en curso)")
             
-        if (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED)) or data == MsgType.NEW_CYCLE_SENT:
+        if (data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED or ui_serial.cycle_status == CycleStatus.CYCLE_PAUSED)) or data == MsgType.NEW_CYCLE_SENT:
             self.progressbar_actual.configure(progress_color="blue")
             
             total_time = len(data_lists_expected["id"]) * ui_serial.cycle_interval
@@ -86,6 +86,9 @@ class ActualCycleFrame(ctk.CTkFrame):
             else:    
                 if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING:
                     self.label_actual.configure(text="Ciclo Actual: {} (en curso)".format(ui_serial.cycle_alias))
+                    self.update_progressbar(total_time, elapsed_time, restant_time)
+                elif ui_serial.cycle_status == CycleStatus.CYCLE_PAUSED:
+                    self.label_actual.configure(text="Ciclo Actual: {} (pausado)".format(ui_serial.cycle_alias))
                     self.update_progressbar(total_time, elapsed_time, restant_time)
                 else:
                     self.label_actual.configure(text="Ciclo Actual: {} (terminado)".format(ui_serial.cycle_alias))
@@ -732,7 +735,7 @@ class LogFrame(ctk.CTkFrame):
                 widget.destroy()
             return 
             
-        if data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED):
+        if data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED or ui_serial.cycle_status == CycleStatus.CYCLE_PAUSED):
             num_measurements = len(data_lists['id'])
             start_index = max(0, num_measurements - 50)
 
@@ -817,9 +820,12 @@ class LogFrame(ctk.CTkFrame):
             self.scrollable_frame._parent_canvas.yview_moveto(1.0)
     
         if data == MsgType.ESP_SYNCRONIZED or data == MsgType.ESP_CONNECTED:
-            self.label_export.bind("<Enter>", self.on_hover)
-            self.label_export.bind("<Leave>", self.off_hover)
-            self.label_export.bind("<Button-1>", self.export_event)
+            if not self.label_export.bindtags().__contains__("bound"):
+                self.label_export.bind("<Enter>", self.on_hover)
+                self.label_export.bind("<Leave>", self.off_hover)
+                self.label_export.bind("<Button-1>", self.export_event)
+
+                self.label_export.bindtags(self.label_export.bindtags() + ("bound",))
 
         if data == MsgType.ESP_DISCONNECTED or data == MsgType.CYCLE_DELETED:
             for widget in self.scrollable_frame.winfo_children():
@@ -827,6 +833,8 @@ class LogFrame(ctk.CTkFrame):
             self.label_export.unbind("<Enter>")
             self.label_export.unbind("<Leave>")
             self.label_export.unbind("<Button-1>")
+
+            self.label_export.bindtags(tuple(tag for tag in self.label_export.bindtags() if tag != "bound"))
     
     def calculate_datetime(self, intervals):
         initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")

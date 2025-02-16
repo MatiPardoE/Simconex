@@ -171,9 +171,12 @@ class SerialPublisher:
                 data_lists['conc'].append(float(match.group(14)))
                 self.send_data(b"#OK!\n")
 
-                self.in_range(data_lists['od'], data_lists_expected['od'], len(data_lists['od']), 'od')
-                self.in_range(data_lists['ph'], data_lists_expected['ph'], len(data_lists['ph']), 'ph')
-                self.in_range(data_lists['temperature'], data_lists_expected['temperature'], len(data_lists['temperature']), 'temperature')
+                if data_lists_expected['od'][0] != 0:
+                    self.in_range(data_lists['od'], data_lists_expected['od'], len(data_lists['od']), 'od')
+                if data_lists_expected['ph'][0] != 0:
+                    self.in_range(data_lists['ph'], data_lists_expected['ph'], len(data_lists['ph']), 'ph')
+                if data_lists_expected['temperature'][0] != 0:
+                    self.in_range(data_lists['temperature'], data_lists_expected['temperature'], len(data_lists['temperature']), 'temperature')
 
                 self.cycle_out_path = os.path.join(os.getcwd(), "Log", cycle_id)
                 os.makedirs(self.cycle_out_path, exist_ok=True) 
