@@ -25,6 +25,7 @@ class CalibPhWindow(ctk.CTkToplevel):
         self.master = master
         self.geometry("700x450")
         self.resizable(0,0)
+        self.protocol("WM_DELETE_WINDOW", self.bloquear_cierre)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -62,6 +63,9 @@ class CalibPhWindow(ctk.CTkToplevel):
         self.btn = ctk.CTkButton(self, text="Siguiente", command=self.btn_press)
         self.btn.grid(column=0, row=4, pady=15, columnspan=2)
     
+    def bloquear_cierre(self):
+        pass
+
     def update_seconds(self):
         for i in range(5, 0 ,-1):
             self.btn.configure(text="Siguiente ({seconds})".format(seconds=i))
@@ -132,7 +136,6 @@ class CalibPhWindow(ctk.CTkToplevel):
             self.ph_button.grid_forget()
             self.btn.grid_forget()
             self.img_label.configure(image=self.img_check)
-            # TODO: Esperar la confirmacion de la finalizacion de la calibracion del ESP
 
         elif self.label_title.cget("text") == "Verificacion":
             ui_serial.publisher.unsubscribe(self.update_ph_value)
@@ -146,6 +149,7 @@ class CalibPhWindow(ctk.CTkToplevel):
             # TODO : Hacer mas bonita la UI para estos casos
             self.btn.configure(text="Cerrar ventana", fg_color="green")
             self.btn.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
+            self.update_date("ph") 
         elif data.strip() == "#FAILCALIBPH!":
             print("Calibracion Fail")
             self.btn.configure(text="Cerrar ventana", fg_color="red")
@@ -162,6 +166,7 @@ class CalibOdWindow(ctk.CTkToplevel):
         self.master = master
         self.geometry("700x450")
         self.resizable(0,0)
+        self.protocol("WM_DELETE_WINDOW", self.bloquear_cierre)
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_columnconfigure(1, weight=1)
@@ -206,15 +211,25 @@ class CalibOdWindow(ctk.CTkToplevel):
         self.btn_b.grid(column=1, row=4, padx=15, pady=15, columnspan=1, sticky="w")
         self.btn_b.grid_forget()
 
+    def bloquear_cierre(self):
+        pass
+
     def update_seconds(self):
         for i in range(5, 0 ,-1):
             self.btn_b.configure(text="Siguiente ({seconds})".format(seconds=i))
             time.sleep(1)
-        self.btn_b.configure(text="Siguiente")
-        self.btn_b.configure(state="normal")
-        self.btn_b.grid(column=1, row=4, padx=15, pady=15, columnspan=1, sticky="w")
-        self.btn_a.configure(text="Terminar calibracion", fg_color="red", command=self.btn_end_press)
-        self.btn_a.grid(column=0, row=4, padx=15, pady=15, sticky="e")
+        
+        if self.label_title.cget("text") == "Espere a que las mediciones se estabilicen.":
+            self.btn_b.grid_forget()
+            self.btn_a.configure(text="Terminar calibracion", fg_color="red", command=self.btn_end_press)
+            self.btn_a.grid(column=0, row=4, padx=15, columnspan=2, sticky="ns")
+
+        else:
+            self.btn_b.configure(text="Siguiente")
+            self.btn_b.configure(state="normal")
+            self.btn_b.grid(column=1, row=4, padx=15, pady=15, columnspan=1, sticky="w")
+            self.btn_a.configure(text="Terminar calibracion", fg_color="red", command=self.btn_end_press)
+            self.btn_a.grid(column=0, row=4, padx=15, pady=15, sticky="e")
 
     def btn_a_press(self):
         if self.label_title.cget("text") == "Como es el proceso de calibracion del sensor de OD":
@@ -235,47 +250,6 @@ class CalibOdWindow(ctk.CTkToplevel):
             self.btn_b.configure(text="Siguiente")
             self.btn_b.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
             self.img_label.configure(image=self.img_calib_od_1)
-        elif self.label_title.cget("text") == "Retire la tapa de la parte superior":
-            self.label_title.configure(text="Sature la esponja (aprox 10 mL de agua)")
-            self.label_text.configure(text="Colóquela en el fondo de la cámara de calibración")
-            self.img_label.configure(image=self.img_calib_od_2)
-        elif self.label_title.cget("text") == "Sature la esponja (aprox 10 mL de agua)":
-            self.label_title.configure(text="Seque la sonda y el elemento sensor")
-            self.label_text.configure(text="Hagalo suavemente con una toalla de papel")
-            self.img_label.configure(image=self.img_calib_od_3)
-        elif self.label_title.cget("text") == "Seque la sonda y el elemento sensor":
-            self.label_title.configure(text="Coloque la sonda en la cámara de calibración")
-            self.label_text.configure(text="El sensor debe quedar 2.5 cm por encima de la esponja saturada de agua.")
-            self.img_label.configure(image=self.img_calib_od_4)
-                     
-        elif self.label_title.cget("text") == "Coloque la sonda en la cámara de calibración":
-            self.label_title.configure(text="Espere a que las mediciones se estabilicen")
-            self.label_text.configure(text="El sensor debe estar 2.5 cm por encima de la esponja saturada de agua.")
-
-            self.btn_b.configure(state="disabled")
-            thread = threading.Thread(target=self.update_seconds)
-            thread.start()   
-
-        elif self.label_title.cget("text") == "Espere a que las mediciones se estabilicen":
-            self.label_title.configure(text="Retire la esponja de la cámara de calibración")
-            self.label_text.configure(text="Llene la cámara con 60 mL de sulfito de sodio fresco.")
-            self.img_label.configure(image=self.img_calib_od_5)
-
-        elif self.label_title.cget("text") == "Retire la esponja de la cámara de calibración":
-            self.label_title.configure(text="Espere a que las mediciones se estabilicen.")
-
-            self.btn_b.configure(state="disabled")
-            thread = threading.Thread(target=self.update_seconds)
-            thread.start() 
-
-        elif self.label_title.cget("text") == "Espere a que las mediciones se estabilicen.":
-            self.label_title.configure(text="Verificacion")
-            self.label_text.configure(text="Espere a verificar la correcta finalizacion de la calibracion")
-            self.btn_a.grid_forget()
-            self.btn_b.configure(text="Finalizar")
-            self.btn_b.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
-            self.img_label.configure(image=self.img_check)
-            self.btn_b.grid_forget()
         
         elif self.label_title.cget("text") == "Retire la esponja del recipiente de calibración":
             self.label_title.configure(text="Coloque la sonda en la solución")
@@ -283,43 +257,72 @@ class CalibOdWindow(ctk.CTkToplevel):
             self.img_label.configure(image=self.img_calib_od_7)
 
         elif self.label_title.cget("text") == "Coloque la sonda en la solución":
-            self.label_title.configure(text="Espere a que las mediciones se estabilicen-")
+            self.label_title.configure(text="Espere a que las mediciones se estabilicen")
             self.label_text.configure(text="El sensor debe estar 13 mm por encima del fondo del recipiente de calibracion.")
-            # TODO : Aca es donde deberiamos enviar el comando para calibrar
+
             ui_serial.publisher.send_data(b"#STARTCALODSAT!\n")
             ui_serial.publisher.subscribe(self.update_rdo_value)
-            self.od_button.grid(column=0, row=3, padx=10, pady=0, sticky="ns", columnspan=2)
-            self.temp_button.grid(column=1, row=3, padx=10, pady=0, sticky="ns", columnspan=2)
+            self.od_button.grid(column=0, row=3, padx=10, pady=0, sticky="e", columnspan=1)
+            self.temp_button.grid(column=1, row=3, padx=10, pady=0, sticky="w", columnspan=1)
             self.btn_b.configure(state="disabled")
             thread = threading.Thread(target=self.update_seconds)
             thread.start() 
         
-        elif self.label_title.cget("text") == "Espere a que las mediciones se estabilicen-":
+        elif self.label_title.cget("text") == "Espere a que las mediciones se estabilicen":
+            ui_serial.publisher.unsubscribe(self.update_rdo_value)        
+            self.label_title.configure(text="Calibracion a 2 puntos")
+            self.label_text.configure(text="Limpie el cabezal del sensor y llene la cámara con 60 mL de sulfito de sodio fresco.")
+            
+            self.btn_a.grid_forget()
+            self.od_button.grid_forget()
+            self.temp_button.grid_forget()
+            self.btn_b.configure(text="Siguiente")
+            self.btn_b.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
+            self.img_label.configure(image=self.img_calib_od_1) 
+
+        elif self.label_title.cget("text") == "Calibracion a 2 puntos":        
+            self.label_title.configure(text="Espere a que las mediciones se estabilicen.")
+            self.label_text.configure(text="")
+            
+            ui_serial.publisher.send_data(b"#STARTCALODSAT2P!\n") 
+            ui_serial.publisher.subscribe(self.update_rdo_value)
+
+            self.od_button.grid(column=0, row=3, padx=10, pady=0, sticky="e", columnspan=1)
+            self.temp_button.grid(column=1, row=3, padx=10, pady=0, sticky="w", columnspan=1)
+            self.btn_b.configure(state="disabled")
+            thread = threading.Thread(target=self.update_seconds)
+            thread.start()
+
+        elif self.label_title.cget("text") == "Verificacion finalizada con exito!" or self.label_title.cget("text") == "Hubo un problema con la verificacion!":
+            ui_serial.publisher.unsubscribe(self.update_rdo_value)
+            ui_serial.mode_status = ModeStatus.NOT_MODE
+            
+            self.destroy()
+    
+    def btn_end_press(self):
+        if self.label_title.cget("text") == "Espere a que las mediciones se estabilicen.":
+            ui_serial.publisher.send_data(b"#FINISHCALODSAT2P!\n")
+            self.od_button.grid_forget()
+            self.temp_button.grid_forget()
             self.label_title.configure(text="Verificacion")
             self.label_text.configure(text="Espere a verificar la correcta finalizacion de la calibracion")
             self.btn_a.grid_forget()
             self.btn_b.configure(text="Finalizar")
             self.btn_b.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
-            self.img_label.configure(image=self.img_check)
             self.btn_b.grid_forget()
+            self.img_label.configure(image=self.img_check)
 
-        elif self.label_title.cget("text") == "Verificacion":
-            ui_serial.publisher.unsubscribe(self.update_rdo_value)
-            ui_serial.mode_status = ModeStatus.NOT_MODE
-            self.destroy()
-    
-    def btn_end_press(self):
-        ui_serial.publisher.send_data(b"#FINISHCALODSAT1P!\n")
-        ui_serial.publisher.unsubscribe(self.update_rdo_value)
-        self.od_button.grid_forget()
-        self.temp_button.grid_forget()
-        self.label_title.configure(text="Verificacion")
-        self.label_text.configure(text="Espere a verificar la correcta finalizacion de la calibracion")
-        self.btn_a.grid_forget()
-        self.btn_b.configure(text="Finalizar")
-        self.btn_b.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
-        self.btn_b.grid_forget()
-        self.img_label.configure(image=self.img_check)
+        else: 
+            ui_serial.publisher.send_data(b"#FINISHCALODSAT1P!\n")
+            self.od_button.grid_forget()
+            self.temp_button.grid_forget()
+            self.label_title.configure(text="Verificacion")
+            self.label_text.configure(text="Espere a verificar la correcta finalizacion de la calibracion")
+            self.btn_a.grid_forget()
+            self.btn_b.configure(text="Finalizar")
+            self.btn_b.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
+            self.btn_b.grid_forget()
+            self.img_label.configure(image=self.img_check)
         
     def update_rdo_value(self, data):
         print("New measurement en RDO CALIB")
@@ -329,15 +332,21 @@ class CalibOdWindow(ctk.CTkToplevel):
         if data == MsgType.NEW_MEASURE_CALIB:
             self.od_button.configure(text=f"OD: {data_calib['od']:.2f}")
             self.temp_button.configure(text=f"Temp: {data_calib['temperature']:.2f}")
+
         elif data.strip() == "#OKCALIBODSAT!":
-            # TODO : Hacer mas bonita la UI para estos casos
+            self.label_title.configure(text="Verificacion finalizada con exito!")
+            self.label_text.configure(text="")
             self.btn_b.configure(text="Cerrar ventana", fg_color="green")
             self.btn_b.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
+            self.btn_b.configure(state="normal")
+            self.update_date("od")
+
         elif data.strip() == "#FAILCALIBODSAT!":
-            print("Calibracion Fail")
+            self.label_title.configure(text="Hubo un problema con la verificacion!")
+            self.label_text.configure(text="")
             self.btn_b.configure(text="Cerrar ventana", fg_color="red")
             self.btn_b.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
-
+            self.btn_b.configure(state="normal")
 
 
 class SensorCalibrateFrame(ctk.CTkFrame):
@@ -381,7 +390,7 @@ class SensorCalibrateFrame(ctk.CTkFrame):
     
     def cal_ph_button_event(self):
         self.calib_window = CalibPhWindow(self)
-        self.update_date("ph") # TODO: hacer que esto ocurra al finalizar la calibracion con exito
+        
 
         self.calib_window.lift()  
         self.calib_window.attributes("-topmost", True) 
@@ -392,7 +401,6 @@ class SensorCalibrateFrame(ctk.CTkFrame):
     
     def cal_od_button_event(self):
         self.calib_window = CalibOdWindow(self)
-        self.update_date("od") # TODO: hacer que esto ocurra al finalizar la calibracion con exito
 
         self.calib_window.lift()  
         self.calib_window.attributes("-topmost", True) 

@@ -105,8 +105,9 @@ class CycleSync:
             self.send_data_and_wait_hs(b"#SYNC1!\n")
             ui_serial.publisher.unsubscribe(self.wait_for_response) 
 
-            if not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
-                self.generate_cycleout_file()
+            #if not ui_serial.cycle_status == CycleStatus.NOT_CYCLE:
+            self.generate_cycleout_file()
+
             self.success_loading_window()
             ui_serial.cycle_status = self.esp_status_reported
             ui_serial.mode_status = ModeStatus.NOT_MODE # Ya termino la sync asi que salgo de este modo
@@ -329,7 +330,7 @@ class CycleSync:
         self.cycle_out_path = os.path.join(os.getcwd(), "Log", ui_serial.cycle_id)
         os.makedirs(self.cycle_out_path, exist_ok=True) 
         fname = os.path.join(os.getcwd(), "Log", ui_serial.cycle_id, "cycle_out_"+ui_serial.cycle_id+".csv")
-        with open(fname, "w", newline='') as csvfile:
+        with open(fname, mode="w", newline='') as csvfile:
             writer = csv.writer(csvfile)
             
             for i in range(len(data_lists["id"])):
