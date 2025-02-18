@@ -21,6 +21,7 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
         {
             // ESP_LOGI("PH", "Valor de pH: %.2f", ph_response);
             measuresAndOutputs.ph = ph_response;
+            newMeasureFlag.ph = true;
         }
     }
 
@@ -30,6 +31,23 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
         requestRDO(&rdo);
         _updateTimeout_;
     }
+    if(measuresAndOutputs.oxygen != rdo.doSaturation.measuredValue){
+        //ESP_LOGI("O2", "Nueva Medicion de Oxigeno: %.2f , Previa: %.2f ", rdo.doSaturation.measuredValue, measuresAndOutputs.oxygen);
+        measuresAndOutputs.oxygen = rdo.doSaturation.measuredValue;
+        newMeasureFlag.oxygen = true;
+    }
+    if (measuresAndOutputs.temperature != rdo.temperature.measuredValue)
+    {
+        measuresAndOutputs.temperature = rdo.temperature.measuredValue;
+        newMeasureFlag.temperature = true;
+    }
+    if (measuresAndOutputs.concentration != rdo.doConcentration.measuredValue)
+    {
+        measuresAndOutputs.concentration = rdo.doConcentration.measuredValue;
+        newMeasureFlag.concentration = true;
+    }
+
+    OD_modulation_run();
 
     // para calibrar y ver valores
     if (rdo.onCalibration == true)
@@ -66,15 +84,10 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
 
         if (__OD_IS_WORKING__ && __NOT_FREE_OD__)
         {
-            if (__O2_LOWER_SAT__)
+            if (newMeasureFlag.oxygen)
             {
-                shiftRegister.setOutput(O2, HIGH);
-                shiftRegister.setOutput(N2, LOW);
-            }
-            else if (__O2_HIGHER_SAT__)
-            {
-                shiftRegister.setOutput(O2, LOW);
-                shiftRegister.setOutput(N2, HIGH);
+                ESP_LOGI("OD", "Nueva Medicion de Oxigeno: %.2f , Previa: %.2f ", measuresAndOutputs.oxygen);
+                OD_modulation_control(rdo.doSaturation.measuredValue, goalValues.oxygen);
             }
         }
         else
@@ -104,17 +117,17 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
             ledStripL.setDuty(goalValues.light_low);
         }
 
-
         do_control_temp(measuresAndOutputs.temperature);
-
-
-        
 
         break;
     default:
         break;
     }
 
+    newMeasureFlag.ph = false;
+    newMeasureFlag.oxygen = false;
+    newMeasureFlag.temperature = false;
+    newMeasureFlag.concentration = false;
     return true;
 }
 
@@ -162,13 +175,13 @@ bool ControlAPI::modeManualsetOutputs(String command)
     }
     else if (command.startsWith("#WCOLD0"))
     {
-        //de forma manual, hago que sean inversos
+        // de forma manual, hago que sean inversos
         shiftRegister.setOutput(W_COLD, LOW);
         ESP_LOGI("Manual", "Set WaterCold to 0");
     }
     else if (command.startsWith("#WCOLD1"))
     {
-        //de forma manual, hago que sean inversos
+        // de forma manual, hago que sean inversos
         shiftRegister.setOutput(W_COLD, HIGH);
         ESP_LOGI("Manual", "Set WaterCold to 1");
         shiftRegister.setOutput(W_HOT, LOW);
@@ -176,13 +189,13 @@ bool ControlAPI::modeManualsetOutputs(String command)
     }
     else if (command.startsWith("#WHOT0"))
     {
-        //de forma manual, hago que sean inversos
+        // de forma manual, hago que sean inversos
         shiftRegister.setOutput(W_HOT, LOW);
         ESP_LOGI("Manual", "Set WaterHot to 0");
     }
     else if (command.startsWith("#WHOT1"))
     {
-        //de forma manual, hago que sean inversos
+        // de forma manual, hago que sean inversos
         shiftRegister.setOutput(W_COLD, LOW);
         ESP_LOGI("Manual", "Set WaterCold to 0");
         shiftRegister.setOutput(W_HOT, HIGH);
@@ -207,11 +220,14 @@ bool ControlAPI::turnOffOutputs()
     shiftRegister.setOutput(1, LOW);
     shiftRegister.setOutput(2, LOW);
     shiftRegister.setOutput(3, LOW);
+    shiftRegister.setOutput(W_HOT, LOW);
+    shiftRegister.setOutput(W_COLD,LOW);
     ledStripT.setDuty(0);
     ledStripMT.setDuty(0);
     ledStripMM.setDuty(0);
     ledStripML.setDuty(0);
     ledStripL.setDuty(0);
+
     return true;
 }
 
@@ -282,25 +298,72 @@ bool ControlAPI::set_control_var(cycle_manager::IntervalData intervalData)
     return true;
 }
 
-bool ControlAPI::do_control_temp( float temp ){
-    //devuelve true si esta en equilibrio
-    if(goalValues.temperature == 0){
+bool ControlAPI::do_control_temp(float temp)
+{
+    // devuelve true si esta en equilibrio
+    if (goalValues.temperature == 0)
+    {
         return false;
     }
-    if( __TempisLower__(temp) ){
+    if (__TempisLower__(temp))
+    {
         shiftRegister.setOutput(W_COLD, LOW);
         shiftRegister.setOutput(W_HOT, HIGH);
         return false;
     }
-    else if( __TempisHigher__(temp) ){
+    else if (__TempisHigher__(temp))
+    {
         shiftRegister.setOutput(W_COLD, HIGH);
         shiftRegister.setOutput(W_HOT, LOW);
         return false;
     }
-    else{
+    else
+    {
         shiftRegister.setOutput(W_COLD, LOW);
         shiftRegister.setOutput(W_HOT, LOW);
         return true;
     }
+}
 
+bool ControlAPI::OD_modulation_control(float current, float goal)
+{
+    float delta = 0;
+    if (__O2_LOWER_SAT__ && !o2_modulation_on)
+    {
+        delta = goal - current;
+        time_o2_on_ms = round((delta / O2_DELTA_1S) * 1000); // 2.2% es lo que sube el oxigeno por segundo, si aumento va a cortar antes
+        timestamp_o2_on = millis();
+        shiftRegister.setOutput(O2, HIGH);
+        shiftRegister.setOutput(N2, LOW);
+        o2_modulation_on = true;
+        ESP_LOGI("O2", "O2 ON for %d ms", time_o2_on_ms);
+        ESP_LOGI("O2", "Delta: %.2f", delta);
+        ESP_LOGI("O2", "Current O2: %.2f", current);
+        ESP_LOGI("O2", "Goal O2: %.2f", goal);
+    }
+    else if (__O2_HIGHER_SAT__)
+    {
+        shiftRegister.setOutput(O2, LOW);
+        shiftRegister.setOutput(N2, HIGH);
+    }
+    else if(__O2_IN_RANGE__){
+        shiftRegister.setOutput(O2, LOW);
+        shiftRegister.setOutput(N2, LOW);
+    }
+    return false;
+}
+
+bool ControlAPI::OD_modulation_run()
+{
+    if (o2_modulation_on)
+    {
+        if (millis() - timestamp_o2_on > time_o2_on_ms)
+        {
+            shiftRegister.setOutput(O2, LOW);
+            o2_modulation_on = false;
+            ESP_LOGI("O2", "O2 OFF");
+            return true;
+        }
+    }
+    return false;
 }

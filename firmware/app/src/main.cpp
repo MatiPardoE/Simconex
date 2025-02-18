@@ -124,6 +124,11 @@ void loop()
             Serial.println("#STA1!");
             fileTransfer.transferCycle(cm.headerPath.c_str(), cm.dataOutPath.c_str(), 10000);
         }
+        else if (cm.cycleData.status == cycle_manager::CYCLE_PAUSED)
+        {
+            Serial.println("#STA3!");
+            fileTransfer.transferCycle(cm.headerPath.c_str(), cm.dataOutPath.c_str(), 10000);
+        }
         else if (cm.cycleData.status == cycle_manager::CYCLE_COMPLETED)
         {
             Serial.println("#STA2!");
@@ -223,18 +228,21 @@ void loop()
                 _updateTimeout_;
             }
         }
-        ESP_LOGE(TAG, "Error checking calibration OD saturation 100%\n");
-        break;
 
+        if( millis_init + 40000  <= millis()){
+            Serial.println("#FAILCALIBODSAT!");
+            ESP_LOGE(TAG, "Error checking calibration OD saturation 100%\n");
+        }
+        break;
 
     case CommUI::GOTO_CALIB_OD_SAT_2P:
         ESP_LOGI(TAG, "Continue calibration OD saturation 0%\n");
-        setRdoCalibrationPoints(&rdo,CALIB_SAT_2P);
-        //dispara la escritura de los registros de 100%
-        //pero no hara el update command
-        //porque sabe que le falta un punto de calib
-        //y volvera a medir
-        finishPercentSaturationCalibration100(&rdo); 
+        setRdoCalibrationPoints(&rdo, CALIB_SAT_2P);
+        // dispara la escritura de los registros de 100%
+        // pero no hara el update command
+        // porque sabe que le falta un punto de calib
+        // y volvera a medir
+        finishPercentSaturationCalibration100(&rdo);
         break;
 
     //
@@ -256,11 +264,10 @@ void loop()
             }
         }
 
-        if( millis_init + 40000  < millis()){
+        if( millis_init + 40000  <= millis()){
             Serial.println("#FAILCALIBODSAT!");
             ESP_LOGE(TAG, "Error checking calibration OD saturation\n");
         }
-
 
         break;
     case CommUI::START_CALIB_PH:
@@ -335,7 +342,7 @@ void loop()
         cm.writeMeasuresToSD(new_measure_outputs, (cycleBundle.intervalData.interval_id - 1)); // Envio el ID-1 porque el ID es el siguiente intervalo
         cm.sendDataToUI(new_measure_outputs, (cycleBundle.intervalData.interval_id - 1));
         sensorControl.turnOffOutputs();
-        //ESP_LOGI(TAG, "Cycle FINISIHED");
+        // ESP_LOGI(TAG, "Cycle FINISIHED");
         break;
     case cycle_manager::NEW_INTERVAL:
         neoPixel.setState(NeoPixel::NEW_INTERVAL);
