@@ -44,17 +44,14 @@
 #define __UMBRAL_O2__ 5
 #define __O2_LOWER_SAT__ (measuresAndOutputs.oxygen < goalValues.oxygen - __UMBRAL_O2__)
 #define __O2_HIGHER_SAT__ (measuresAndOutputs.oxygen > goalValues.oxygen + __UMBRAL_O2__)
+#define __O2_IN_RANGE__ (measuresAndOutputs.oxygen > goalValues.oxygen - __UMBRAL_O2__ && measuresAndOutputs.oxygen < goalValues.oxygen + __UMBRAL_O2__)
 
 #define __UMBRAL_TEMP__ 5
-#define __TempisLower__(x)     (x < goalValues.temperature - __UMBRAL_O2__)
-#define __TempisHigher__(x)    (x > goalValues.temperature + __UMBRAL_O2__)
+#define __TempisLower__(x)     (x < goalValues.temperature - __UMBRAL_TEMP__)
+#define __TempisHigher__(x)    (x > goalValues.temperature + __UMBRAL_TEMP__)
 
 
-#define __UMBRAL_TEMP__ 5
-#define __TempisLower__(x)     (x < goalValues.temperature - __UMBRAL_O2__)
-#define __TempisHigher__(x)    (x > goalValues.temperature + __UMBRAL_O2__)
-
-#define O2_DELTA_1S (40) // 2.2% es lo que sube el oxigeno por segundo (pasado a milisegundo)
+#define O2_DELTA_1S (15) // 2.2% es lo que sube el oxigeno por segundo (pasado a milisegundo)
 
 extern cycle_manager cm;
 
