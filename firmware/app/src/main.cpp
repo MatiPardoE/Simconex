@@ -228,7 +228,11 @@ void loop()
                 _updateTimeout_;
             }
         }
-        ESP_LOGE(TAG, "Error checking calibration OD saturation 100%\n");
+
+        if( millis_init + 40000  <= millis()){
+            Serial.println("#FAILCALIBODSAT!");
+            ESP_LOGE(TAG, "Error checking calibration OD saturation 100%\n");
+        }
         break;
 
     case CommUI::GOTO_CALIB_OD_SAT_2P:
@@ -260,8 +264,7 @@ void loop()
             }
         }
 
-        if (millis_init + 40000 < millis())
-        {
+        if( millis_init + 40000  <= millis()){
             Serial.println("#FAILCALIBODSAT!");
             ESP_LOGE(TAG, "Error checking calibration OD saturation\n");
         }
