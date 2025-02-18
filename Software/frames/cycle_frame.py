@@ -355,7 +355,7 @@ class ControlCycleFrame(ctk.CTkFrame):
     def esp_syncronized(self):
         self.enable_load_file(True)
 
-        if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING: # Si hay un ciclo corriendo, habilito play/pause y eliminar
+        if ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_PAUSED: # Si hay un ciclo corriendo, habilito play/pause y eliminar
             self.play_pause_image_label.configure(image=self.pause_image)
             self.enable_play_pause(True)
             self.enable_bin(False)
