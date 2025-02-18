@@ -346,6 +346,10 @@ bool ControlAPI::OD_modulation_control(float current, float goal)
         shiftRegister.setOutput(O2, LOW);
         shiftRegister.setOutput(N2, HIGH);
     }
+    else if(__O2_IN_RANGE__){
+        shiftRegister.setOutput(O2, LOW);
+        shiftRegister.setOutput(N2, LOW);
+    }
     return false;
 }
 
