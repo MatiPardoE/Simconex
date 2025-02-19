@@ -31,8 +31,9 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
         requestRDO(&rdo);
         _updateTimeout_;
     }
-    if(measuresAndOutputs.oxygen != rdo.doSaturation.measuredValue){
-        //ESP_LOGI("O2", "Nueva Medicion de Oxigeno: %.2f , Previa: %.2f ", rdo.doSaturation.measuredValue, measuresAndOutputs.oxygen);
+    if (measuresAndOutputs.oxygen != rdo.doSaturation.measuredValue)
+    {
+        // ESP_LOGI("O2", "Nueva Medicion de Oxigeno: %.2f , Previa: %.2f ", rdo.doSaturation.measuredValue, measuresAndOutputs.oxygen);
         measuresAndOutputs.oxygen = rdo.doSaturation.measuredValue;
         newMeasureFlag.oxygen = true;
     }
@@ -65,6 +66,8 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
     {
     case cycle_manager::CycleStatus::CYCLE_RUNNING:
         // TODO pasar a funcion
+
+        air_pump_control(shiftRegister.getOutputState());
         // Umbrales de control
         if (__PH_IS_WORKING__ && __NOT_FREE_PH__)
         {
@@ -221,12 +224,13 @@ bool ControlAPI::turnOffOutputs()
     shiftRegister.setOutput(2, LOW);
     shiftRegister.setOutput(3, LOW);
     shiftRegister.setOutput(W_HOT, LOW);
-    shiftRegister.setOutput(W_COLD,LOW);
+    shiftRegister.setOutput(W_COLD, LOW);
     ledStripT.setDuty(0);
     ledStripMT.setDuty(0);
     ledStripMM.setDuty(0);
     ledStripML.setDuty(0);
     ledStripL.setDuty(0);
+    digitalWrite(AIR_PUMP, HIGH);
 
     return true;
 }
@@ -259,7 +263,7 @@ bool ControlAPI::init()
     shiftRegister.setOutput(7, LOW);
 
     pinMode(AIR_PUMP, OUTPUT);
-    digitalWrite(AIR_PUMP, LOW);
+    digitalWrite(AIR_PUMP, HIGH); // Comenzamos prendida la bomba de aire
 
     return true;
 }
@@ -295,6 +299,34 @@ bool ControlAPI::set_control_var(cycle_manager::IntervalData intervalData)
     goalValues.ph = intervalData.ph;
     goalValues.temperature = intervalData.temperature;
 
+    return true;
+}
+
+bool ControlAPI::air_pump_control(byte output_shift)
+{
+    bool EV_oxygen = (output_shift & 0x02) == 0x02;
+    bool EV_nitrogen = (output_shift & 0x04) == 0x04;
+    bool EV_co2 = (output_shift & 0x08) == 0x08;
+
+    if (!EV_oxygen && !EV_nitrogen && !EV_co2)
+    {
+        digitalWrite(AIR_PUMP, HIGH);
+    }
+    else if (EV_co2)
+    {
+        digitalWrite(AIR_PUMP, LOW);
+    }
+    else if (EV_nitrogen && goalValues.oxygen >= 100.0)
+    {
+        digitalWrite(AIR_PUMP, HIGH);
+    }
+    else if (EV_oxygen && goalValues.oxygen < 100.0)
+    {
+        digitalWrite(AIR_PUMP, HIGH);
+    }
+    else{
+        digitalWrite(AIR_PUMP, LOW);
+    }
     return true;
 }
 
@@ -346,7 +378,8 @@ bool ControlAPI::OD_modulation_control(float current, float goal)
         shiftRegister.setOutput(O2, LOW);
         shiftRegister.setOutput(N2, HIGH);
     }
-    else if(__O2_IN_RANGE__){
+    else if (__O2_IN_RANGE__)
+    {
         shiftRegister.setOutput(O2, LOW);
         shiftRegister.setOutput(N2, LOW);
     }

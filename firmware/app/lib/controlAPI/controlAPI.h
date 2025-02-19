@@ -41,12 +41,12 @@
 #define __NOT_FREE_PH__ (goalValues.ph != 0)
 #define __NOT_FREE_OD__ (goalValues.oxygen != 0)
 
-#define __UMBRAL_O2__ 5
+#define __UMBRAL_O2__ 3
 #define __O2_LOWER_SAT__ (measuresAndOutputs.oxygen < goalValues.oxygen - __UMBRAL_O2__)
 #define __O2_HIGHER_SAT__ (measuresAndOutputs.oxygen > goalValues.oxygen + __UMBRAL_O2__)
 #define __O2_IN_RANGE__ (measuresAndOutputs.oxygen > goalValues.oxygen - __UMBRAL_O2__ && measuresAndOutputs.oxygen < goalValues.oxygen + __UMBRAL_O2__)
 
-#define __UMBRAL_TEMP__ 5
+#define __UMBRAL_TEMP__ 0.5
 #define __TempisLower__(x)     (x < goalValues.temperature - __UMBRAL_TEMP__)
 #define __TempisHigher__(x)    (x > goalValues.temperature + __UMBRAL_TEMP__)
 
@@ -105,6 +105,7 @@ private:
     LedStrip ledStripT, ledStripMT, ledStripMM, ledStripML, ledStripL;
     ShiftRegister74HC595 shiftRegister;
 
+    bool air_pump_control(byte output_shift);
     bool OD_modulation_control(float current, float goal);
     bool OD_modulation_run();
     bool o2_modulation_on = false;

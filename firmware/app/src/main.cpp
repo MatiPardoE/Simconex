@@ -60,9 +60,8 @@ void setup()
     modbus.begin();
     clearRDO();
     neoPixel.begin();
-    neoPixel.initFun();
 
-    delay(350);
+    delay(1000);
     if (!cm.begin(SD_CS_PIN)) // Inicializa la SD y lee el header
     {
         ESP_LOGE(TAG, "Cycle manager failed to initialize\n");
