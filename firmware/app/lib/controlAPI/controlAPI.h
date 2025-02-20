@@ -29,7 +29,8 @@
 #define EV_1 5
 #define EV_2 4
 ////// Bomba de Aire ///////
-#define AIR_PUMP 23
+#define OLD_AIR_PUMP 23
+#define AIR_PUMP_FIX EV_1
 
 #define __UMBRAL_PH__ 0.1
 #define __PH_LOWER__ (measuresAndOutputs.ph < goalValues.ph - __UMBRAL_PH__)
