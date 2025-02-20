@@ -168,12 +168,12 @@ bool ControlAPI::modeManualsetOutputs(String command)
     }
     else if (command.startsWith("#A0"))
     {
-        digitalWrite(AIR_PUMP, LOW);
+        shiftRegister.setOutput(AIR_PUMP_FIX, LOW);
         ESP_LOGI("Manual", "Set EV_air to 0");
     }
     else if (command.startsWith("#A1"))
     {
-        digitalWrite(AIR_PUMP, HIGH);
+        shiftRegister.setOutput(AIR_PUMP_FIX, HIGH);
         ESP_LOGI("Manual", "Set EV_air to 1");
     }
     else if (command.startsWith("#WCOLD0"))
@@ -230,7 +230,7 @@ bool ControlAPI::turnOffOutputs()
     ledStripMM.setDuty(0);
     ledStripML.setDuty(0);
     ledStripL.setDuty(0);
-    digitalWrite(AIR_PUMP, HIGH);
+    shiftRegister.setOutput(AIR_PUMP_FIX, HIGH);
 
     return true;
 }
@@ -253,17 +253,16 @@ bool ControlAPI::init()
     ledStripL.begin(PIN_LED_STRIP_5, 4, 5000, 8);  // Configura el pin 22, canal 4, frecuencia de 5000 Hz, resolución de 8 bits
 
     shiftRegister.begin(SR_DATA_PIN, SR_LATCH_PIN, SR_CLOCK_PIN);
-    shiftRegister.setOutput(0, LOW);
-    shiftRegister.setOutput(1, LOW);
-    shiftRegister.setOutput(2, LOW);
-    shiftRegister.setOutput(3, LOW);
-    shiftRegister.setOutput(4, LOW);
-    shiftRegister.setOutput(5, LOW);
-    shiftRegister.setOutput(6, LOW);
-    shiftRegister.setOutput(7, LOW);
+    shiftRegister.setOutput(W_COLD, LOW);
+    shiftRegister.setOutput(W_HOT, LOW);
+    shiftRegister.setOutput(O2, LOW);
+    shiftRegister.setOutput(N2, LOW);
+    shiftRegister.setOutput(CO2, LOW);
+    shiftRegister.setOutput(EV_1, LOW);
+    shiftRegister.setOutput(EV_2, LOW);
 
-    pinMode(AIR_PUMP, OUTPUT);
-    digitalWrite(AIR_PUMP, HIGH); // Comenzamos prendida la bomba de aire
+    pinMode(OLD_AIR_PUMP, INPUT_PULLDOWN);
+    shiftRegister.setOutput(AIR_PUMP_FIX, LOW);
 
     return true;
 }
@@ -282,7 +281,7 @@ cycle_manager::MeasuresAndOutputs ControlAPI::takeMeasuresAndOutputs()
     measuresAndOutputs.temperature = rdo.temperature.measuredValue;
     measuresAndOutputs.oxygen = rdo.doSaturation.measuredValue;
     measuresAndOutputs.concentration = rdo.doConcentration.measuredValue;
-    measuresAndOutputs.air_pump = digitalRead(AIR_PUMP);
+    measuresAndOutputs.air_pump = (output_shift & 0x32) == 0x32;
     // la medicion de ph se actualiza en el .run()
     return measuresAndOutputs;
 }
@@ -310,22 +309,22 @@ bool ControlAPI::air_pump_control(byte output_shift)
 
     if (!EV_oxygen && !EV_nitrogen && !EV_co2)
     {
-        digitalWrite(AIR_PUMP, HIGH);
+        shiftRegister.setOutput(AIR_PUMP_FIX, HIGH);
     }
     else if (EV_co2)
     {
-        digitalWrite(AIR_PUMP, LOW);
+        shiftRegister.setOutput(AIR_PUMP_FIX, LOW);
     }
     else if (EV_nitrogen && goalValues.oxygen >= 100.0)
     {
-        digitalWrite(AIR_PUMP, HIGH);
+        shiftRegister.setOutput(AIR_PUMP_FIX, HIGH);
     }
     else if (EV_oxygen && goalValues.oxygen < 100.0)
     {
-        digitalWrite(AIR_PUMP, HIGH);
+        shiftRegister.setOutput(AIR_PUMP_FIX, HIGH);
     }
     else{
-        digitalWrite(AIR_PUMP, LOW);
+        shiftRegister.setOutput(AIR_PUMP_FIX, LOW);
     }
     return true;
 }

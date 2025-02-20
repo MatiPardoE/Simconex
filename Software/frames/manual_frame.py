@@ -433,8 +433,8 @@ class SetPointsFrame(ctk.CTkFrame):
         self.co2_button.configure(fg_color="red")
         self.o2_button.configure(text="Apagado")
         self.o2_button.configure(fg_color="red")
-        self.air_button.configure(text="Apagado")
-        self.air_button.configure(fg_color="red")
+        self.air_button.configure(text="Encendido")
+        self.air_button.configure(fg_color="green")
         self.n2_button.configure(text="Apagado")
         self.n2_button.configure(fg_color="red")
     
