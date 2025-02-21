@@ -368,13 +368,13 @@ class MyPlot(ctk.CTkFrame):
         self.datetime_axis_expected = []
         
         if var=="ph":
-            self.ax.set_ylim(6, 10)
+            self.ax.set_ylim(4, 12)
         elif var=="od":
             self.ax.set_ylabel("[%]")
-            self.ax.set_ylim(0, 100)
+            self.ax.set_ylim(0, 300)
         elif var=="temperature":
             self.ax.set_ylabel("[°C]")
-            self.ax.set_ylim(10, 30)
+            self.ax.set_ylim(5, 40)
         elif var=="light_t":
             self.ax.set_ylabel("[%]")
             self.ax.set_ylim(0, 100)
@@ -458,13 +458,13 @@ class MyPlot(ctk.CTkFrame):
             if self.resize_plot_flag:
                 self.ax.set_xlim(self.datetime_axis[0], self.datetime_axis[-1])
 
-                if self.valores_esperado_flag and self.var != "light_t":
-                    y_min = min(min(data_lists[self.var]), min(data_lists_expected[self.var]))*0.9
-                    y_max = max(max(data_lists[self.var]), max(data_lists_expected[self.var]))*1.1
-                else:
-                    y_min = min(data_lists[self.var])*0.9
-                    y_max = max(data_lists[self.var])*1.1
-                self.ax.set_ylim(y_min, y_max)
+                # if self.valores_esperado_flag and self.var != "light_t":
+                #     y_min = min(min(data_lists[self.var]), min(data_lists_expected[self.var]))*0.9
+                #     y_max = max(max(data_lists[self.var]), max(data_lists_expected[self.var]))*1.1
+                # else:
+                #     y_min = min(data_lists[self.var])*0.9
+                #     y_max = max(data_lists[self.var])*1.1
+                # self.ax.set_ylim(y_min, y_max)
 
             self.fig.canvas.draw_idle()    
         
