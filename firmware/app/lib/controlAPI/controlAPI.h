@@ -54,6 +54,7 @@
 
 #define O2_DELTA_1S (15) // 2.2% es lo que sube el oxigeno por segundo (pasado a milisegundo)
 
+#define PH_FILTER_SIZE 5
 extern cycle_manager cm;
 
 class ControlAPI
@@ -112,6 +113,9 @@ private:
     bool o2_modulation_on = false;
     uint16_t time_o2_on_ms = 0;
     unsigned long timestamp_o2_on = 0;
+
+    float ph_filter[PH_FILTER_SIZE] = {0};
+    float ph_filter_total_sum = 0;
 };
 
 #endif // SENSOR_CONTROL_H

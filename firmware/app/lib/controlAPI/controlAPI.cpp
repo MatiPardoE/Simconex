@@ -20,9 +20,18 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
         if (ph_response != -1)
         {
             // ESP_LOGI("PH", "Valor de pH: %.2f", ph_response);
-            measuresAndOutputs.ph = ph_response;
             newMeasureFlag.ph = true;
         }
+    }
+
+    if(newMeasureFlag.ph){
+        ph_filter_total_sum -= ph_filter[0];
+        for (int i = 0; i < PH_FILTER_SIZE - 1; i++) {
+            ph_filter[i] = ph_filter[i + 1];
+        }
+        ph_filter[PH_FILTER_SIZE - 1] = ph_response;
+        ph_filter_total_sum += ph_response;
+        measuresAndOutputs.ph = ph_filter_total_sum / PH_FILTER_SIZE;
     }
 
     // Medicion OD
