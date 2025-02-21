@@ -378,7 +378,7 @@ class SerialPublisher:
 
         # Comparar los valores
         for v1, v2 in zip(last_list_1, last_list_2):
-            if abs(v2 - v1) < 0.2 * v1:
+            if abs(v2 - v1) < 0.1 * v1:
                 if variable == "ph":
                     self.noti_ph = False
                 if variable == "od":

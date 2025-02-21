@@ -8,7 +8,6 @@
 #include <neo_pixel.h>
 
 
-#define TOTAL_CHARS_CYCLE_OUT 63
 
 extern NeoPixel neoPixel;
 class cycle_manager

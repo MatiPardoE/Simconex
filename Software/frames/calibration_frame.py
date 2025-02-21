@@ -141,6 +141,31 @@ class CalibPhWindow(ctk.CTkToplevel):
             ui_serial.publisher.unsubscribe(self.update_ph_value)
             ui_serial.mode_status = ModeStatus.NOT_MODE
             self.destroy()
+    
+    def update_date(self, sensor_name):
+        if not os.path.exists("calib"):
+            os.makedirs("calib")
+        if not os.path.exists("calib/calib_data.csv"):
+            with open("calib/calib_data.csv", mode="w", encoding="utf-8") as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(["ph", "01/01/2000"])
+                writer.writerow(["od", "01/01/2000"])
+
+        data = []
+        with open("calib/calib_data.csv", mode="r", encoding="utf-8") as csvfile:
+            reader = csv.reader(csvfile)
+            data = list(reader)
+        
+        today_date = datetime.now().strftime("%d/%m/%Y")
+        
+        for row in data:
+            if len(row) == 2 and row[0] == sensor_name:
+                row[1] = today_date
+        
+        with open("calib/calib_data.csv", mode="w", encoding="utf-8", newline="") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(data)        
+        self.master.label_last_cal.configure(text=f"Ultima calibracion realizada el " + str(datetime.now().strftime('%d/%m/%Y')))
             
     def update_ph_value(self, data):
         if data == MsgType.NEW_MEASURE_CALIB:
@@ -159,7 +184,6 @@ class CalibPhWindow(ctk.CTkToplevel):
 class CalibOdWindow(ctk.CTkToplevel):
     def __init__(self, master = None):
         super().__init__(master = master)
-
         image_path = os.path.join(os.getcwd(), "images")
 
         self.title('Calibracion sensor de OD/Temperatura')
@@ -323,6 +347,31 @@ class CalibOdWindow(ctk.CTkToplevel):
             self.btn_b.grid(column=0, row=4, pady=15, columnspan=2, sticky="ns")
             self.btn_b.grid_forget()
             self.img_label.configure(image=self.img_check)
+    
+    def update_date(self, sensor_name):
+        if not os.path.exists("calib"):
+            os.makedirs("calib")
+        if not os.path.exists("calib/calib_data.csv"):
+            with open("calib/calib_data.csv", mode="w", encoding="utf-8") as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(["ph", "01/01/2000"])
+                writer.writerow(["od", "01/01/2000"])
+
+        data = []
+        with open("calib/calib_data.csv", mode="r", encoding="utf-8") as csvfile:
+            reader = csv.reader(csvfile)
+            data = list(reader)
+        
+        today_date = datetime.now().strftime("%d/%m/%Y")
+        
+        for row in data:
+            if len(row) == 2 and row[0] == sensor_name:
+                row[1] = today_date
+        
+        with open("calib/calib_data.csv", mode="w", encoding="utf-8", newline="") as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerows(data)        
+        self.master.label_last_cal.configure(text=f"Ultima calibracion realizada el " + str(datetime.now().strftime('%d/%m/%Y')))
         
     def update_rdo_value(self, data):
         print("New measurement en RDO CALIB")
@@ -455,31 +504,6 @@ class SensorCalibrateFrame(ctk.CTkFrame):
                     name = "pH"
                 messagebox.showwarning("Advertencia", "El sensor de " + name + " requiere calibración")
                 print("Advertencia", "El sensor de " + name + " requiere calibración")
-    
-    def update_date(self, sensor_name):
-        if not os.path.exists("calib"):
-            os.makedirs("calib")
-        if not os.path.exists("calib/calib_data.csv"):
-            with open("calib/calib_data.csv", mode="w", encoding="utf-8") as csvfile:
-                writer = csv.writer(csvfile)
-                writer.writerow(["ph", "01/01/2000"])
-                writer.writerow(["od", "01/01/2000"])
-
-        data = []
-        with open("calib/calib_data.csv", mode="r", encoding="utf-8") as csvfile:
-            reader = csv.reader(csvfile)
-            data = list(reader)
-        
-        today_date = datetime.now().strftime("%d/%m/%Y")
-        
-        for row in data:
-            if len(row) == 2 and row[0] == sensor_name:
-                row[1] = today_date
-        
-        with open("calib/calib_data.csv", mode="w", encoding="utf-8", newline="") as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerows(data)        
-        self.label_last_cal.configure(text=f"Ultima calibracion realizada el " + str(datetime.now().strftime('%d/%m/%Y')))
 
 
 class CalibrationFrame(ctk.CTkFrame):

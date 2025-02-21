@@ -26,15 +26,15 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
         }
     }
 
-    // if(newMeasureFlag.ph){
-    //     ph_filter_total_sum -= ph_filter[0];
-    //     for (int i = 0; i < PH_FILTER_SIZE - 1; i++) {
-    //         ph_filter[i] = ph_filter[i + 1];
-    //     }
-    //     ph_filter[PH_FILTER_SIZE - 1] = ph_response;
-    //     ph_filter_total_sum += ph_response;
-    //     measuresAndOutputs.ph = ph_filter_total_sum / PH_FILTER_SIZE;
-    // }
+    if(newMeasureFlag.ph){
+        ph_filter_total_sum -= ph_filter[0];
+        for (int i = 0; i < PH_FILTER_SIZE - 1; i++) {
+            ph_filter[i] = ph_filter[i + 1];
+        }
+        ph_filter[PH_FILTER_SIZE - 1] = ph_response;
+        ph_filter_total_sum += ph_response;
+        measuresAndOutputs.ph = ph_filter_total_sum / PH_FILTER_SIZE;
+    }
 
     // Medicion OD
     if (_TIMEOUT_TO_RDO_REQUEST_)
