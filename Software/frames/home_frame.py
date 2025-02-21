@@ -112,7 +112,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.label_control = ctk.CTkLabel(self.right_frame, text="Estado Variables", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_control.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsew")
 
-        self.label_light = ctk.CTkLabel(self.right_frame, text="Luz", font=ctk.CTkFont(weight="bold"))
+        self.label_light = ctk.CTkLabel(self.right_frame, text="Luz [%]", font=ctk.CTkFont(weight="bold"))
         self.label_light.grid(row=1, column=0, padx=10, pady=(10,0), sticky="nsew")
         self.light_button = ctk.CTkButton(self.right_frame, text="--%", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.light_button.grid(row=2, column=0, padx=10, pady=0, sticky="ns")
@@ -122,17 +122,17 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.ph_button = ctk.CTkButton(self.right_frame, text="--", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.ph_button.grid(row=4, column=0, padx=10, pady=0, sticky="ns")
 
-        self.label_do = ctk.CTkLabel(self.right_frame, text="OD", font=ctk.CTkFont(weight="bold"))
+        self.label_do = ctk.CTkLabel(self.right_frame, text="OD [%]", font=ctk.CTkFont(weight="bold"))
         self.label_do.grid(row=5, column=0, padx=10, pady=(10,0), sticky="nsew")
         self.do_button = ctk.CTkButton(self.right_frame, text="--%", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.do_button.grid(row=6, column=0, padx=10, pady=0, sticky="ns")
 
-        self.label_temp = ctk.CTkLabel(self.right_frame, text="Temperatura", font=ctk.CTkFont(weight="bold"))
+        self.label_temp = ctk.CTkLabel(self.right_frame, text="Temperatura [°C]", font=ctk.CTkFont(weight="bold"))
         self.label_temp.grid(row=7  , column=0, padx=10, pady=(10,0), sticky="nsew")
         self.temp_button = ctk.CTkButton(self.right_frame, text="--°C", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.temp_button.grid(row=8, column=0, padx=10, pady=(0,10), sticky="ns")
 
-        self.label_conc = ctk.CTkLabel(self.right_frame, text="Concentracion", font=ctk.CTkFont(weight="bold"))
+        self.label_conc = ctk.CTkLabel(self.right_frame, text="OD [mg/L]", font=ctk.CTkFont(weight="bold"))
         self.label_conc.grid(row=9  , column=0, padx=10, pady=(10,0), sticky="nsew")
         self.conc_button = ctk.CTkButton(self.right_frame, text="-- mg/L", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.conc_button.grid(row=10, column=0, padx=10, pady=(0,10), sticky="ns")
@@ -367,17 +367,7 @@ class MyPlot(ctk.CTkFrame):
         self.datetime_axis = []
         self.datetime_axis_expected = []
         
-        if var=="ph":
-            self.ax.set_ylim(6, 10)
-        elif var=="od":
-            self.ax.set_ylabel("[%]")
-            self.ax.set_ylim(0, 100)
-        elif var=="temperature":
-            self.ax.set_ylabel("[°C]")
-            self.ax.set_ylim(10, 30)
-        elif var=="light_t":
-            self.ax.set_ylabel("[%]")
-            self.ax.set_ylim(0, 100)
+        self.set_plot_axis()
         
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)  
         self.canvas.draw()
@@ -387,6 +377,19 @@ class MyPlot(ctk.CTkFrame):
         self.toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
 
         self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=True)
+    
+    def set_plot_axis(self):
+        if self.var=="ph":
+            self.ax.set_ylim(1, 13)
+        elif self.var=="od":
+            self.ax.set_ylabel("[%]")
+            self.ax.set_ylim(0, 300)
+        elif self.var=="temperature":
+            self.ax.set_ylabel("[°C]")
+            self.ax.set_ylim(5, 40)
+        elif self.var=="light_t":
+            self.ax.set_ylabel("[%]")
+            self.ax.set_ylim(0, 100)
 
     def reset_data(self):
         self.id_data = []
@@ -409,6 +412,7 @@ class MyPlot(ctk.CTkFrame):
             self.initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")  
             self.reset_data() 
             self.ax.clear()
+
             if data_lists_expected[self.var][0] != 0 and self.var != "light_t":
                 self.valores_esperado_flag = True
                 self.line_expected, = self.ax.plot(self.datetime_axis, [], label="Valores esperados")
@@ -417,6 +421,8 @@ class MyPlot(ctk.CTkFrame):
             self.ax.legend()
             self.fig.canvas.mpl_connect("button_press_event", self.check_active_tool)
             self.resize_plot_flag = True
+
+            self.set_plot_axis()
         
         if data == MsgType.ESP_SYNCRONIZED and (ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING or ui_serial.cycle_status == CycleStatus.CYCLE_FINISHED or ui_serial.cycle_status == CycleStatus.CYCLE_PAUSED): # Aca es que grafico un ciclo que esta empezado y sigue funcionando
             self.initial_time = datetime.strptime(ui_serial.cycle_id, "%Y%m%d_%H%M")
@@ -442,6 +448,8 @@ class MyPlot(ctk.CTkFrame):
             self.fig.canvas.mpl_connect("button_press_event", self.check_active_tool)
             self.resize_plot_flag = True
 
+            self.set_plot_axis()
+
         if data == MsgType.NEW_MEASUREMENT and ui_serial.cycle_status == CycleStatus.CYCLE_RUNNING:
             num_measurements = len(data_lists['id'])
             if num_measurements == 1:
@@ -457,14 +465,6 @@ class MyPlot(ctk.CTkFrame):
 
             if self.resize_plot_flag:
                 self.ax.set_xlim(self.datetime_axis[0], self.datetime_axis[-1])
-
-                if self.valores_esperado_flag and self.var != "light_t":
-                    y_min = min(min(data_lists[self.var]), min(data_lists_expected[self.var]))*0.9
-                    y_max = max(max(data_lists[self.var]), max(data_lists_expected[self.var]))*1.1
-                else:
-                    y_min = min(data_lists[self.var])*0.9
-                    y_max = max(data_lists[self.var])*1.1
-                self.ax.set_ylim(y_min, y_max)
 
             self.fig.canvas.draw_idle()    
         

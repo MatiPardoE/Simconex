@@ -148,8 +148,8 @@ class SerialPublisher:
             for callback in self.subscribers: callback(MsgType.ESP_DISCONNECTED)
         #TODO: AGREGAR LA CONCENTRACION
         pattern = r"^(\d{8}),(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(0|1),(0|1),(0|1),(0|1),(\d{2}\.\d{2})$"
+        # pattern = r"^(\d{8}),(?!0{2}\.0{2},0{3}\.0{2},0{2}\.0{2}$)(\d{2}\.\d{2}),(\d{3}\.\d{2}),(\d{2}\.\d{2}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(\d{3}),(0|1),(0|1),(0|1),(0|1),(\d{2}\.\d{2})$"
         match = re.match(pattern, data)
-
 
         if match:
             if cycle_status == CycleStatus.CYCLE_RUNNING: # Caso prioritario si esta corriendo solo guardo en data_list
@@ -233,8 +233,13 @@ class SerialPublisher:
                 for callback in self.subscribers: callback(MsgType.NEW_MEASURE_CALIB)
 
             elif mode_status == ModeStatus.MODE_SYNC: # Si el estado del ciclo no esta corriendo, pero el modo es sincronización, guardo
-                    for callback in self.subscribers:          
-                        callback(data)
+                
+                if (int(match.group(5))==0 and float(match.group(2))==0 and float(match.group(3))==0 and float(match.group(4))==0):
+                    data = self.prev_data
+                
+                for callback in self.subscribers:          
+                    callback(data)
+                    self.prev_data = data
         else:
             # Resto de comandos que no son intervalos
             for callback in self.subscribers:          
@@ -373,7 +378,7 @@ class SerialPublisher:
 
         # Comparar los valores
         for v1, v2 in zip(last_list_1, last_list_2):
-            if abs(v2 - v1) < 0.2 * v1:
+            if abs(v2 - v1) < 0.1 * v1:
                 if variable == "ph":
                     self.noti_ph = False
                 if variable == "od":

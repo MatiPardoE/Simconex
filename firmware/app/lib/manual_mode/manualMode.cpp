@@ -54,6 +54,6 @@ void ManualMode::deactivate()
     active = false;
     manualAlarmFlag = false;
     manualAlarm.stopAndDeleteAlarm();
-    ESP_LOGI("ManualMode", "Desactivando manual mode");
+    //ESP_LOGI("ManualMode", "Desactivando manual mode");
     neoPixel.setState(NeoPixel::OFF);
 }

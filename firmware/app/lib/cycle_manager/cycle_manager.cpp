@@ -516,7 +516,7 @@ bool cycle_manager::readInterval()
 
         file.close();
 
-        logIntervalDataforDebug(intervalData);
+        //logIntervalDataforDebug(intervalData);
         return true;
     }
     else
@@ -580,6 +580,7 @@ bool cycle_manager::evaluateAlarmStatus()
     case CYCLE_PAUSED:
         // Handle cycle paused
         ESP_LOGI(TAG, "Cycle paused, pausing alarm");
+        cycleAlarm.setAlarm(cycleData.interval_time, cycle_manager::onAlarm);
         cycleAlarm.pauseAlarm();
         neoPixel.setState(NeoPixel::CYCLE_PAUSED);
         break;

@@ -70,7 +70,7 @@ class LogFrame(ctk.CTkFrame):
         self.label_time = ctk.CTkLabel(self.frame_line, text="Temperatura [°C]", corner_radius=0, width=200, font=ctk.CTkFont(size=15, weight="bold"))
         self.label_time.grid(row=0, column=5, padx=5, pady=0, sticky="ns")
 
-        self.label_time = ctk.CTkLabel(self.frame_line, text="Concentracion [mg/L]", corner_radius=0, width=200, font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_time = ctk.CTkLabel(self.frame_line, text="OD [mg/L]", corner_radius=0, width=200, font=ctk.CTkFont(size=15, weight="bold"))
         self.label_time.grid(row=0, column=6, padx=5, pady=0, sticky="ns")
 
         self.label_time = ctk.CTkLabel(self.frame_line, text="Ciclo", corner_radius=0, width=150, font=ctk.CTkFont(size=15, weight="bold"))
@@ -101,22 +101,22 @@ class LogFrame(ctk.CTkFrame):
 
                 date, hour = self.calculate_datetime(i)
                 
-                self.label_time = ctk.CTkLabel(self.in_frame, text=hour, corner_radius=0, width=100) 
+                self.label_time = ctk.CTkLabel(self.in_frame, text=hour, corner_radius=0, width=125) 
                 self.label_time.pack(side='left')
 
-                self.label_date = ctk.CTkLabel(self.in_frame, text=date, corner_radius=0, width=200) 
+                self.label_date = ctk.CTkLabel(self.in_frame, text=date, corner_radius=0, width=225) 
                 self.label_date.pack(side='left')
 
-                self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['od'][i]), corner_radius=0, width=125)
+                self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['od'][i]), corner_radius=0, width=150)
                 self.label_od.pack(side='left')
 
-                self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['ph'][i]), corner_radius=0, width=125)
+                self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['ph'][i]), corner_radius=0, width=150)
                 self.label_ph.pack(side='left')
 
-                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists_manual['light_t'][i]}", corner_radius=0, width=125)
+                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists_manual['light_t'][i]}", corner_radius=0, width=150)
                 self.label_light.pack(side='left')
 
-                self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['temperature'][i]), corner_radius=0, width=200)
+                self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['temperature'][i]), corner_radius=0, width=225)
                 self.label_temp.pack(side='left')
 
                 self.label_conc = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['conc'][i]), corner_radius=0, width=200)
@@ -140,22 +140,22 @@ class LogFrame(ctk.CTkFrame):
             self.in_frame = ctk.CTkFrame(self.frame_line)
             self.in_frame.pack(fill="x")
 
-            self.label_time = ctk.CTkLabel(self.in_frame, text=datetime.datetime.now().strftime("%H:%M:%S"), corner_radius=0, width=100)
+            self.label_time = ctk.CTkLabel(self.in_frame, text=datetime.datetime.now().strftime("%H:%M:%S"), corner_radius=0, width=125)
             self.label_time.pack(side='left')
 
-            self.label_date = ctk.CTkLabel(self.in_frame, text=datetime.datetime.now().strftime("%d/%m/%Y"), corner_radius=0, width=200)
+            self.label_date = ctk.CTkLabel(self.in_frame, text=datetime.datetime.now().strftime("%d/%m/%Y"), corner_radius=0, width=225)
             self.label_date.pack(side='left')
 
-            self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['od'][last_index]), corner_radius=0, width=125)
+            self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['od'][last_index]), corner_radius=0, width=150)
             self.label_od.pack(side='left')
 
-            self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['ph'][last_index]), corner_radius=0, width=125)
+            self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['ph'][last_index]), corner_radius=0, width=150)
             self.label_ph.pack(side='left')
 
-            self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists_manual['light_t'][last_index]}", corner_radius=0, width=125)
+            self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists_manual['light_t'][last_index]}", corner_radius=0, width=150)
             self.label_light.pack(side='left')
 
-            self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['temperature'][last_index]), corner_radius=0, width=200)
+            self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['temperature'][last_index]), corner_radius=0, width=225)
             self.label_temp.pack(side='left')
 
             self.label_conc = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['conc'][last_index]), corner_radius=0, width=200)
@@ -247,7 +247,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.temp_button = ctk.CTkButton(self.right_frame, text="--", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.temp_button.grid(row=8, column=0, padx=10, pady=(0, 10), sticky="ns")
 
-        self.label_conc = ctk.CTkLabel(self.right_frame, text="Concentracion [mg/L]", font=ctk.CTkFont(weight="bold"))
+        self.label_conc = ctk.CTkLabel(self.right_frame, text="OD [mg/L]", font=ctk.CTkFont(weight="bold"))
         self.label_conc.grid(row=9, column=0, padx=10, pady=(10,0), sticky="nsew")
         self.conc_button = ctk.CTkButton(self.right_frame, text="--", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.conc_button.grid(row=10, column=0, padx=10, pady=(0, 10), sticky="ns")
@@ -369,8 +369,8 @@ class SetPointsFrame(ctk.CTkFrame):
         if data == MsgType.ESP_PLAYED or data == MsgType.NEW_CYCLE_SENT:
             self.esp_played() 
 
-        if data == MsgType.NEW_MEASUREMENT and ui_serial.mode_status == ModeStatus.MODE_MANUAL:
-            self.update_buttons()
+        #if data == MsgType.NEW_MEASUREMENT and ui_serial.mode_status == ModeStatus.MODE_MANUAL:
+         #   self.update_buttons()
 
     def esp_connected(self):
         self.entry_light.configure(state = "normal")
@@ -433,8 +433,8 @@ class SetPointsFrame(ctk.CTkFrame):
         self.co2_button.configure(fg_color="red")
         self.o2_button.configure(text="Apagado")
         self.o2_button.configure(fg_color="red")
-        self.air_button.configure(text="Apagado")
-        self.air_button.configure(fg_color="red")
+        self.air_button.configure(text="Encendido")
+        self.air_button.configure(fg_color="green")
         self.n2_button.configure(text="Apagado")
         self.n2_button.configure(fg_color="red")
     

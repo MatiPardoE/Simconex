@@ -123,7 +123,7 @@ class App(ctk.CTk):
         self.scaling_label.grid(row=10, column=0, padx=20, pady=(10, 0))
         self.scaling_optionemenu = ctk.CTkOptionMenu(self.navigation_frame, values=["80%", "90%", "100%", "110%", "120%"],
                                                      command=self.change_scaling_event)
-        self.scaling_optionemenu.set("90%")
+        self.scaling_optionemenu.set("120%")
         ctk.set_widget_scaling(0.9)
         self.scaling_optionemenu.grid(row=11, column=0, padx=20, pady=(10, 20), sticky="s")
 

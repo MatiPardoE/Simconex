@@ -14,6 +14,10 @@ void NeoPixel::begin()
 {
     pixels.begin();
     pixels.clear();
+    for (int i = 0; i < numPixels; i++) {
+        pixels.setPixelColor(i, pixels.Color(255, 255, 255)); // White
+    }
+    pixels.show();
 }
 
 void NeoPixel::setState(neoPixelState state)
@@ -63,12 +67,12 @@ void NeoPixel::setState(neoPixelState state)
 
 void NeoPixel::initFun()
 {
-    for (int i = 0; i < numPixels; i++)
-    {
-        pixels.setPixelColor(i, pixels.Color(255, 255, 255)); // White color
+    for (int j = 0; j < 256; j++) { // Cycle through the color wheel
+        for (int i = 0; i < numPixels; i++) {
+            pixels.setPixelColor(i, pixels.ColorHSV((i * 256 / numPixels + j) & 255, 255, 255));
+        }
         pixels.show();
-        delay(100);                                     // Delay to create a start-up effect
-        pixels.setPixelColor(i, pixels.Color(0, 0, 0)); // Turn off the pixel
+        delay(20); // Adjust delay for speed of rainbow effect
     }
     pixels.show();
 }
