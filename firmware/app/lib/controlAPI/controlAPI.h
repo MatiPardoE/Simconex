@@ -101,6 +101,7 @@ private:
     // Add private members if needed
     cycle_manager::MeasuresAndOutputs measuresAndOutputs;
     cycle_manager::MeasuresAndOutputs measuresAndOutputs_prev;
+    cycle_manager::MeasuresAndOutputs ev_was_active;
     GoalValues goalValues;
     NewMeasureFlags newMeasureFlag;
     // SENSORS

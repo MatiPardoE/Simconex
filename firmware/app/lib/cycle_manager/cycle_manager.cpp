@@ -118,6 +118,28 @@ bool cycle_manager::writeMeasuresToSD(MeasuresAndOutputs measuresAndOutputs, uin
         ESP_LOGE(TAG, "Failed to open data output file for writing");
         return false;
     }
+    ESP_LOGI(TAG, "Filas por size: %d",file.size()/TOTAL_CHARS_CYCLE_OUT);
+
+    if(file.size()/TOTAL_CHARS_CYCLE_OUT != interval_id_measure){
+        ESP_LOGE(TAG, "Error NOS SALTEAMOS UNA FILA");
+        file.printf("%08d,%05.2f,%06.2f,%05.2f,%03d,%03d,%03d,%03d,%03d,%d,%d,%d,%d,%05.2f",
+            interval_id_measure-1,
+            measuresAndOutputs.ph,
+            measuresAndOutputs.oxygen,
+            measuresAndOutputs.temperature,
+            measuresAndOutputs.light_top,
+            measuresAndOutputs.light_mid_top,
+            measuresAndOutputs.light_mid_mid,
+            measuresAndOutputs.light_mid_low,
+            measuresAndOutputs.light_low,
+            measuresAndOutputs.EV_co2,
+            measuresAndOutputs.EV_oxygen,
+            measuresAndOutputs.EV_nitrogen,
+            measuresAndOutputs.air_pump,
+            measuresAndOutputs.concentration);
+            file.println();
+    }
+
     // Write the measures to the file
     file.printf("%08d,%05.2f,%06.2f,%05.2f,%03d,%03d,%03d,%03d,%03d,%d,%d,%d,%d,%05.2f",
                 interval_id_measure,

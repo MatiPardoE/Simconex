@@ -5,6 +5,7 @@
 ControlAPI::ControlAPI()
 {
     measuresAndOutputs = {0, 0, 0, 0, 0, 0, 0, 0, false, false, false, false};
+    ev_was_active = {0, 0, 0, 0, 0, 0, 0, 0, false, false, false, false};
     goalValues = {0, 0, 0, 0, 0, 0, 0, 0};
 }
 
@@ -21,18 +22,19 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
         {
             // ESP_LOGI("PH", "Valor de pH: %.2f", ph_response);
             newMeasureFlag.ph = true;
+            measuresAndOutputs.ph = ph_response;
         }
     }
 
-    if(newMeasureFlag.ph){
-        ph_filter_total_sum -= ph_filter[0];
-        for (int i = 0; i < PH_FILTER_SIZE - 1; i++) {
-            ph_filter[i] = ph_filter[i + 1];
-        }
-        ph_filter[PH_FILTER_SIZE - 1] = ph_response;
-        ph_filter_total_sum += ph_response;
-        measuresAndOutputs.ph = ph_filter_total_sum / PH_FILTER_SIZE;
-    }
+    // if(newMeasureFlag.ph){
+    //     ph_filter_total_sum -= ph_filter[0];
+    //     for (int i = 0; i < PH_FILTER_SIZE - 1; i++) {
+    //         ph_filter[i] = ph_filter[i + 1];
+    //     }
+    //     ph_filter[PH_FILTER_SIZE - 1] = ph_response;
+    //     ph_filter_total_sum += ph_response;
+    //     measuresAndOutputs.ph = ph_filter_total_sum / PH_FILTER_SIZE;
+    // }
 
     // Medicion OD
     if (_TIMEOUT_TO_RDO_REQUEST_)
@@ -87,6 +89,7 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
             else if (__PH_HIGHER__)
             {
                 shiftRegister.setOutput(CO2, HIGH);
+                ev_was_active.EV_co2 = true;
             }
         }
         else
@@ -153,6 +156,7 @@ bool ControlAPI::modeManualsetOutputs(String command)
     else if (command.startsWith("#C1"))
     {
         shiftRegister.setOutput(CO2, HIGH);
+        ev_was_active.EV_co2 = true;
         ESP_LOGI("Manual", "Set EV_co2 to 1");
     }
     else if (command.startsWith("#O0"))
@@ -164,6 +168,7 @@ bool ControlAPI::modeManualsetOutputs(String command)
     {
         shiftRegister.setOutput(O2, HIGH);
         ESP_LOGI("Manual", "Set EV_o2 to 1");
+        ev_was_active.EV_oxygen = true;
     }
     else if (command.startsWith("#N0"))
     {
@@ -174,6 +179,7 @@ bool ControlAPI::modeManualsetOutputs(String command)
     {
         shiftRegister.setOutput(N2, HIGH);
         ESP_LOGI("Manual", "Set EV_n2 to 1");
+        ev_was_active.EV_nitrogen = true;
     }
     else if (command.startsWith("#A0"))
     {
@@ -184,6 +190,7 @@ bool ControlAPI::modeManualsetOutputs(String command)
     {
         shiftRegister.setOutput(AIR_PUMP_FIX, HIGH);
         ESP_LOGI("Manual", "Set EV_air to 1");
+        ev_was_active.air_pump = true;  
     }
     else if (command.startsWith("#WCOLD0"))
     {
@@ -240,6 +247,7 @@ bool ControlAPI::turnOffOutputs()
     ledStripML.setDuty(0);
     ledStripL.setDuty(0);
     shiftRegister.setOutput(AIR_PUMP_FIX, HIGH);
+    ev_was_active.air_pump = true;
 
     return true;
 }
@@ -272,6 +280,7 @@ bool ControlAPI::init()
 
     pinMode(OLD_AIR_PUMP, INPUT_PULLDOWN);
     shiftRegister.setOutput(AIR_PUMP_FIX, HIGH);
+    ev_was_active.air_pump = true;
 
     return true;
 }
@@ -279,9 +288,11 @@ bool ControlAPI::init()
 cycle_manager::MeasuresAndOutputs ControlAPI::takeMeasuresAndOutputs()
 {
     byte output_shift = shiftRegister.getOutputState();
-    measuresAndOutputs.EV_oxygen = (output_shift & 0x02) == 0x02;
-    measuresAndOutputs.EV_nitrogen = (output_shift & 0x04) == 0x04;
-    measuresAndOutputs.EV_co2 = (output_shift & 0x08) == 0x08;
+    measuresAndOutputs.EV_oxygen = ev_was_active.EV_oxygen;
+    measuresAndOutputs.EV_nitrogen = ev_was_active.EV_nitrogen;
+    measuresAndOutputs.EV_co2 = ev_was_active.EV_co2;
+    measuresAndOutputs.air_pump = ev_was_active.air_pump;
+    ev_was_active = {0, 0, 0, 0, 0, 0, 0, 0, false, false, false, false};
     measuresAndOutputs.light_top = ledStripT.getDuty();
     measuresAndOutputs.light_mid_top = ledStripMT.getDuty();
     measuresAndOutputs.light_mid_mid = ledStripMM.getDuty();
@@ -290,7 +301,7 @@ cycle_manager::MeasuresAndOutputs ControlAPI::takeMeasuresAndOutputs()
     measuresAndOutputs.temperature = rdo.temperature.measuredValue;
     measuresAndOutputs.oxygen = rdo.doSaturation.measuredValue;
     measuresAndOutputs.concentration = rdo.doConcentration.measuredValue;
-    measuresAndOutputs.air_pump = (output_shift & 0x32) == 0x32;
+    
     // la medicion de ph se actualiza en el .run()
     return measuresAndOutputs;
 }
@@ -319,6 +330,7 @@ bool ControlAPI::air_pump_control(byte output_shift)
     if (!EV_oxygen && !EV_nitrogen && !EV_co2)
     {
         shiftRegister.setOutput(AIR_PUMP_FIX, HIGH);
+        ev_was_active.air_pump = true;
     }
     else if (EV_co2)
     {
@@ -327,10 +339,12 @@ bool ControlAPI::air_pump_control(byte output_shift)
     else if (EV_nitrogen && goalValues.oxygen >= 100.0)
     {
         shiftRegister.setOutput(AIR_PUMP_FIX, HIGH);
+        ev_was_active.air_pump = true;
     }
     else if (EV_oxygen && goalValues.oxygen < 100.0)
     {
         shiftRegister.setOutput(AIR_PUMP_FIX, HIGH);
+        ev_was_active.air_pump = true;
     }
     else{
         shiftRegister.setOutput(AIR_PUMP_FIX, LOW);
@@ -376,6 +390,7 @@ bool ControlAPI::OD_modulation_control(float current, float goal)
         shiftRegister.setOutput(O2, HIGH);
         shiftRegister.setOutput(N2, LOW);
         o2_modulation_on = true;
+        ev_was_active.EV_oxygen = true;
         ESP_LOGI("O2", "O2 ON for %d ms", time_o2_on_ms);
         ESP_LOGI("O2", "Delta: %.2f", delta);
         ESP_LOGI("O2", "Current O2: %.2f", current);
@@ -385,6 +400,7 @@ bool ControlAPI::OD_modulation_control(float current, float goal)
     {
         shiftRegister.setOutput(O2, LOW);
         shiftRegister.setOutput(N2, HIGH);
+        ev_was_active.EV_nitrogen = true;
     }
     else if (__O2_IN_RANGE__)
     {
