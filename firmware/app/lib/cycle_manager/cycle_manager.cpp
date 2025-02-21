@@ -516,7 +516,7 @@ bool cycle_manager::readInterval()
 
         file.close();
 
-        logIntervalDataforDebug(intervalData);
+        //logIntervalDataforDebug(intervalData);
         return true;
     }
     else
