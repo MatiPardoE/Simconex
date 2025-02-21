@@ -369,8 +369,8 @@ class SetPointsFrame(ctk.CTkFrame):
         if data == MsgType.ESP_PLAYED or data == MsgType.NEW_CYCLE_SENT:
             self.esp_played() 
 
-        if data == MsgType.NEW_MEASUREMENT and ui_serial.mode_status == ModeStatus.MODE_MANUAL:
-            self.update_buttons()
+        #if data == MsgType.NEW_MEASUREMENT and ui_serial.mode_status == ModeStatus.MODE_MANUAL:
+         #   self.update_buttons()
 
     def esp_connected(self):
         self.entry_light.configure(state = "normal")
