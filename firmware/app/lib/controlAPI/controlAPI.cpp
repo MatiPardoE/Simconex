@@ -271,7 +271,7 @@ bool ControlAPI::init()
     shiftRegister.setOutput(EV_2, LOW);
 
     pinMode(OLD_AIR_PUMP, INPUT_PULLDOWN);
-    shiftRegister.setOutput(AIR_PUMP_FIX, LOW);
+    shiftRegister.setOutput(AIR_PUMP_FIX, HIGH);
 
     return true;
 }
