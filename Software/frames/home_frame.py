@@ -112,7 +112,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.label_control = ctk.CTkLabel(self.right_frame, text="Estado Variables", font=ctk.CTkFont(size=20, weight="bold"))
         self.label_control.grid(row=0, column=0, padx=10, pady=(10, 0), sticky="nsew")
 
-        self.label_light = ctk.CTkLabel(self.right_frame, text="Luz", font=ctk.CTkFont(weight="bold"))
+        self.label_light = ctk.CTkLabel(self.right_frame, text="Luz [%]", font=ctk.CTkFont(weight="bold"))
         self.label_light.grid(row=1, column=0, padx=10, pady=(10,0), sticky="nsew")
         self.light_button = ctk.CTkButton(self.right_frame, text="--%", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.light_button.grid(row=2, column=0, padx=10, pady=0, sticky="ns")
@@ -122,17 +122,17 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.ph_button = ctk.CTkButton(self.right_frame, text="--", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.ph_button.grid(row=4, column=0, padx=10, pady=0, sticky="ns")
 
-        self.label_do = ctk.CTkLabel(self.right_frame, text="OD", font=ctk.CTkFont(weight="bold"))
+        self.label_do = ctk.CTkLabel(self.right_frame, text="OD [%]", font=ctk.CTkFont(weight="bold"))
         self.label_do.grid(row=5, column=0, padx=10, pady=(10,0), sticky="nsew")
         self.do_button = ctk.CTkButton(self.right_frame, text="--%", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.do_button.grid(row=6, column=0, padx=10, pady=0, sticky="ns")
 
-        self.label_temp = ctk.CTkLabel(self.right_frame, text="Temperatura", font=ctk.CTkFont(weight="bold"))
+        self.label_temp = ctk.CTkLabel(self.right_frame, text="Temperatura [°C]", font=ctk.CTkFont(weight="bold"))
         self.label_temp.grid(row=7  , column=0, padx=10, pady=(10,0), sticky="nsew")
         self.temp_button = ctk.CTkButton(self.right_frame, text="--°C", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.temp_button.grid(row=8, column=0, padx=10, pady=(0,10), sticky="ns")
 
-        self.label_conc = ctk.CTkLabel(self.right_frame, text="Concentracion", font=ctk.CTkFont(weight="bold"))
+        self.label_conc = ctk.CTkLabel(self.right_frame, text="OD [mg/L]", font=ctk.CTkFont(weight="bold"))
         self.label_conc.grid(row=9  , column=0, padx=10, pady=(10,0), sticky="nsew")
         self.conc_button = ctk.CTkButton(self.right_frame, text="-- mg/L", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.conc_button.grid(row=10, column=0, padx=10, pady=(0,10), sticky="ns")
@@ -380,7 +380,7 @@ class MyPlot(ctk.CTkFrame):
     
     def set_plot_axis(self):
         if self.var=="ph":
-            self.ax.set_ylim(4, 12)
+            self.ax.set_ylim(1, 13)
         elif self.var=="od":
             self.ax.set_ylabel("[%]")
             self.ax.set_ylim(0, 300)

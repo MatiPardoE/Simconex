@@ -70,7 +70,7 @@ class LogFrame(ctk.CTkFrame):
         self.label_time = ctk.CTkLabel(self.frame_line, text="Temperatura [°C]", corner_radius=0, width=200, font=ctk.CTkFont(size=15, weight="bold"))
         self.label_time.grid(row=0, column=5, padx=5, pady=0, sticky="ns")
 
-        self.label_time = ctk.CTkLabel(self.frame_line, text="Concentracion [mg/L]", corner_radius=0, width=200, font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_time = ctk.CTkLabel(self.frame_line, text="OD [mg/L]", corner_radius=0, width=200, font=ctk.CTkFont(size=15, weight="bold"))
         self.label_time.grid(row=0, column=6, padx=5, pady=0, sticky="ns")
 
         self.label_time = ctk.CTkLabel(self.frame_line, text="Ciclo", corner_radius=0, width=150, font=ctk.CTkFont(size=15, weight="bold"))
@@ -247,7 +247,7 @@ class InstantValuesFrame(ctk.CTkFrame):
         self.temp_button = ctk.CTkButton(self.right_frame, text="--", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.temp_button.grid(row=8, column=0, padx=10, pady=(0, 10), sticky="ns")
 
-        self.label_conc = ctk.CTkLabel(self.right_frame, text="Concentracion [mg/L]", font=ctk.CTkFont(weight="bold"))
+        self.label_conc = ctk.CTkLabel(self.right_frame, text="OD [mg/L]", font=ctk.CTkFont(weight="bold"))
         self.label_conc.grid(row=9, column=0, padx=10, pady=(10,0), sticky="nsew")
         self.conc_button = ctk.CTkButton(self.right_frame, text="--", fg_color="white", hover=False, state="disabled", text_color_disabled="black", width=100)
         self.conc_button.grid(row=10, column=0, padx=10, pady=(0, 10), sticky="ns")

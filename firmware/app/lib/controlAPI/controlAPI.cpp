@@ -14,15 +14,20 @@ bool ControlAPI::run(cycle_manager::CycleStatus cycleStatus)
     static cycle_manager::MeasuresAndOutputs new_measure_calib = {0, 0, 0, 0, 0, 0, 0, 0, false, false, false, false};
 
     float ph_response = 0;
+    static float ph_actual = 0;
+    static float ph_prev = -1;
     // Medicion de ph
     if (can_ph_read())
     {
         ph_response = get_ph();
-        if (ph_response != -1)
+        if (ph_response != -1 && o2_modulation_on == false)
         {
             // ESP_LOGI("PH", "Valor de pH: %.2f", ph_response);
-            newMeasureFlag.ph = true;
-            measuresAndOutputs.ph = ph_response;
+            if((ph_response!=0 && abs(ph_response-ph_prev) < 3) || ph_prev == -1){
+                ph_prev = ph_response;
+                newMeasureFlag.ph = true;
+            }
+            ph_actual = ph_response;
         }
     }
 

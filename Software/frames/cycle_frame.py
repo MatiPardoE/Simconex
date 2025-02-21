@@ -717,7 +717,7 @@ class LogFrame(ctk.CTkFrame):
         self.label_time = ctk.CTkLabel(self.frame_line, text="Temperatura [°C]", corner_radius=0, width=200, font=ctk.CTkFont(size=15, weight="bold"))
         self.label_time.grid(row=0, column=5, padx=5, pady=0, sticky="ns")
 
-        self.label_time = ctk.CTkLabel(self.frame_line, text="Concentracion [mg/L]", corner_radius=0, width=200, font=ctk.CTkFont(size=15, weight="bold"))
+        self.label_time = ctk.CTkLabel(self.frame_line, text="OD [mg/L]", corner_radius=0, width=200, font=ctk.CTkFont(size=15, weight="bold"))
         self.label_time.grid(row=0, column=6, padx=5, pady=0, sticky="ns")
 
         self.label_time = ctk.CTkLabel(self.frame_line, text="Ciclo", corner_radius=0, width=150, font=ctk.CTkFont(size=15, weight="bold"))
