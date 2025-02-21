@@ -33,8 +33,8 @@
 #define AIR_PUMP_FIX EV_1
 
 #define __UMBRAL_PH__ 0.1
-#define __PH_LOWER__ (measuresAndOutputs.ph < goalValues.ph - __UMBRAL_PH__)
-#define __PH_HIGHER__ (measuresAndOutputs.ph > goalValues.ph + __UMBRAL_PH__)
+#define __PH_LOWER__ (ph_response < goalValues.ph - __UMBRAL_PH__)
+#define __PH_HIGHER__ (ph_response > goalValues.ph + __UMBRAL_PH__)
 
 #define __PH_IS_WORKING__ (measuresAndOutputs.ph != 0)
 #define __OD_IS_WORKING__ (rdo.doSaturation.measuredValue != 0)
