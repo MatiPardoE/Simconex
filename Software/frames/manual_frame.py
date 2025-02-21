@@ -101,22 +101,22 @@ class LogFrame(ctk.CTkFrame):
 
                 date, hour = self.calculate_datetime(i)
                 
-                self.label_time = ctk.CTkLabel(self.in_frame, text=hour, corner_radius=0, width=100) 
+                self.label_time = ctk.CTkLabel(self.in_frame, text=hour, corner_radius=0, width=125) 
                 self.label_time.pack(side='left')
 
-                self.label_date = ctk.CTkLabel(self.in_frame, text=date, corner_radius=0, width=200) 
+                self.label_date = ctk.CTkLabel(self.in_frame, text=date, corner_radius=0, width=225) 
                 self.label_date.pack(side='left')
 
-                self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['od'][i]), corner_radius=0, width=125)
+                self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['od'][i]), corner_radius=0, width=150)
                 self.label_od.pack(side='left')
 
-                self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['ph'][i]), corner_radius=0, width=125)
+                self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['ph'][i]), corner_radius=0, width=150)
                 self.label_ph.pack(side='left')
 
-                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists_manual['light_t'][i]}", corner_radius=0, width=125)
+                self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists_manual['light_t'][i]}", corner_radius=0, width=150)
                 self.label_light.pack(side='left')
 
-                self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['temperature'][i]), corner_radius=0, width=200)
+                self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['temperature'][i]), corner_radius=0, width=225)
                 self.label_temp.pack(side='left')
 
                 self.label_conc = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['conc'][i]), corner_radius=0, width=200)
@@ -140,22 +140,22 @@ class LogFrame(ctk.CTkFrame):
             self.in_frame = ctk.CTkFrame(self.frame_line)
             self.in_frame.pack(fill="x")
 
-            self.label_time = ctk.CTkLabel(self.in_frame, text=datetime.datetime.now().strftime("%H:%M:%S"), corner_radius=0, width=100)
+            self.label_time = ctk.CTkLabel(self.in_frame, text=datetime.datetime.now().strftime("%H:%M:%S"), corner_radius=0, width=125)
             self.label_time.pack(side='left')
 
-            self.label_date = ctk.CTkLabel(self.in_frame, text=datetime.datetime.now().strftime("%d/%m/%Y"), corner_radius=0, width=200)
+            self.label_date = ctk.CTkLabel(self.in_frame, text=datetime.datetime.now().strftime("%d/%m/%Y"), corner_radius=0, width=225)
             self.label_date.pack(side='left')
 
-            self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['od'][last_index]), corner_radius=0, width=125)
+            self.label_od = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['od'][last_index]), corner_radius=0, width=150)
             self.label_od.pack(side='left')
 
-            self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['ph'][last_index]), corner_radius=0, width=125)
+            self.label_ph = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['ph'][last_index]), corner_radius=0, width=150)
             self.label_ph.pack(side='left')
 
-            self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists_manual['light_t'][last_index]}", corner_radius=0, width=125)
+            self.label_light = ctk.CTkLabel(self.in_frame, text=f"{data_lists_manual['light_t'][last_index]}", corner_radius=0, width=150)
             self.label_light.pack(side='left')
 
-            self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['temperature'][last_index]), corner_radius=0, width=200)
+            self.label_temp = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['temperature'][last_index]), corner_radius=0, width=225)
             self.label_temp.pack(side='left')
 
             self.label_conc = ctk.CTkLabel(self.in_frame, text="{0:.2f}".format(data_lists_manual['conc'][last_index]), corner_radius=0, width=200)
