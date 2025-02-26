@@ -5,7 +5,7 @@ a = Analysis(
     ['simConex.py'],
     pathex=[],
     binaries=[],
-    datas=[('images', 'images')],  # ← Esto asegura que la carpeta 'images' se incluya
+    datas=[('calib', 'calib'), ('input_csv', 'input_csv'), ('Log', 'Log'), ('images', 'images')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -29,10 +29,11 @@ exe = EXE(
     upx=True,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,
+    console=True,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['logo_edited.ico'],
 )

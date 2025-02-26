@@ -1,0 +1,10 @@
+customtkinter     
+esptool               
+matplotlib                
+numpy                   
+pandas                     
+Pillow            
+pip                    
+pyserial          
+python-dateutil                          
+ttkwidgets         

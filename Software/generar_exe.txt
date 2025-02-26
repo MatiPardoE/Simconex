@@ -1,2 +1,1 @@
-pyinstaller --onefile --windowed simConex.py
-xcopy images dist\images /E /I /Y
+pyinstaller --onefile --icon=logo_edited.ico --add-data "calib;calib" --add-data "input_csv;input_csv" --add-data "Log;Log" --add-data "images;images" simConex.py

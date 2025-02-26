@@ -3,3 +3,4 @@ input_csv/
 frames/__pycache__/
 dist/
 build/
+*.rar
