@@ -1,0 +1,31 @@
+# TEMPLATE S32K
+# Ignore all 
+* 
+
+# Unignore all with extensions *.c *.h *.txt y con Makefile 
+!*.c 
+!*.h 
+#!Makefile 
+!*.txt
+!*.cpp
+!*.hpp
+!*.s
+!*README*
+!*.md
+!*.inc
+!*.ld
+!*.cproject
+!*.project
+!*.gitignore
+
+
+# Unignore all dirs
+!*/
+
+# Ignore this
+/Debug_FLASH/
+/FreeRTOS_TAD_logs/
+/RemoteSystemsTempFiles/
+**.metadata
+**.settings
+**Debug/
